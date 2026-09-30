@@ -7,39 +7,71 @@
 -- 1. ENUM TYPES
 -- ============================================================
 
-CREATE TYPE user_role AS ENUM ('super_admin', 'receptionist');
+DO $$ BEGIN
+  CREATE TYPE user_role AS ENUM ('super_admin', 'receptionist');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE appointment_status AS ENUM (
-  'pending', 'confirmed', 'rescheduled', 'checked_in',
-  'completed', 'no_show', 'cancelled', 'expired'
-);
+DO $$ BEGIN
+  CREATE TYPE appointment_status AS ENUM (
+    'pending', 'confirmed', 'rescheduled', 'checked_in',
+    'completed', 'no_show', 'cancelled', 'expired'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE order_status AS ENUM (
-  'received', 'confirmed', 'preparing',
-  'ready', 'shipped', 'delivered', 'picked_up',
-  'completed', 'cancelled'
-);
+DO $$ BEGIN
+  CREATE TYPE order_status AS ENUM (
+    'received', 'confirmed', 'preparing',
+    'ready', 'shipped', 'delivered', 'picked_up',
+    'completed', 'cancelled'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE delivery_method AS ENUM ('pickup', 'delivery');
-CREATE TYPE payment_method AS ENUM ('cash', 'card', 'bank_transfer');
-CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'refunded', 'partially_refunded');
-CREATE TYPE invoice_status AS ENUM ('issued', 'paid', 'voided');
-CREATE TYPE discount_type AS ENUM ('percentage', 'fixed');
+DO $$ BEGIN
+  CREATE TYPE delivery_method AS ENUM ('pickup', 'delivery');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE stock_movement_type AS ENUM (
-  'initial', 'purchase', 'sale', 'adjustment',
-  'return', 'reservation', 'reservation_release',
-  'reservation_fulfillment', 'correction'
-);
+DO $$ BEGIN
+  CREATE TYPE payment_method AS ENUM ('cash', 'card', 'bank_transfer');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE review_status AS ENUM ('pending', 'approved', 'rejected');
-CREATE TYPE gender_type AS ENUM ('male', 'female', 'other');
-CREATE TYPE consent_status AS ENUM ('pending', 'given', 'revoked');
+DO $$ BEGIN
+  CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'refunded', 'partially_refunded');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-CREATE TYPE audit_action AS ENUM (
-  'create', 'update', 'delete', 'void',
-  'login', 'logout', 'export', 'email_sent'
-);
+DO $$ BEGIN
+  CREATE TYPE invoice_status AS ENUM ('issued', 'paid', 'voided');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE discount_type AS ENUM ('percentage', 'fixed');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE stock_movement_type AS ENUM (
+    'initial', 'purchase', 'sale', 'adjustment',
+    'return', 'reservation', 'reservation_release',
+    'reservation_fulfillment', 'correction'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE review_status AS ENUM ('pending', 'approved', 'rejected');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE gender_type AS ENUM ('male', 'female', 'other');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE consent_status AS ENUM ('pending', 'given', 'revoked');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+DO $$ BEGIN
+  CREATE TYPE audit_action AS ENUM (
+    'create', 'update', 'delete', 'void',
+    'login', 'logout', 'export', 'email_sent'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- ============================================================
 -- 2. STAFF TABLE + AUTH HELPERS
