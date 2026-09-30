@@ -77,10 +77,10 @@ To transition the system to live status, execute the following 4 administrative 
    - `supabase/migrations/004_production_email_logs.sql`
 3. Create the Doctor and Receptionist user accounts in Supabase Auth, and map their UUIDs into `public.staff`:
    ```sql
-   INSERT INTO public.staff (id, email, full_name, role, is_active)
+   INSERT INTO public.staff (auth_user_id, name, email, role, is_active)
    VALUES
-     ('<DOCTOR_AUTH_USER_UUID>', 'doctor@brimishskincare.com', 'Dr. [Doctor Name]', 'super_admin', true),
-     ('<RECEPTION_AUTH_USER_UUID>', 'reception@brimishskincare.com', 'Reception Desk', 'receptionist', true);
+     ('<DOCTOR_AUTH_USER_UUID>', 'Dr. [Doctor Name]', 'doctor@brimishskincare.com', 'super_admin', true),
+     ('<RECEPTION_AUTH_USER_UUID>', 'Reception Desk', 'reception@brimishskincare.com', 'receptionist', true);
    ```
 
 ### Step 2: Configure Resend Domain DNS

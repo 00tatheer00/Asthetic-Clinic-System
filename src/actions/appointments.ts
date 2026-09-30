@@ -24,6 +24,12 @@ export async function createPublicAppointment(formData: unknown) {
   }
 
   const data = parsed.data;
+
+  // Enforce future date (prevent booking appointments in the past)
+  if (new Date(data.scheduled_at).getTime() < Date.now() - 5 * 60 * 1000) {
+    return { success: false, error: 'Appointment date and time cannot be in the past.' };
+  }
+
   const supabase = createAdminClient();
 
   // Get treatment name for email
@@ -57,7 +63,7 @@ export async function createPublicAppointment(formData: unknown) {
     return { success: false, error: 'Failed to create appointment. Please try again.' };
   }
 
-  // Send notification email (non-blocking)
+  // Send notification email (non-blocking, logged automatically)
   sendAppointmentReceivedEmail({
     customerName: data.customer_name,
     customerPhone: data.customer_phone,
@@ -65,21 +71,6 @@ export async function createPublicAppointment(formData: unknown) {
     scheduledAt: formatDateTime(data.scheduled_at),
     message: data.message || undefined,
   }).catch(console.error);
-
-  // Log email
-  if (data.customer_email) {
-    void supabase
-      .from('email_log')
-      .insert({
-        template_name: 'appointment_received',
-        recipient_email: data.customer_email,
-        subject: `Appointment Request Received`,
-        status: 'pending',
-        reference_type: 'appointment',
-        reference_id: appointment.id,
-      })
-      .then(() => {});
-  }
 
   return { success: true, appointmentId: appointment.id };
 }

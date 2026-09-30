@@ -75,10 +75,10 @@ Execute these 12 steps on the live Supabase project before traffic is routed:
    - Create Receptionist user: `reception@brimishskincare.com` (Auto-confirm email: Yes)
 6. **Link Auth Users to Staff Table**:
    ```sql
-   INSERT INTO public.staff (id, email, full_name, role, is_active)
+   INSERT INTO public.staff (auth_user_id, name, email, role, is_active)
    VALUES
-     ('<DOCTOR_AUTH_USER_UUID>', 'doctor@brimishskincare.com', 'Dr. [Doctor Name]', 'super_admin', true),
-     ('<RECEPTION_AUTH_USER_UUID>', 'reception@brimishskincare.com', 'Front Desk Reception', 'receptionist', true);
+     ('<DOCTOR_AUTH_USER_UUID>', 'Dr. [Doctor Name]', 'doctor@brimishskincare.com', 'super_admin', true),
+     ('<RECEPTION_AUTH_USER_UUID>', 'Front Desk Reception', 'reception@brimishskincare.com', 'receptionist', true);
    ```
 7. **Configure Real Clinic Settings**:
    Execute update on `clinic_settings`:

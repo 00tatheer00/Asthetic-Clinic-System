@@ -92,8 +92,8 @@ If a patient requests their photos be removed from the public website:
 5. Copy the generated User UID (UUID).
 6. In Supabase SQL Editor, run:
    ```sql
-   INSERT INTO public.staff (id, email, full_name, role, is_active)
-   VALUES ('<COPIED_UID>', 'reception2@brimishskincare.com', 'Staff Member Name', 'receptionist', true);
+   INSERT INTO public.staff (auth_user_id, name, email, role, is_active)
+   VALUES ('<COPIED_UID>', 'Staff Member Name', 'reception2@brimishskincare.com', 'receptionist', true);
    ```
 
 ### 5.2 Deactivating Staff Access

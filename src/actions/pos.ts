@@ -59,7 +59,9 @@ export async function createSale(formData: unknown) {
   let subtotal = 0;
 
   for (const item of data.items) {
-    // Validate stock for product items
+    let verifiedUnitPrice = item.unit_price;
+
+    // Validate stock and verify price for product items
     if (item.item_type === 'product' && item.product_id) {
       const { data: product } = await supabase
         .from('products')
@@ -78,15 +80,32 @@ export async function createSale(formData: unknown) {
           error: `Insufficient stock for "${product.name}". Available: ${availableStock}`,
         };
       }
+
+      verifiedUnitPrice = Number(product.sale_price);
+    }
+
+    // Verify price for treatment/service items
+    if (item.item_type === 'service' && item.treatment_id) {
+      const { data: treatment } = await supabase
+        .from('treatments')
+        .select('id, price, name, is_active')
+        .eq('id', item.treatment_id)
+        .single();
+
+      if (!treatment) {
+        return { success: false, error: `Treatment not found: ${item.name}` };
+      }
+
+      verifiedUnitPrice = Number(treatment.price);
     }
 
     const itemDiscount = calculateDiscount(
-      item.unit_price * item.quantity,
+      verifiedUnitPrice * item.quantity,
       item.discount_type,
       item.discount_value
     );
     const lineTotal = calculateLineTotal(
-      item.unit_price,
+      verifiedUnitPrice,
       item.quantity,
       item.discount_type,
       item.discount_value
@@ -100,7 +119,7 @@ export async function createSale(formData: unknown) {
       item_type: item.item_type,
       name: item.name,
       quantity: item.quantity,
-      unit_price: item.unit_price,
+      unit_price: verifiedUnitPrice,
       discount_type: item.discount_type || null,
       discount_value: item.discount_value,
       discount_amount: itemDiscount,

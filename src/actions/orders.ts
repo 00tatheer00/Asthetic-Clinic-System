@@ -128,25 +128,36 @@ export async function placeOrder(formData: unknown) {
     // Order is created but items failed — log for manual fix
   }
 
-  // Reserve stock for each product
+  // Reserve stock for each product (atomic RPC with fallback)
   for (const item of data.items) {
     const product = products.find((p) => p.id === item.product_id)!;
 
-    await supabase
-      .from('products')
-      .update({ reserved_quantity: product.reserved_quantity + item.quantity })
-      .eq('id', item.product_id);
-
-    await supabase.from('stock_movements').insert({
-      product_id: item.product_id,
-      movement_type: 'reservation',
-      quantity: item.quantity,
-      quantity_before: product.stock_quantity,
-      quantity_after: product.stock_quantity,
-      reference_type: 'order',
-      reference_id: order.id,
-      reason: `Stock reserved for order ${orderNumber}`,
+    // Try atomic RPC first to prevent race conditions
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc('atomic_reserve_stock', {
+      p_product_id: item.product_id,
+      p_quantity: item.quantity,
+      p_order_id: order.id,
+      p_reason: `Stock reserved for order ${orderNumber}`,
     });
+
+    if (rpcErr || !(rpcRes as { success?: boolean })?.success) {
+      // Fallback
+      await supabase
+        .from('products')
+        .update({ reserved_quantity: product.reserved_quantity + item.quantity })
+        .eq('id', item.product_id);
+
+      await supabase.from('stock_movements').insert({
+        product_id: item.product_id,
+        movement_type: 'reservation',
+        quantity: item.quantity,
+        quantity_before: product.stock_quantity,
+        quantity_after: product.stock_quantity,
+        reference_type: 'order',
+        reference_id: order.id,
+        reason: `Stock reserved for order ${orderNumber}`,
+      });
+    }
   }
 
   // Send confirmation email (non-blocking)

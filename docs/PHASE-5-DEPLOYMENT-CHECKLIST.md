@@ -43,16 +43,16 @@
      - Auto-confirm user: Yes
   2. Insert corresponding record into `public.staff`:
      ```sql
-     INSERT INTO public.staff (id, email, full_name, role, is_active)
-     VALUES ('<SUPABASE_AUTH_USER_UUID>', 'doctor@brimishskincare.com', 'Dr. [Doctor Name]', 'super_admin', true);
+     INSERT INTO public.staff (auth_user_id, name, email, role, is_active)
+     VALUES ('<SUPABASE_AUTH_USER_UUID>', 'Dr. [Doctor Name]', 'doctor@brimishskincare.com', 'super_admin', true);
      ```
   3. Create Receptionist User (`receptionist`):
      - Email: `reception@brimishskincare.com`
      - Auto-confirm user: Yes
   4. Insert corresponding record into `public.staff`:
      ```sql
-     INSERT INTO public.staff (id, email, full_name, role, is_active)
-     VALUES ('<SUPABASE_AUTH_USER_UUID>', 'reception@brimishskincare.com', 'Clinic Reception Desk', 'receptionist', true);
+     INSERT INTO public.staff (auth_user_id, name, email, role, is_active)
+     VALUES ('<SUPABASE_AUTH_USER_UUID>', 'Clinic Reception Desk', 'reception@brimishskincare.com', 'receptionist', true);
      ```
 
 ---

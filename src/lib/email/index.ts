@@ -29,13 +29,25 @@ async function persistEmailLog(
 ) {
   try {
     const admin = createAdminClient();
-    await admin.from('email_logs').insert({
+    const { error } = await admin.from('email_logs').insert({
       recipient,
       subject,
       status,
       provider_id: providerId || null,
       error_message: errorMessage || null,
     });
+
+    if (error) {
+      // Resilient fallback if 001 table exists before 004 migration
+      await admin.from('email_log').insert({
+        recipient_email: recipient,
+        subject,
+        status: status === 'mock' ? 'sent' : status,
+        resend_id: providerId || null,
+        error_message: errorMessage || null,
+        template_name: 'system',
+      });
+    }
   } catch {
     // Non-blocking: database logging failure must never crash email flow
   }

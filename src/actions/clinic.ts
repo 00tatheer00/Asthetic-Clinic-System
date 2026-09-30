@@ -295,19 +295,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
     clinicStrn: invoice.clinic_strn,
   });
 
-  // Log email
-  await supabase.from('email_log').insert({
-    template_name: 'invoice',
-    recipient_email: invoice.customer_email,
-    subject: `Invoice ${invoice.invoice_number}`,
-    status: result.success ? 'sent' : 'failed',
-    resend_id: result.messageId || null,
-    error_message: result.error || null,
-    reference_type: 'invoice',
-    reference_id: invoiceId,
-  });
-
-  if (!result.success) return { success: false, error: 'Failed to send email.' };
+  if (!result.success) return { success: false, error: result.error || 'Failed to send email.' };
   return { success: true };
 }
 
