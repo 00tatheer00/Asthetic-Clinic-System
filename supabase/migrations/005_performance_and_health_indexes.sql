@@ -1,18 +1,19 @@
 -- ============================================================
 -- Migration 005: High-Performance Indexes & Database Health Checks
+-- Verified against actual Brimish Skin Care schema definitions
 -- ============================================================
 
 -- 1. High-Frequency Foreign Key & Filter Indexes
 CREATE INDEX IF NOT EXISTS idx_patients_phone ON patients (phone);
-CREATE INDEX IF NOT EXISTS idx_patients_mrn ON patients (mrn);
+CREATE INDEX IF NOT EXISTS idx_patients_name ON patients (name);
 CREATE INDEX IF NOT EXISTS idx_patients_created_at ON patients (created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_appointments_patient_id ON appointments (patient_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_date_status ON appointments (appointment_date, status);
+CREATE INDEX IF NOT EXISTS idx_appointments_scheduled_status ON appointments (scheduled_at, status);
 CREATE INDEX IF NOT EXISTS idx_appointments_created_at ON appointments (created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_visits_patient_id ON visits (patient_id);
-CREATE INDEX IF NOT EXISTS idx_visits_visited_at ON visits (visited_at DESC);
+CREATE INDEX IF NOT EXISTS idx_visits_visit_date ON visits (visit_date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_invoices_patient_id ON invoices (patient_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status_date ON invoices (status, created_at DESC);
@@ -25,16 +26,16 @@ CREATE INDEX IF NOT EXISTS idx_orders_status ON orders (status, created_at DESC)
 CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON orders (customer_phone);
 
 CREATE INDEX IF NOT EXISTS idx_products_sku ON products (sku);
-CREATE INDEX IF NOT EXISTS idx_products_category_active ON products (category, is_active);
-CREATE INDEX IF NOT EXISTS idx_products_stock_reorder ON products (stock_quantity, reorder_level) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_products_category_active ON products (category_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_products_stock_alert ON products (stock_quantity, low_stock_threshold) WHERE is_active = true AND deleted_at IS NULL;
 
-CREATE INDEX IF NOT EXISTS idx_treatments_category_active ON treatments (category, is_active);
+CREATE INDEX IF NOT EXISTS idx_treatments_category_active ON treatments (category_id, is_active);
 
-CREATE INDEX IF NOT EXISTS idx_inventory_movements_product ON inventory_movements (product_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_inventory_movements_type ON inventory_movements (movement_type);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_product ON stock_movements (product_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stock_movements_type ON stock_movements (movement_type);
 
-CREATE INDEX IF NOT EXISTS idx_reviews_approved ON reviews (is_approved, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_before_after_gallery ON before_after_cases (is_published, consent_obtained) WHERE is_published = true AND consent_obtained = true;
+CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_before_after_public ON before_after (is_public, created_at DESC) WHERE is_public = true AND deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_audit_log_staff_date ON audit_log (staff_id, created_at DESC);
 
@@ -53,10 +54,10 @@ DECLARE
     v_today_appointments INTEGER;
     v_unpaid_invoices INTEGER;
 BEGIN
-    SELECT count(*) INTO v_total_patients FROM patients;
-    SELECT count(*) INTO v_low_stock_count FROM products WHERE stock_quantity <= reorder_level AND is_active = true;
+    SELECT count(*) INTO v_total_patients FROM patients WHERE deleted_at IS NULL;
+    SELECT count(*) INTO v_low_stock_count FROM products WHERE stock_quantity <= low_stock_threshold AND is_active = true AND deleted_at IS NULL;
     SELECT count(*) INTO v_pending_orders FROM orders WHERE status = 'received';
-    SELECT count(*) INTO v_today_appointments FROM appointments WHERE appointment_date = CURRENT_DATE AND status IN ('pending', 'confirmed');
+    SELECT count(*) INTO v_today_appointments FROM appointments WHERE (scheduled_at AT TIME ZONE 'Asia/Karachi')::DATE = CURRENT_DATE AND status IN ('pending', 'confirmed') AND deleted_at IS NULL;
     SELECT count(*) INTO v_unpaid_invoices FROM invoices WHERE status = 'issued';
 
     result := jsonb_build_object(
