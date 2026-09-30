@@ -6,75 +6,14 @@ import { NextResponse, type NextRequest } from 'next/server';
  * 1. Refreshing Supabase auth session (token rotation)
  * 2. Protecting /dashboard/* routes (redirect to login if unauthenticated)
  * 3. Redirecting authenticated users away from /auth/login
+ * 4. Protecting /api/cron/* routes with CRON_SECRET
  */
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // IMPORTANT: Do NOT use getSession() for security-sensitive operations.
-  // Use getUser() which validates the token with the Supabase Auth server.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const { pathname } = request.nextUrl;
-
-  // Protect dashboard routes
-  if (pathname.startsWith('/dashboard')) {
-    if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      url.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(url);
-    }
-
-    // Verify user has an active staff record
-    const { data: staff } = await supabase
-      .from('staff')
-      .select('id, role, is_active')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (!staff || !staff.is_active) {
-      // User exists in auth but not in staff table or is deactivated
-      await supabase.auth.signOut();
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      url.searchParams.set('error', 'unauthorized');
-      return NextResponse.redirect(url);
-    }
-  }
-
-  // Redirect authenticated users away from login page
-  if (pathname === '/auth/login' && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
 
   // Protect API cron routes with secret
   if (pathname.startsWith('/api/cron')) {
@@ -83,6 +22,97 @@ export async function middleware(request: NextRequest) {
 
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return supabaseResponse;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Gracefully handle missing environment variables in production/Vercel
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('[Middleware] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in environment variables.');
+    
+    // If attempting to access dashboard, redirect to login with explanatory error
+    if (pathname.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/login';
+      url.searchParams.set('error', 'environment_not_configured');
+      return NextResponse.redirect(url);
+    }
+    
+    return supabaseResponse;
+  }
+
+  try {
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            supabaseResponse = NextResponse.next({
+              request,
+            });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    // IMPORTANT: Do NOT use getSession() for security-sensitive operations.
+    // Use getUser() which validates the token with the Supabase Auth server.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Protect dashboard routes
+    if (pathname.startsWith('/dashboard')) {
+      if (!user) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/login';
+        url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+      }
+
+      // Verify user has an active staff record
+      const { data: staff } = await supabase
+        .from('staff')
+        .select('id, role, is_active')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!staff || !staff.is_active) {
+        // User exists in auth but not in staff table or is deactivated
+        await supabase.auth.signOut();
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/login';
+        url.searchParams.set('error', 'unauthorized');
+        return NextResponse.redirect(url);
+      }
+    }
+
+    // Redirect authenticated users away from login page
+    if (pathname === '/auth/login' && user) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+  } catch (err) {
+    console.error('[Middleware] Supabase auth execution error:', err);
+    // On unexpected auth error, redirect dashboard attempts to login rather than crashing the whole site with 500
+    if (pathname.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/login';
+      return NextResponse.redirect(url);
     }
   }
 
@@ -96,7 +126,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization)
      * - favicon.ico, sitemap.xml, robots.txt
-     * - Public assets
+     * - Public static assets (.svg, .png, .jpg, etc.)
      */
     '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
