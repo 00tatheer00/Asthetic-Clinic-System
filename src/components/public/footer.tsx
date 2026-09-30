@@ -1,0 +1,152 @@
+import Link from 'next/link';
+import { Heart, MapPin, Phone, Mail, Clock, Globe, MessageCircle } from 'lucide-react';
+import { PUBLIC_NAV_ITEMS } from '@/lib/constants';
+
+export function PublicFooter() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-gray-950 text-gray-300">
+      {/* Main Footer */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand */}
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600">
+                <span className="text-sm font-bold text-white">B</span>
+              </div>
+              <div>
+                <span className="text-lg font-bold text-white">Brimish</span>
+                <span className="text-lg font-light text-gray-500 ml-1">Skin Care</span>
+              </div>
+            </Link>
+            <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
+              Expert aesthetic skincare treatments and premium products in Peshawar, Pakistan.
+              Your journey to beautiful, healthy skin starts here.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {PUBLIC_NAV_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-gray-400 hover:text-rose-400 transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+              Services
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/treatments" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                  All Treatments
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                  Shop Products
+                </Link>
+              </li>
+              <li>
+                <Link href="/gallery" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                  Before & After
+                </Link>
+              </li>
+              <li>
+                <Link href="/book" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                  Book Appointment
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div>
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+              Contact Us
+            </h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="h-4 w-4 mt-0.5 text-rose-400 shrink-0" />
+                <span className="text-sm text-gray-400">
+                  Peshawar, Khyber Pakhtunkhwa,<br />Pakistan
+                </span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="h-4 w-4 text-rose-400 shrink-0" />
+                <a href="tel:+92" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                  Contact for number
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="h-4 w-4 text-rose-400 shrink-0" />
+                <a href="mailto:info@brimishskincare.com" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                  info@brimishskincare.com
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Clock className="h-4 w-4 text-rose-400 shrink-0" />
+                <span className="text-sm text-gray-400">Mon–Sat: 10am – 7pm</span>
+              </li>
+            </ul>
+
+            {/* Social */}
+            <div className="flex items-center gap-3 mt-5">
+              <a
+                href="#"
+                className="flex items-center justify-center h-9 w-9 rounded-full bg-gray-800 text-gray-400 hover:bg-rose-500 hover:text-white transition-all"
+                aria-label="Instagram"
+              >
+                <Globe className="h-4 w-4" />
+              </a>
+              <a
+                href="#"
+                className="flex items-center justify-center h-9 w-9 rounded-full bg-gray-800 text-gray-400 hover:bg-rose-500 hover:text-white transition-all"
+                aria-label="Facebook"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-gray-800">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-gray-500">
+              &copy; {currentYear} Brimish Skin Care. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
+              <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+            <p className="text-xs text-gray-600 flex items-center gap-1">
+              Made with <Heart className="h-3 w-3 text-rose-500 fill-rose-500" /> in Peshawar
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

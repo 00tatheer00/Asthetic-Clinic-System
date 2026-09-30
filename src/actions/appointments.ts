@@ -1,0 +1,273 @@
+'use server';
+
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import { appointmentBookingSchema, appointmentUpdateSchema } from '@/lib/validations';
+import { sendAppointmentReceivedEmail, sendAppointmentConfirmedEmail } from '@/lib/email';
+import { formatDateTime } from '@/lib/utils/helpers';
+import { revalidatePath } from 'next/cache';
+import type { AppointmentStatus } from '@/lib/types';
+
+// ============================================================
+// Public: Create appointment (guest, uses admin client)
+// ============================================================
+
+export async function createPublicAppointment(formData: unknown) {
+  const parsed = appointmentBookingSchema.safeParse(formData);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const data = parsed.data;
+  const supabase = createAdminClient();
+
+  // Get treatment name for email
+  const { data: treatment } = await supabase
+    .from('treatments')
+    .select('name')
+    .eq('id', data.treatment_id)
+    .single();
+
+  if (!treatment) {
+    return { success: false, error: 'Selected treatment not found.' };
+  }
+
+  // Create appointment
+  const { data: appointment, error } = await supabase
+    .from('appointments')
+    .insert({
+      customer_name: data.customer_name,
+      customer_phone: data.customer_phone,
+      customer_email: data.customer_email || null,
+      treatment_id: data.treatment_id,
+      scheduled_at: data.scheduled_at,
+      message: data.message || null,
+      status: 'pending',
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error('[Appointment] Create failed:', error);
+    return { success: false, error: 'Failed to create appointment. Please try again.' };
+  }
+
+  // Send notification email (non-blocking)
+  sendAppointmentReceivedEmail({
+    customerName: data.customer_name,
+    customerPhone: data.customer_phone,
+    treatmentName: treatment.name,
+    scheduledAt: formatDateTime(data.scheduled_at),
+    message: data.message || undefined,
+  }).catch(console.error);
+
+  // Log email
+  if (data.customer_email) {
+    void supabase
+      .from('email_log')
+      .insert({
+        template_name: 'appointment_received',
+        recipient_email: data.customer_email,
+        subject: `Appointment Request Received`,
+        status: 'pending',
+        reference_type: 'appointment',
+        reference_id: appointment.id,
+      })
+      .then(() => {});
+  }
+
+  return { success: true, appointmentId: appointment.id };
+}
+
+// ============================================================
+// Dashboard: Update appointment status
+// ============================================================
+
+export async function updateAppointmentStatus(
+  appointmentId: string,
+  newStatus: AppointmentStatus,
+  reason?: string
+) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  // Get staff ID
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff) return { success: false, error: 'Staff not found' };
+
+  // Get current appointment
+  const { data: appointment } = await supabase
+    .from('appointments')
+    .select('*, treatments(name)')
+    .eq('id', appointmentId)
+    .single();
+
+  if (!appointment) return { success: false, error: 'Appointment not found' };
+
+  // Validate status transition
+  const validTransitions: Record<string, string[]> = {
+    pending: ['confirmed', 'cancelled'],
+    confirmed: ['checked_in', 'rescheduled', 'no_show', 'cancelled'],
+    rescheduled: ['confirmed', 'cancelled'],
+    checked_in: ['completed'],
+    completed: [],
+    no_show: [],
+    cancelled: [],
+    expired: [],
+  };
+
+  const allowed = validTransitions[appointment.status] || [];
+  if (!allowed.includes(newStatus)) {
+    return {
+      success: false,
+      error: `Cannot change status from "${appointment.status}" to "${newStatus}".`,
+    };
+  }
+
+  // Build update payload
+  const updateData: Record<string, unknown> = {
+    status: newStatus,
+    updated_by: staff.id,
+  };
+
+  if (newStatus === 'confirmed') {
+    updateData.confirmed_at = new Date().toISOString();
+    updateData.confirmed_by = staff.id;
+  }
+
+  if (newStatus === 'cancelled') {
+    updateData.cancellation_reason = reason || null;
+  }
+
+  const { error } = await supabase
+    .from('appointments')
+    .update(updateData)
+    .eq('id', appointmentId);
+
+  if (error) {
+    console.error('[Appointment] Update failed:', error);
+    return { success: false, error: 'Failed to update appointment.' };
+  }
+
+  // Send confirmation email if confirming and customer has email
+  if (newStatus === 'confirmed' && appointment.customer_email) {
+    const { data: settings } = await supabase
+      .from('clinic_settings')
+      .select('clinic_phone')
+      .limit(1)
+      .single();
+
+    sendAppointmentConfirmedEmail({
+      customerEmail: appointment.customer_email,
+      customerName: appointment.customer_name,
+      treatmentName: appointment.treatments?.name || 'Treatment',
+      scheduledAt: formatDateTime(appointment.scheduled_at),
+      clinicPhone: settings?.clinic_phone || undefined,
+    }).catch(console.error);
+  }
+
+  // Audit log
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'update',
+    entity_type: 'appointment',
+    entity_id: appointmentId,
+    description: `Status changed from ${appointment.status} to ${newStatus}`,
+    old_values: { status: appointment.status },
+    new_values: { status: newStatus },
+  });
+
+  revalidatePath('/dashboard/appointments');
+  return { success: true };
+}
+
+// ============================================================
+// Dashboard: Link patient to appointment
+// ============================================================
+
+export async function linkPatientToAppointment(
+  appointmentId: string,
+  patientId: string
+) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff) return { success: false, error: 'Staff not found' };
+
+  const { error } = await supabase
+    .from('appointments')
+    .update({
+      patient_id: patientId,
+      updated_by: staff.id,
+    })
+    .eq('id', appointmentId);
+
+  if (error) {
+    return { success: false, error: 'Failed to link patient.' };
+  }
+
+  revalidatePath('/dashboard/appointments');
+  return { success: true };
+}
+
+// ============================================================
+// Dashboard: Delete (soft) appointment
+// ============================================================
+
+export async function deleteAppointment(appointmentId: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  // Only super_admin can delete
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff || staff.role !== 'super_admin') {
+    return { success: false, error: 'Only admin can delete appointments.' };
+  }
+
+  const { error } = await supabase
+    .from('appointments')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', appointmentId);
+
+  if (error) {
+    return { success: false, error: 'Failed to delete appointment.' };
+  }
+
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'delete',
+    entity_type: 'appointment',
+    entity_id: appointmentId,
+    description: 'Appointment soft-deleted',
+  });
+
+  revalidatePath('/dashboard/appointments');
+  return { success: true };
+}
