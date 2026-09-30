@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder');
 
@@ -17,6 +18,27 @@ interface EmailResult {
   success: boolean;
   messageId?: string;
   error?: string;
+}
+
+async function persistEmailLog(
+  recipient: string,
+  subject: string,
+  status: 'sent' | 'failed' | 'mock',
+  providerId?: string,
+  errorMessage?: string
+) {
+  try {
+    const admin = createAdminClient();
+    await admin.from('email_logs').insert({
+      recipient,
+      subject,
+      status,
+      provider_id: providerId || null,
+      error_message: errorMessage || null,
+    });
+  } catch {
+    // Non-blocking: database logging failure must never crash email flow
+  }
 }
 
 /**
@@ -44,8 +66,10 @@ function stripHtml(html: string): string {
 export async function sendEmail(options: SendEmailOptions): Promise<EmailResult> {
   // If API key is not configured or placeholder in development/test, log and safely return
   if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === 're_placeholder') {
+    const mockId = `mock-${Date.now()}`;
     console.log(`[Email Mock/Dev] Would send to: ${options.to} | Subject: "${options.subject}"`);
-    return { success: true, messageId: `mock-${Date.now()}` };
+    await persistEmailLog(options.to, options.subject, 'mock', mockId);
+    return { success: true, messageId: mockId };
   }
 
   try {
@@ -62,13 +86,16 @@ export async function sendEmail(options: SendEmailOptions): Promise<EmailResult>
 
     if (error) {
       console.error('[Email] Resend API error:', error);
+      await persistEmailLog(options.to, options.subject, 'failed', undefined, error.message);
       return { success: false, error: error.message };
     }
 
+    await persistEmailLog(options.to, options.subject, 'sent', data?.id);
     return { success: true, messageId: data?.id };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown email exception';
     console.error('[Email] Transport exception:', message);
+    await persistEmailLog(options.to, options.subject, 'failed', undefined, message);
     return { success: false, error: message };
   }
 }
