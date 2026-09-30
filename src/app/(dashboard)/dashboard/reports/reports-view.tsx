@@ -100,12 +100,16 @@ export function ReportsView({
   treatments,
   patients,
 }: ReportsViewProps) {
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | '90d' | 'all'>('30d');
 
   // Filter records by timeRange
   const filterByDate = <T extends { created_at: string }>(items: T[]): T[] => {
     if (timeRange === 'all') return items;
     const now = new Date();
+    if (timeRange === 'today') {
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      return items.filter((item) => new Date(item.created_at) >= todayStart);
+    }
     const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
     const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     return items.filter((item) => new Date(item.created_at) >= cutoff);
@@ -161,6 +165,33 @@ export function ReportsView({
   );
 
   // Export Handlers
+  const handleExportDailyClosing = () => {
+    const headers = [
+      'Report Type',
+      'Date',
+      'Total Revenue (PKR)',
+      'Total Discounts (PKR)',
+      'Total Taxes (PKR)',
+      'Paid Invoices Count',
+      'Completed Appointments',
+      'Online Orders',
+    ];
+    const rows = [
+      [
+        'End-of-Day Closing Reconciliation',
+        new Date().toISOString().split('T')[0],
+        totalRevenue,
+        totalDiscounts,
+        totalTax,
+        paidInvoices.length,
+        completedAppts,
+        completedOrders.length,
+      ],
+    ];
+    exportToCSV(`brimish-daily-closing-${new Date().toISOString().split('T')[0]}`, headers, rows);
+    toast.success('Daily Closing CSV exported');
+  };
+
   const handleExportInvoices = () => {
     const headers = [
       'Invoice Number',
@@ -249,27 +280,41 @@ export function ReportsView({
           </p>
         </div>
 
-        {/* Range Selector */}
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
-          {[
-            { label: '7 Days', value: '7d' },
-            { label: '30 Days', value: '30d' },
-            { label: '90 Days', value: '90d' },
-            { label: 'All Time', value: 'all' },
-          ].map((btn) => (
-            <button
-              key={btn.value}
-              onClick={() => setTimeRange(btn.value as '7d' | '30d' | '90d' | 'all')}
-              className={cn(
-                'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
-                timeRange === btn.value
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-900'
-              )}
+        {/* Range Selector & Daily Closing Action */}
+        <div className="flex flex-wrap items-center gap-2">
+          {timeRange === 'today' && (
+            <Button
+              size="sm"
+              onClick={handleExportDailyClosing}
+              className="bg-gray-900 hover:bg-black text-white rounded-lg text-xs"
             >
-              {btn.label}
-            </button>
-          ))}
+              <Download className="h-3.5 w-3.5 mr-1.5" />
+              Daily Closing CSV
+            </Button>
+          )}
+
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+            {[
+              { label: 'Today', value: 'today' },
+              { label: '7 Days', value: '7d' },
+              { label: '30 Days', value: '30d' },
+              { label: '90 Days', value: '90d' },
+              { label: 'All Time', value: 'all' },
+            ].map((btn) => (
+              <button
+                key={btn.value}
+                onClick={() => setTimeRange(btn.value as 'today' | '7d' | '30d' | '90d' | 'all')}
+                className={cn(
+                  'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
+                  timeRange === btn.value
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900'
+                )}
+              >
+                {btn.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
