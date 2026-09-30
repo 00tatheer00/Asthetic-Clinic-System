@@ -71,14 +71,14 @@ export default function AboutPage() {
                 Founded in Peshawar, Brimish Skin Care Clinic was established with a singular mission: to eliminate misleading beauty fads and deliver safe, medically validated aesthetic treatments suited to South Asian skin profiles.
               </p>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Whether you are treating persistent cystic acne, hormonal pigmentation, sun damage, or seeking age-defying rejuvenation, our clinic utilizes FDA-cleared laser systems, sterile clinical equipment, and medical-grade home care regimens.
+                Whether you are treating persistent cystic acne, hormonal pigmentation, sun damage, or seeking age-defying rejuvenation, our clinic utilizes medical-grade clinical equipment, sterile treatment protocols, and evidence-based home care regimens.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 {[
                   'Certified Aesthetic Practitioners',
                   'Rigorous 4-Step Sterilization Protocol',
-                  'FDA-Approved Medical Equipment',
+                  'International Standard Clinical Equipment',
                   'Custom Protocols for Asian Skin Types',
                   'Transparent Pricing & Consent',
                   'Complimentary Follow-Up Reviews',
