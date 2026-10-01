@@ -33,6 +33,13 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  generateBuildId: async () => {
+    return (
+      process.env.VERCEL_GIT_COMMIT_SHA ||
+      process.env.BUILD_ID ||
+      `brimish-${Date.now()}`
+    );
+  },
   images: {
     remotePatterns: [
       {
@@ -48,6 +55,61 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // 1. Service Worker: Never let browser or CDN cache sw.js
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+          {
+            key: 'Surrogate-Control',
+            value: 'no-store',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      // 2. Version API: Realtime deployment detection endpoint
+      {
+        source: '/api/version',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          },
+          {
+            key: 'Surrogate-Control',
+            value: 'no-store',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      // 3. Web Manifest
+      {
+        source: '/manifest.webmanifest',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, must-revalidate, max-age=0',
+          },
+        ],
+      },
+      // 4. Global Security Headers for all routes
       {
         source: '/:path*',
         headers: securityHeaders,

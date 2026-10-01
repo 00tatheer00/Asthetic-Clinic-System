@@ -7,288 +7,190 @@ import {
   Calendar,
   ArrowRight,
   MessageCircle,
-  Sparkles,
   Star,
   Shield,
-  Clock,
   MapPin,
-  CheckCircle2,
   Stethoscope,
   Sun,
   Moon,
-  Play,
-  Pause,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AmbientParticles } from '@/components/public/ambient-particles';
-import { AnimatedCounter } from '@/components/public/counter-stat';
 
 export function HeroCinematic() {
   // Theme mood: 'daylight' (bright day) or 'twilight' (ambient night)
   const [mood, setMood] = useState<'twilight' | 'daylight'>('daylight');
-  const [isAutoTour, setIsAutoTour] = useState(false);
-
-  // Auto 24h cycle tour effect (smoothly switches day/night every 9 seconds when active)
-  useEffect(() => {
-    if (!isAutoTour) return;
-    const interval = setInterval(() => {
-      setMood((prev) => (prev === 'daylight' ? 'twilight' : 'daylight'));
-    }, 9000);
-    return () => clearInterval(interval);
-  }, [isAutoTour]);
-
-  const quickTreatments = [
-    { name: 'HydraFacial MD', price: 'Rs. 5,000', id: 'hydrafacial' },
-    { name: 'Laser Hair Removal', price: 'Rs. 1,000', id: 'laser-hair-removal' },
-    { name: 'Pico Laser', price: 'Rs. 1,500', id: 'pico-laser' },
-    { name: 'Medical Peel', price: 'Rs. 3,500', id: 'chemical-peel' },
-    { name: 'Collagen Microneedling', price: 'Rs. 6,000', id: 'microneedling' },
-  ];
 
   return (
-    <section className="relative min-h-[92vh] lg:min-h-screen w-full flex items-center justify-center overflow-hidden bg-black text-white">
-      {/* 1. Full-Bleed Twin AI Background Images (Exact Same Scene: Day & Night) */}
+    <section className="relative w-full flex items-center justify-center overflow-hidden bg-black text-white py-12 sm:py-16 lg:py-20">
+      {/* 1. Real Clinic Background Images (Day & Night) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        
-        {/* Night / Twilight Layer (Exact same room with evening garden & warm architectural cove lighting) */}
+        {/* Night Layer */}
         <div
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
             mood === 'twilight' ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <Image
             src="/images/hero-clinic-night.jpg"
-            alt="Brimish Aesthetic Dermatology Clinic Sanctuary - Twilight Suite"
+            alt="Brimish Skin Care Clinic Peshawar"
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center animate-slow-zoom brightness-95"
+            className="object-cover object-center brightness-90"
           />
         </div>
 
-        {/* Daylight Layer (Exact same room with natural daylight streaming in & sunny garden) */}
+        {/* Daylight Layer */}
         <div
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
             mood === 'daylight' ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <Image
             src="/images/hero-clinic-day.jpg"
-            alt="Brimish Aesthetic Dermatology Clinic Sanctuary - Daylight Sanctuary"
+            alt="Brimish Skin Care Clinic Peshawar"
             fill
             priority
             sizes="100vw"
-            className="object-cover object-center animate-slow-zoom brightness-95"
+            className="object-cover object-center brightness-90"
           />
         </div>
 
-        {/* 2. Cinematic Multi-Layered Overlays */}
-        {/* Dynamic Dark Vignette for ultra-crisp typography & contrast */}
-        <div
-          className={`absolute inset-0 transition-colors duration-1000 ${
-            mood === 'twilight'
-              ? 'bg-gradient-to-r from-black/90 via-[#1c081a]/80 to-black/60'
-              : 'bg-gradient-to-r from-black/85 via-black/65 to-black/35'
-          }`}
-        />
+        {/* Crisp Gradient Overlay for Perfect Contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
 
-        {/* Ambient Floating Light Particles (Ethereal sunbeams or warm twilight embers) */}
-        <AmbientParticles mood={mood} />
-
-        {/* Top subtle fade from navbar */}
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/80 via-black/35 to-transparent" />
-        
-        {/* Bottom fade blending smoothly into next section */}
-        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#140612] via-[#140612]/70 to-transparent" />
-
-        {/* Ambient atmospheric rose-gold radial glows */}
-        <div className="absolute top-1/4 left-1/4 -ml-40 h-[500px] w-[500px] rounded-full bg-rose-500/15 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-purple-500/15 blur-[120px] pointer-events-none" />
+        {/* Top & Bottom Soft Fades */}
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
       </div>
 
-      {/* 3. Ambient Mood & Auto Tour Switcher */}
-      <div className="absolute top-6 right-6 z-20 flex items-center gap-2 p-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs shadow-xl shadow-black/30">
-        {/* Auto Cycle Button */}
+      {/* 2. Simple Day / Night Switcher */}
+      <div className="absolute top-4 right-4 sm:top-5 sm:right-6 z-20 flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-xs">
         <button
           type="button"
-          onClick={() => setIsAutoTour(!isAutoTour)}
-          className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
-            isAutoTour
-              ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md animate-pulse'
-              : 'text-gray-300 hover:text-white bg-white/5'
-          }`}
-          title="Auto 24h day/night ambient tour"
-        >
-          {isAutoTour ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-          <span>{isAutoTour ? 'Touring...' : '24h Tour'}</span>
-        </button>
-
-        {/* Twilight Button */}
-        <button
-          type="button"
-          onClick={() => {
-            setIsAutoTour(false);
-            setMood('twilight');
-          }}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-300 ${
+          onClick={() => setMood('twilight')}
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${
             mood === 'twilight'
-              ? 'bg-[#2D1226] text-rose-200 border border-rose-400/40 shadow-sm font-semibold'
-              : 'text-gray-300 hover:text-white font-medium'
+              ? 'bg-rose-950 text-rose-200 border border-rose-500/40 font-medium'
+              : 'text-gray-300 hover:text-white'
           }`}
-          title="Switch to Twilight / Night Lighting"
+          title="Evening View"
         >
-          <Moon className="h-3.5 w-3.5 text-rose-300" />
-          <span>Twilight</span>
+          <Moon className="h-3 w-3 text-rose-300" />
+          <span>Night</span>
         </button>
 
-        {/* Daylight Button */}
         <button
           type="button"
-          onClick={() => {
-            setIsAutoTour(false);
-            setMood('daylight');
-          }}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-300 ${
+          onClick={() => setMood('daylight')}
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${
             mood === 'daylight'
-              ? 'bg-amber-500/90 text-white border border-amber-300/40 shadow-sm font-semibold'
-              : 'text-gray-300 hover:text-white font-medium'
+              ? 'bg-amber-600 text-white font-medium'
+              : 'text-gray-300 hover:text-white'
           }`}
-          title="Switch to Daylight Natural Sunshine"
+          title="Day View"
         >
-          <Sun className="h-3.5 w-3.5 text-amber-200" />
-          <span>Daylight</span>
+          <Sun className="h-3 w-3 text-amber-200" />
+          <span>Day</span>
         </button>
       </div>
 
-      {/* 4. Hero Content Container */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28 flex flex-col justify-center min-h-[90vh]">
-        <div className="max-w-3xl space-y-6 text-center sm:text-left">
+      {/* 3. Hero Content Container */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-2xl space-y-4 text-center sm:text-left">
           
-          {/* Doctor / Clinic Pill Badge with Radar Ripple Animation */}
-          <div className="inline-flex items-center gap-2.5 rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-xs font-semibold text-rose-200 border border-white/20 shadow-lg shadow-black/20">
-            <div className="relative flex items-center justify-center h-2.5 w-2.5">
-              <span className="absolute h-5 w-5 rounded-full bg-rose-500/70 animate-radar-pulse" />
-              <span className="relative h-2 w-2 rounded-full bg-rose-400" />
-            </div>
-            <span className="tracking-wider uppercase text-[11px] sm:text-xs">
-              ✦ Peshawar’s Premier Aesthetic Clinic • Led by Dr. Bilal
-            </span>
+          {/* Clinic Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-medium text-rose-200 border border-white/15">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+            <span>Dr. Bilal Skin Care Clinic • University Road, Peshawar</span>
           </div>
 
-          {/* Main Headline (Bespoke Editorial Serif + Liquid Gradient Shimmer) */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.08] drop-shadow-md">
-            Where Medical Precision Meets{' '}
-            <span className="block italic text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-amber-200 to-rose-200 animate-shimmer-flow">
-              Flawless, Radiant Skin
-            </span>
+          {/* Short, Clear Headline in Easy Pakistani English */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight drop-shadow-md">
+            Best Skin Care & Laser Clinic in Peshawar
           </h1>
 
-          {/* Subheading */}
-          <p className="text-base sm:text-lg text-gray-200 leading-relaxed font-normal max-w-2xl drop-shadow-sm">
-            Physician-guided aesthetic protocols engineered exclusively for South Asian skin profiles. Experience medical HydraFacial MD, targeted chemical peels, and precision laser dermatology in an atmosphere of refined luxury on University Road, Peshawar.
+          {/* Short, Clear Subtitle */}
+          <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-xl">
+            Get clear, healthy skin with Dr. Bilal. We provide HydraFacial, laser hair removal, acne treatments, and chemical peels with complete safety.
           </p>
 
-          {/* Quick Treatment Selector Glass Chips with Shine-Sweep Effect */}
-          <div className="pt-2">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-rose-200/90 mb-3 flex items-center justify-center sm:justify-start gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-              <span>Signature Protocols • Direct Booking</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
-              {quickTreatments.map((chip) => (
-                <Link
-                  key={chip.name}
-                  href={`/book?treatment=${chip.id}`}
-                  className="shine-sweep inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-xs font-medium text-white shadow-md hover:border-rose-300/60 hover:scale-105 transition-all duration-300"
-                >
-                  <span>{chip.name}</span>
-                  <span className="text-white/40">|</span>
-                  <span className="font-bold text-rose-300">{chip.price}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Luxury CTA Group with Hover Light Sweep & Soft Lift */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
+          {/* Simple, Straightforward Buttons */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
+            {/* 1. Book Appointment */}
             <Link href="/book" className="w-full sm:w-auto">
               <Button
-                size="lg"
-                className="shine-sweep w-full sm:w-auto bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-full px-9 py-6 text-base font-semibold shadow-2xl shadow-rose-600/50 hover:shadow-rose-500/70 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 border border-rose-400/40"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white rounded-full px-6 py-2.5 h-11 text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <Calendar className="h-4 w-4" />
-                <span>Book In-Person Consultation</span>
+                <span>Book Appointment</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
 
+            {/* 2. Straightforward WhatsApp Button */}
             <a
               href="https://wa.me/923000000000"
               target="_blank"
               rel="noopener noreferrer"
-              className="shine-sweep w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full text-sm font-semibold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 backdrop-blur-md shadow-lg shadow-emerald-950/40 hover:scale-105 transition-all duration-300"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 h-11 rounded-full text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md transition-colors cursor-pointer"
+              title="Chat with clinic on WhatsApp"
             >
-              <MessageCircle className="h-4 w-4 text-emerald-400 fill-emerald-400" />
-              <span>Chat on WhatsApp</span>
+              <MessageCircle className="h-4 w-4 fill-white text-white" />
+              <span>WhatsApp</span>
             </a>
 
+            {/* 3. View Treatments */}
             <Link href="/treatments" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                size="lg"
-                className="w-full sm:w-auto rounded-full px-7 py-6 text-sm font-semibold bg-white/5 hover:bg-white/15 text-white border-white/25 hover:border-white/40 backdrop-blur-md transition-all hover:scale-105"
+                className="w-full sm:w-auto rounded-full px-5 py-2.5 h-11 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 transition-colors cursor-pointer"
               >
-                Explore Treatments
+                View Treatments
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* 5. Floating Bottom Credibility Dock with Animated Number Counters */}
-        <div className="mt-14 pt-8 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-white/90">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
-            <div className="h-10 w-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
-              <Star className="h-5 w-5 fill-amber-300 text-amber-300" />
+        {/* 4. Bottom Credibility Badges (Clean & Simple) */}
+        <div className="mt-8 pt-6 border-t border-white/15 grid grid-cols-2 lg:grid-cols-4 gap-3 text-white/90">
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-amber-400/20 flex items-center justify-center text-amber-300 shrink-0">
+              <Star className="h-4 w-4 fill-amber-300 text-amber-300" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-tight">
-                <AnimatedCounter value={4.9} decimals={1} suffix=" / 5.0 Rating" />
-              </div>
-              <div className="text-[11px] text-gray-300">
-                <AnimatedCounter value={1200} suffix="+ Peshawar Patients" />
-              </div>
+              <div className="text-xs sm:text-sm font-bold text-white leading-tight">4.9 / 5.0 Rating</div>
+              <div className="text-[10px] sm:text-[11px] text-gray-300">1,200+ Happy Patients</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
-            <div className="h-10 w-10 rounded-xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-300 shrink-0">
-              <Stethoscope className="h-5 w-5" />
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-300 shrink-0">
+              <Stethoscope className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-tight">
-                <AnimatedCounter value={100} suffix="% Doctor Led" />
-              </div>
-              <div className="text-[11px] text-gray-300">PMC Registered Specialist</div>
+              <div className="text-xs sm:text-sm font-bold text-white leading-tight">Doctor-Led Care</div>
+              <div className="text-[10px] sm:text-[11px] text-gray-300">Checked by Dr. Bilal</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0">
-              <Shield className="h-5 w-5" />
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-300 shrink-0">
+              <Shield className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-tight">No Advance Card</div>
-              <div className="text-[11px] text-gray-300">Pay on Arrival at Clinic</div>
+              <div className="text-xs sm:text-sm font-bold text-white leading-tight">No Advance Required</div>
+              <div className="text-[10px] sm:text-[11px] text-gray-300">Pay at the Clinic</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
-            <div className="h-10 w-10 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 shrink-0">
-              <MapPin className="h-5 w-5" />
+          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
+              <MapPin className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-tight">University Road</div>
-              <div className="text-[11px] text-gray-300">Peshawar Premier Clinic</div>
+              <div className="text-xs sm:text-sm font-bold text-white leading-tight">University Road</div>
+              <div className="text-[10px] sm:text-[11px] text-gray-300">Peshawar, Pakistan</div>
             </div>
           </div>
         </div>

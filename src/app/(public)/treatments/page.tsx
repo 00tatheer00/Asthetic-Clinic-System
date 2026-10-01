@@ -3,7 +3,7 @@ import { formatCurrency } from '@/lib/utils/helpers';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Clock, ArrowRight, Sparkles, Shield, CheckCircle2 } from 'lucide-react';
+import { Clock, ArrowRight, Shield, CheckCircle2 } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -142,35 +142,31 @@ export default async function TreatmentsPage() {
         <div className="absolute top-0 right-1/4 -mt-20 h-80 w-80 rounded-full bg-rose-200/30 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 h-72 w-72 rounded-full bg-pink-200/20 blur-2xl pointer-events-none" />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-4 py-1.5 text-xs font-semibold text-rose-900 border border-rose-200/60 shadow-xs">
-            <Sparkles className="h-3.5 w-3.5 text-rose-600" />
-            <span>CLINICAL AESTHETIC DERMATOLOGY MENU</span>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-3">
+          <div className="inline-block rounded-full bg-rose-100 px-3.5 py-1 text-xs font-semibold text-rose-800">
+            Our Skin Treatments
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-gray-950 tracking-tight">
-            Evidence-Based Treatments for{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500">
-              Transformative Skin Health
-            </span>
+            Skin Care & Laser Treatments in Peshawar
           </h1>
 
-          <p className="mt-4 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Every procedure at Brimish Skin Care is physician-directed, utilizing medical-grade equipment calibrated precisely for Pakistani and South Asian skin types.
+          <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            All treatments at Brimish Skin Care are checked and performed by Dr. Bilal. We use safe, high quality equipment suitable for Pakistani skin.
           </p>
 
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-600 font-medium">
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-600 font-medium">
             <span className="flex items-center gap-1.5">
               <Shield className="h-4 w-4 text-emerald-600" />
-              100% Doctor Performed
+              Doctor-Led Clinic
             </span>
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              Hospital-Grade Sterilization
+              100% Sterile & Clean
             </span>
             <span className="flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-rose-600" />
-              Zero Forced Packages
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              Clear & Fair Prices
             </span>
           </div>
         </div>
@@ -227,13 +223,12 @@ export default async function TreatmentsPage() {
                       {/* Top Badges */}
                       <div className="flex items-center justify-between gap-2 mb-4">
                         {treatment.is_featured ? (
-                          <div className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-3 py-1 text-[11px] font-bold text-rose-800">
-                            <Sparkles className="h-3 w-3 text-rose-600" />
-                            Featured Signature
+                          <div className="inline-flex rounded-full bg-rose-100 px-3 py-1 text-[11px] font-bold text-rose-800">
+                            Popular Treatment
                           </div>
                         ) : (
                           <div className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium text-gray-700">
-                            Clinical Protocol
+                            Skin Treatment
                           </div>
                         )}
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShieldCheck, Calendar, ArrowRight, Sparkles } from 'lucide-react';
+import { ShieldCheck, Calendar, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CaseItem {
@@ -175,7 +175,6 @@ function BeforeAfterSlider({ item }: { item: CaseItem }) {
         <div className="space-y-2">
           {item.treatments && (
             <Badge variant="outline" className="text-xs border-rose-200 text-rose-700 bg-rose-50/50">
-              <Sparkles className="h-3 w-3 mr-1 inline" />
               {item.treatments.name}
             </Badge>
           )}

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X, ShoppingBag, Phone, Sparkles, MapPin, Clock, MessageCircle, Calendar } from 'lucide-react';
+import { Menu, X, ShoppingBag, Phone, MapPin, Clock, MessageCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -49,18 +49,17 @@ export function PublicHeader() {
             </span>
           </div>
           <div className="flex items-center gap-5">
-            <span className="inline-flex items-center gap-1 text-rose-300 font-medium">
-              <Sparkles className="h-3 w-3" />
-              Physician-Led Aesthetic Rejuvenation
+            <span className="text-rose-300 font-medium text-xs">
+              Dr. Bilal Skin Care & Laser Clinic • University Road
             </span>
             <a
               href="https://wa.me/923000000000"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-gray-300 hover:text-emerald-400 transition-colors"
+              className="inline-flex items-center gap-1.5 text-gray-300 hover:text-emerald-400 transition-colors"
             >
               <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
-              WhatsApp Help
+              WhatsApp
             </a>
           </div>
         </div>

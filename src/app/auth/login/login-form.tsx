@@ -1,27 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createClient } from '@/lib/supabase/client';
+import { loginStaffAction } from '@/actions/auth';
 import { loginSchema, type LoginInput } from '@/lib/validations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
   const errorParam = searchParams.get('error');
 
+  const getInitialError = (): string | null => {
+    if (errorParam === 'unauthorized') {
+      return 'Your account is not authorized to access the clinic dashboard. Please contact administrator.';
+    }
+    if (errorParam === 'environment_not_configured') {
+      return 'Database connection environment variables are missing. Please contact technical support.';
+    }
+    if (errorParam === 'session_expired') {
+      return 'Your session has expired. Please sign in again.';
+    }
+    return null;
+  };
+
   const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(
-    errorParam === 'unauthorized' ? 'Your account is not authorized. Contact the administrator.' : null
-  );
+  const [serverError, setServerError] = useState<string | null>(getInitialError());
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const {
     register,
@@ -29,29 +42,58 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
 
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
-    const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
+    try {
+      // 1. Call Server Action to authenticate, verify active staff role, and write HTTP session cookies
+      const actionResult = await loginStaffAction(data, redirect);
 
-    if (error) {
-      setServerError(
-        error.message === 'Invalid login credentials'
-          ? 'Invalid email or password.'
-          : error.message
-      );
-      return;
+      if (!actionResult.success) {
+        const errorMsg = actionResult.error || 'Invalid email or password. Please try again.';
+        setServerError(errorMsg);
+        toast.error(errorMsg);
+        return;
+      }
+
+      setIsNavigating(true);
+      toast.success('Login successful! Redirecting to clinic dashboard...');
+
+      // 2. Also synchronize client-side Supabase browser client storage
+      try {
+        const supabase = createClient();
+        await supabase.auth.signInWithPassword({
+          email: data.email.trim().toLowerCase(),
+          password: data.password,
+        });
+      } catch {
+        // Non-fatal if browser client sync fails since server-side session cookies are already written
+      }
+
+      // 3. HARD NAVIGATION to dashboard:
+      // Using window.location.href ensures cookies are cleanly attached to HTTP request headers
+      // and bypasses stale Next.js in-memory client router prefetch caches.
+      const targetUrl = actionResult.redirectTo || redirect || '/dashboard';
+      window.location.href = targetUrl;
+    } catch (err: unknown) {
+      console.error('[LoginForm] Uncaught error during sign in:', err);
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : 'A network or server error occurred. Please check your connection.';
+      setServerError(errorMsg);
+      toast.error(errorMsg);
+      setIsNavigating(false);
     }
-
-    router.push(redirect);
-    router.refresh();
   };
+
+  const isLoading = isSubmitting || isNavigating;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-rose-50 px-4">
@@ -75,8 +117,9 @@ export function LoginForm() {
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {serverError && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
-                  {serverError}
+                <div className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
+                  <span>{serverError}</span>
                 </div>
               )}
 
@@ -85,10 +128,11 @@ export function LoginForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@brimishskincare.com"
+                  placeholder="bilal@admin.com"
                   autoComplete="email"
+                  disabled={isLoading}
                   {...register('email')}
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
                 />
                 {errors.email && (
                   <p className="text-xs text-red-600">{errors.email.message}</p>
@@ -103,13 +147,14 @@ export function LoginForm() {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     autoComplete="current-password"
+                    disabled={isLoading}
                     {...register('password')}
-                    className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
+                    className={errors.password ? 'border-red-500 pr-10 focus-visible:ring-red-500' : 'pr-10'}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -122,10 +167,10 @@ export function LoginForm() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 shadow-md"
-                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 shadow-md font-medium text-white transition-all cursor-pointer"
+                disabled={isLoading}
               >
-                {isSubmitting ? (
+                {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...

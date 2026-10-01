@@ -2,36 +2,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   ArrowRight,
-  Sparkles,
   Star,
   Shield,
   Clock,
   CheckCircle2,
   Calendar,
-  Phone,
-  Heart,
   Award,
-  BadgeCheck,
   Stethoscope,
   Microscope,
-  MapPin,
-  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HomeFaqSection, QuickBookBanner } from '@/components/public/home-interactive';
 import { HeroCinematic } from '@/components/public/hero-cinematic';
 
 export const metadata = {
-  title: 'Brimish Skin Care Clinic — Premier Aesthetic & Dermatology in Peshawar',
+  title: 'Brimish Skin Care Clinic — Best Aesthetic & Dermatology Clinic in Peshawar',
   description:
-    'Experience Peshawar’s most trusted aesthetic dermatology clinic. Specialized HydraFacial, medical chemical peels, microneedling, and physician-guided skincare protocols by Dr. Bilal.',
+    'Peshawar’s trusted skin clinic by Dr. Bilal. We offer HydraFacial, laser hair removal, chemical peels, and acne treatments on University Road, Peshawar.',
 };
 
 export default function HomePage() {
   return (
     <div className="relative overflow-x-hidden bg-white">
       {/* ============================================================ */}
-      {/* 1. HERO SECTION (Full Background Cinematic Showcase)          */}
+      {/* 1. HERO SECTION                                              */}
       {/* ============================================================ */}
       <HeroCinematic />
 
@@ -44,23 +38,23 @@ export default function HomePage() {
             {[
               {
                 icon: Stethoscope,
-                title: 'Physician-Led Care',
-                desc: 'Every protocol overseen by certified doctor Dr. Bilal',
+                title: 'Doctor-Led Clinic',
+                desc: 'Dr. Bilal personally examines every patient',
               },
               {
                 icon: Shield,
-                title: 'Strict Sterilization',
-                desc: 'Autoclaved tools & single-use disposable consumables',
+                title: '100% Clean & Sterile',
+                desc: 'Sterilized tools and disposable items for every patient',
               },
               {
                 icon: Microscope,
-                title: 'Melanin-Safe Settings',
-                desc: 'Calibrated safely for South Asian & Pakistani skin',
+                title: 'Safe for Pakistani Skin',
+                desc: 'Specially tested for Asian skin tones with zero burning risk',
               },
               {
                 icon: Award,
-                title: 'Honest Pricing',
-                desc: 'Transparent rates in PKR with zero forced packages',
+                title: 'Clear & Fair Rates',
+                desc: 'Affordable rates in PKR with no hidden fees or forced packages',
               },
             ].map((feature, i) => (
               <div key={i} className="flex flex-col sm:flex-row items-center sm:items-start gap-3.5">
@@ -78,21 +72,20 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 3. SIGNATURE CLINICAL TREATMENTS SHOWCASE                    */}
+      {/* 3. POPULAR SKIN TREATMENTS                                    */}
       {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-white">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="max-w-2xl mx-auto text-center mb-16 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="h-3 w-3" />
-              Signature Aesthetic Menu
+          <div className="max-w-2xl mx-auto text-center mb-14 space-y-3">
+            <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
+              Our Treatments
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-950">
-              Targeted Treatments for Visible, Lasting Results
+              Skin Care Treatments in Peshawar
             </h2>
             <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-              Designed to treat acne, stubborn hyperpigmentation, open pores, and early aging using proven medical dermatology techniques.
+              Effective, safe treatments for acne, scars, open pores, and dull skin by Dr. Bilal.
             </p>
           </div>
 
@@ -100,38 +93,38 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                title: 'HydraFacial MD Protocol',
-                desc: 'Deep vortex pore extraction, salicylic exfoliation, and peptide hydration for radiant glass skin.',
+                title: 'HydraFacial Treatment',
+                desc: 'Deep cleansing, blackhead extraction, and peptide hydration for fresh, glowing skin.',
                 price: 'Rs. 5,000',
                 time: '45 mins',
-                tag: 'Most Popular Rejuvenation',
+                tag: 'Most Popular',
                 image: '/images/treatment-hydrafacial.jpg',
                 slug: 'hydrafacial-md',
               },
               {
-                title: 'Medical Chemical Peels',
-                desc: 'Custom medical-grade peel blends targeted for melasma, sun damage, and active acne breakouts.',
+                title: 'Chemical Peels',
+                desc: 'Custom medical peel targeted for melasma, sun tan, dark marks, and active acne.',
                 price: 'From Rs. 3,500',
                 time: '30 mins',
-                tag: 'Pigmentation & Acne',
+                tag: 'Acne & Glow',
                 image: '/images/treatment-peel.jpg',
                 slug: 'chemical-peel',
               },
               {
-                title: 'Collagen Microneedling',
-                desc: 'Precision micro-puncture therapy stimulating natural collagen to smooth pitted acne scars and fine lines.',
+                title: 'Microneedling Treatment',
+                desc: 'Stimulates natural collagen to smooth deep acne scars, pores, and rough texture.',
                 price: 'Rs. 6,000',
                 time: '60 mins',
-                tag: 'Texture & Scar Repair',
+                tag: 'Scars & Texture',
                 image: '/images/treatment-microneedle.jpg',
                 slug: 'collagen-microneedling',
               },
               {
-                title: 'Laser Acne & Clarity Protocol',
-                desc: 'Targeted phototherapy reducing P. acnes bacteria, vascular redness, and persistent stubborn marks.',
+                title: 'Laser Acne Treatment',
+                desc: 'Targeted laser therapy reducing acne-causing bacteria, redness, and stubborn pimples.',
                 price: 'Rs. 7,500',
                 time: '45 mins',
-                tag: 'Advanced Phototherapy',
+                tag: 'Laser Care',
                 image: '/images/treatment-laser.jpg',
                 slug: 'laser-acne-protocol',
               },
@@ -178,7 +171,7 @@ export default function HomePage() {
                     <Link href="/book">
                       <Button
                         size="sm"
-                        className="bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded-full text-xs font-semibold px-4 transition-colors"
+                        className="bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded-full text-xs font-semibold px-4 transition-colors cursor-pointer"
                       >
                         Book Now
                       </Button>
@@ -193,9 +186,9 @@ export default function HomePage() {
             <Link href="/treatments">
               <Button
                 variant="outline"
-                className="rounded-full px-8 py-5 border-gray-300 text-gray-800 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 font-semibold"
+                className="rounded-full px-8 py-5 border-gray-300 text-gray-800 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 font-semibold cursor-pointer"
               >
-                <span>Browse All Clinical Treatments & Add-Ons</span>
+                <span>View All Treatments & Prices</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -204,18 +197,17 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 4. MEET DR. BILAL & THE CLINICAL PHILOSOPHY                 */}
+      {/* 4. MEET DR. BILAL                                            */}
       {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-gradient-to-b from-gray-50/50 to-white border-y border-gray-100">
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-gray-50/50 to-white border-y border-gray-100">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
             {/* Doctor Portrait */}
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-sm lg:max-w-none">
-                <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-rose-400 to-pink-300 opacity-20 blur-xl" />
-                <div className="relative rounded-3xl overflow-hidden border border-gray-200 shadow-xl bg-white">
-                  <div className="relative h-[480px] w-full">
+                <div className="relative rounded-3xl overflow-hidden border border-gray-200 shadow-lg bg-white">
+                  <div className="relative h-[440px] w-full">
                     <Image
                       src="/images/dr-bilal.jpg"
                       alt="Dr. Bilal Aesthetic Dermatologist at Brimish Skin Care Clinic Peshawar"
@@ -227,40 +219,39 @@ export default function HomePage() {
                   <div className="p-5 bg-white border-t border-gray-100 flex items-center justify-between">
                     <div>
                       <div className="font-serif font-bold text-lg text-gray-900">Dr. Bilal</div>
-                      <div className="text-xs text-rose-600 font-medium">Lead Aesthetic Physician</div>
+                      <div className="text-xs text-rose-600 font-medium">Skin & Aesthetic Specialist</div>
                     </div>
-                    <div className="flex items-center gap-1 text-amber-500 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
-                      <Star className="h-3 w-3 fill-amber-400" />
-                      <span>10+ Yrs Exp</span>
+                    <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
+                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                      <span>10+ Years Exp</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Doctor Bio & Philosophy */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
-                <BadgeCheck className="h-3.5 w-3.5" />
-                Physician Leadership
+            {/* Doctor Bio */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
+                About Dr. Bilal
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-950 leading-tight">
-                “Healthy, confident skin begins with authentic medical expertise — never marketing gimmicks.”
+                Real Medical Care for Healthy, Clear Skin
               </h2>
 
               <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-                Founded by Dr. Bilal, Brimish Skin Care Clinic was created to provide Peshawar with transparent, safe, and scientifically grounded aesthetic treatments. We respect your natural anatomy and focus on restoring skin barrier health, collagen density, and vibrant tone without harsh or unnatural interventions.
+                Dr. Bilal started Brimish Skin Care Clinic in Peshawar to provide honest, safe, and effective skin treatments. We believe in clear advice, genuine care, and real results—without pushing unnecessary packages or fake promises.
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
                 {[
-                  'Certified in Advanced Aesthetic Protocols',
-                  'Calibrated Treatments for Asian Skin Melanin',
-                  'Rigorous 4-Step Sterilization Standards',
-                  'Evidence-Based Home Care Regimens',
-                  'Private & Confidential Female Care Suites',
-                  'Transparent Consultation & Informed Consent',
+                  'Certified skin & laser specialist',
+                  'Safe procedures for Pakistani skin types',
+                  'Strict hygiene and sterilized equipment',
+                  'Easy-to-follow home skincare guidance',
+                  'Separate, private rooms for female patients',
+                  'Complete consultation before any treatment',
                 ].map((point, idx) => (
                   <div key={idx} className="flex items-start gap-2.5">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -271,14 +262,14 @@ export default function HomePage() {
 
               <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
                 <Link href="/book" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white rounded-full px-8 py-5 text-sm font-semibold shadow-md">
+                  <Button className="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white rounded-full px-7 py-3 text-sm font-semibold shadow-md cursor-pointer">
                     <Calendar className="mr-2 h-4 w-4" />
                     Book Consultation with Dr. Bilal
                   </Button>
                 </Link>
                 <Link href="/about" className="w-full sm:w-auto">
-                  <Button variant="ghost" className="w-full sm:w-auto text-gray-700 hover:text-rose-600 text-sm font-semibold">
-                    Read Our Clinical Story →
+                  <Button variant="ghost" className="w-full sm:w-auto text-gray-700 hover:text-rose-600 text-sm font-semibold cursor-pointer">
+                    Read Our Story →
                   </Button>
                 </Link>
               </div>
@@ -291,28 +282,28 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/* 5. CLINIC IMPACT BY THE NUMBERS                              */}
       {/* ============================================================ */}
-      <section className="py-16 bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 text-white">
+      <section className="py-14 bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 divide-y lg:divide-y-0 lg:divide-x divide-white/10 text-center">
-            <div className="p-4 space-y-1">
-              <div className="text-4xl sm:text-5xl font-serif font-bold text-rose-400">15,000+</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium">Procedures Performed</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y lg:divide-y-0 lg:divide-x divide-white/10 text-center">
+            <div className="p-3 space-y-1">
+              <div className="text-3xl sm:text-4xl font-serif font-bold text-rose-400">15,000+</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium">Treatments Done</div>
               <div className="text-[11px] text-gray-500">In Peshawar & KPK</div>
             </div>
-            <div className="p-4 space-y-1">
-              <div className="text-4xl sm:text-5xl font-serif font-bold text-rose-400">4.9 / 5.0</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium">Average Patient Rating</div>
+            <div className="p-3 space-y-1">
+              <div className="text-3xl sm:text-4xl font-serif font-bold text-rose-400">4.9 / 5.0</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium">Patient Rating</div>
               <div className="text-[11px] text-gray-500">Over 1,200+ Reviews</div>
             </div>
-            <div className="p-4 space-y-1">
-              <div className="text-4xl sm:text-5xl font-serif font-bold text-rose-400">10+ Years</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium">Clinical Experience</div>
-              <div className="text-[11px] text-gray-500">Dedicated Dermatology</div>
+            <div className="p-3 space-y-1">
+              <div className="text-3xl sm:text-4xl font-serif font-bold text-rose-400">10+ Years</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium">Experience</div>
+              <div className="text-[11px] text-gray-500">Skin & Aesthetic Care</div>
             </div>
-            <div className="p-4 space-y-1">
-              <div className="text-4xl sm:text-5xl font-serif font-bold text-rose-400">100%</div>
-              <div className="text-xs sm:text-sm text-gray-300 font-medium">Sterilization Protocol</div>
-              <div className="text-[11px] text-gray-500">Hospital-Grade Safety</div>
+            <div className="p-3 space-y-1">
+              <div className="text-3xl sm:text-4xl font-serif font-bold text-rose-400">100%</div>
+              <div className="text-xs sm:text-sm text-gray-300 font-medium">Sterile & Clean</div>
+              <div className="text-[11px] text-gray-500">Highest Safety Standards</div>
             </div>
           </div>
         </div>
@@ -321,18 +312,17 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/* 6. REAL PATIENT TESTIMONIALS                                 */}
       {/* ============================================================ */}
-      <section className="py-20 sm:py-28 bg-white">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
-              <Star className="h-3 w-3 fill-rose-600 text-rose-600" />
-              Verified Patient Experiences
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+            <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
+              Patient Reviews
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-950">
-              Loved by Patients Across Peshawar
+              What Our Patients Say in Peshawar
             </h2>
             <p className="text-gray-600 text-sm sm:text-base">
-              Real reviews from real individuals who trusted Dr. Bilal and Brimish Skin Care Clinic with their aesthetic journey.
+              Real reviews from patients who visited Brimish Skin Care Clinic.
             </p>
           </div>
 
@@ -341,33 +331,33 @@ export default function HomePage() {
               {
                 name: 'Khadija Rahman',
                 location: 'Hayatabad, Peshawar',
-                treatment: 'HydraFacial MD + Peel',
+                treatment: 'HydraFacial + Peel',
                 quote:
-                  'I struggled with stubborn dullness and post-inflammatory acne marks for two years. After just 2 sessions with Dr. Bilal, my skin has a healthy glow without needing heavy foundation. The clinic is spotless and luxurious.',
+                  'I had stubborn dark marks and acne spots for two years. After just 2 sessions with Dr. Bilal, my skin has a healthy glow. The clinic is very clean and staff is polite.',
               },
               {
                 name: 'Amina Khattak',
                 location: 'University Town, Peshawar',
-                treatment: 'Acne Clear Protocol',
+                treatment: 'Acne Treatment',
                 quote:
-                  'What impressed me most was that Dr. Bilal didn’t try to oversell expensive treatments. He carefully explained my skin barrier issues, gave me a simple regimen, and my cystic acne cleared up within weeks.',
+                  'What I liked most is that Dr. Bilal did not try to sell expensive packages. He gave me simple advice, a proper cream regimen, and my cystic acne cleared up in weeks.',
               },
               {
                 name: 'Zainab Afridi',
                 location: 'DHA Peshawar',
-                treatment: 'Microneedling Collagen Therapy',
+                treatment: 'Microneedling Therapy',
                 quote:
-                  'My pitted acne scars on both cheeks have smoothed out remarkably. The procedure was comfortable with numbing cream, and the follow-up care was exceptional. Highly recommended clinic in Peshawar!',
+                  'My acne pits and scars have improved so much. The procedure was comfortable with numbing cream. Highly recommended skin specialist clinic in Peshawar!',
               },
             ].map((review, idx) => (
               <div
                 key={idx}
-                className="rounded-3xl border border-gray-200/80 bg-rose-50/20 p-8 flex flex-col justify-between space-y-5 hover:border-rose-200 transition-colors shadow-xs"
+                className="rounded-3xl border border-gray-200/80 bg-rose-50/20 p-7 flex flex-col justify-between space-y-4 hover:border-rose-200 transition-colors shadow-xs"
               >
                 <div className="space-y-3">
                   <div className="flex items-center text-amber-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-amber-400" />
+                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
                   <p className="text-gray-700 text-sm leading-relaxed italic">
@@ -375,7 +365,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200/60 flex items-center justify-between">
+                <div className="pt-3 border-t border-gray-200/60 flex items-center justify-between">
                   <div>
                     <div className="font-serif font-bold text-gray-900 text-sm">{review.name}</div>
                     <div className="text-xs text-gray-500">{review.location}</div>
@@ -390,8 +380,8 @@ export default function HomePage() {
 
           <div className="text-center mt-10">
             <Link href="/reviews">
-              <Button variant="ghost" className="text-rose-600 hover:text-rose-700 font-semibold text-sm">
-                Read All Verified Patient Reviews →
+              <Button variant="ghost" className="text-rose-600 hover:text-rose-700 font-semibold text-sm cursor-pointer">
+                Read All Patient Reviews →
               </Button>
             </Link>
           </div>
@@ -399,19 +389,19 @@ export default function HomePage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 7. FREQUENTLY ASKED QUESTIONS (Interactive Accordion)        */}
+      {/* 7. FREQUENTLY ASKED QUESTIONS                                */}
       {/* ============================================================ */}
-      <section className="py-20 sm:py-24 bg-gray-50/60 border-t border-gray-200/70">
+      <section className="py-16 sm:py-20 bg-gray-50/60 border-t border-gray-200/70">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
-              Answers & Reassurance
+          <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+            <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
+              FAQ
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-950">
               Frequently Asked Questions
             </h2>
             <p className="text-gray-600 text-sm sm:text-base">
-              Everything you need to know about our safety standards, procedures, and appointments.
+              Common questions patients ask before booking an appointment.
             </p>
           </div>
 
@@ -422,7 +412,7 @@ export default function HomePage() {
       {/* ============================================================ */}
       {/* 8. VIP CONVERSION CALL TO ACTION BANNER                      */}
       {/* ============================================================ */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="py-14 sm:py-16 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <QuickBookBanner />
         </div>
@@ -437,7 +427,7 @@ export default function HomePage() {
             '@type': 'MedicalClinic',
             name: 'Brimish Skin Care Clinic',
             description:
-              'Peshawar’s premier aesthetic skincare and dermatology clinic led by Dr. Bilal.',
+              'Peshawar’s premier skin care and laser clinic led by Dr. Bilal.',
             url: process.env.NEXT_PUBLIC_SITE_URL || 'https://brimishskincare.com',
             address: {
               '@type': 'PostalAddress',
@@ -453,7 +443,7 @@ export default function HomePage() {
             physician: {
               '@type': 'Physician',
               name: 'Dr. Bilal',
-              jobTitle: 'Lead Aesthetic Physician & Dermatologist',
+              jobTitle: 'Skin & Aesthetic Specialist',
             },
           }),
         }}

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { ProductGrid } from './product-grid';
 import type { Metadata } from 'next';
-import { Sparkles, Shield, Truck, RefreshCw } from 'lucide-react';
+import { Shield, Truck, RefreshCw } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Shop Clinical Skincare Products | Brimish Skin Care Clinic Peshawar',
@@ -122,21 +122,17 @@ export default async function ProductsPage() {
         <div className="absolute top-0 right-1/4 -mt-20 h-80 w-80 rounded-full bg-rose-200/30 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 h-72 w-72 rounded-full bg-pink-200/20 blur-2xl pointer-events-none" />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-4 py-1.5 text-xs font-semibold text-rose-900 border border-rose-200/60 shadow-xs">
-            <Sparkles className="h-3.5 w-3.5 text-rose-600" />
-            <span>PHYSICIAN-FORMULATED HOME SKINCARE</span>
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-3">
+          <div className="inline-block rounded-full bg-rose-100 px-3.5 py-1 text-xs font-semibold text-rose-800">
+            Skincare Products
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-gray-950 tracking-tight">
-            Medical Grade Skincare,{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500">
-              Prescribed for You
-            </span>
+            Skin Care Products by Dr. Bilal
           </h1>
 
-          <p className="mt-4 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Every product in our clinical boutique has been vetted and curated by Dr. Bilal to reinforce clinic treatments, protect barrier health, and maintain lasting radiance.
+          <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Authentic skincare products, cleansers, serums, and sunscreens recommended by Dr. Bilal for Pakistani skin.
           </p>
 
           <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-600 font-medium">

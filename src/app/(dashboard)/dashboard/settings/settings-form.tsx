@@ -10,8 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, Loader2, Building2, Receipt, Clock, UserCheck } from 'lucide-react';
+import { Save, Loader2, Building2, Receipt, Clock, UserCheck, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { clearBrowserCacheAndReload } from '@/lib/cache-utils';
+import { cn } from '@/lib/utils';
 
 interface ClinicSettings {
   id: string;
@@ -50,6 +52,23 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 export function SettingsForm({ settings, operatingHours, staff, isAdmin }: SettingsFormProps) {
   const router = useRouter();
+  const [clearingCache, setClearingCache] = useState(false);
+
+  const handlePurgeCache = async () => {
+    try {
+      setClearingCache(true);
+      toast.loading('کیشے صاف کیا جا رہا ہے... (Purging browser cache...)', {
+        id: 'settings-cache-purge',
+      });
+      await clearBrowserCacheAndReload({ hardRedirect: true });
+    } catch (err) {
+      console.error(err);
+      toast.error('کیشے صاف کرنے میں خرابی واقع ہوئی', {
+        id: 'settings-cache-purge',
+      });
+      setClearingCache(false);
+    }
+  };
 
   // Settings form state
   const [form, setForm] = useState({
@@ -419,6 +438,47 @@ export function SettingsForm({ settings, operatingHours, staff, isAdmin }: Setti
             >
               {isAdmin ? 'Super Admin' : 'Clinic Receptionist'}
             </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Browser Cache & Deployment Sync Card */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-rose-600" />
+              <div>
+                <CardTitle className="text-base">Browser Cache & Deployment Sync</CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  کیشے صاف کریں اور لائیو سرور سے نئی اپڈیٹس فوراً حاصل کریں۔
+                </CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200 text-xs w-fit">
+              Live Auto-Sync Active
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-1">
+          <p className="text-sm text-gray-600 leading-relaxed">
+            جب بھی کوئی نیا ورژن Vercel پر deploy ہوتا ہے، براؤزر اور سروس ورکر بعض اوقات پرانی فائلیں کیشے میں محفوظ رکھتے ہیں۔
+            اگر آپ کو کوئی نیا فیچر یا تبدیلی نظر نہ آرہی ہو، تو نیچے دیے گئے بٹن کو دبا کر براؤزر کیشے کو فوراً صاف کریں۔
+          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-100">
+            <div className="text-xs text-gray-500">
+              Purges CacheStorage, Service Worker caches, and performs a fresh hard reload.
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={clearingCache}
+              onClick={handlePurgeCache}
+              className="border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 gap-2 text-xs shrink-0"
+            >
+              <RefreshCw className={cn('h-3.5 w-3.5', clearingCache && 'animate-spin')} />
+              {clearingCache ? 'صاف کیا جا رہا ہے...' : 'Purge Cache & Reload (کیشے صاف کریں)'}
+            </Button>
           </div>
         </CardContent>
       </Card>

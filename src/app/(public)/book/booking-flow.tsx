@@ -20,7 +20,7 @@ import {
   ShieldCheck,
   Calendar as CalendarIcon,
   Clock,
-  Sparkles,
+  Heart,
   Phone,
   MessageCircle,
   Loader2,
@@ -842,7 +842,7 @@ export function BookingFlow({
                     : 'text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <Sparkles className="h-4 w-4 text-amber-500" />
+                <Heart className="h-4 w-4 text-rose-500" />
                 <span>Makeup Studio</span>
               </button>
             </div>
@@ -1268,11 +1268,8 @@ export function BookingFlow({
           <div className="py-6 text-center space-y-6 animate-slide-in-right">
             {/* Celebration Badge */}
             <div className="relative inline-flex items-center justify-center">
-              <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15 animate-bounce">
+              <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15">
                 <Check className="h-10 w-10 stroke-[3]" />
-              </div>
-              <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-amber-400 flex items-center justify-center text-white text-xs">
-                ✨
               </div>
             </div>
 

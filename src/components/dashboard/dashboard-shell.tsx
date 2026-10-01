@@ -24,6 +24,9 @@ import { DASHBOARD_NAV_SECTIONS } from '@/lib/constants';
 import { getInitials } from '@/lib/utils/helpers';
 import type { Staff } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { ClearCacheButton } from '@/components/clear-cache-button';
+import { clearBrowserCacheAndReload } from '@/lib/cache-utils';
+import { RefreshCw } from 'lucide-react';
 
 // Map icon strings to components
 const iconMap: Record<string, React.ElementType> = {
@@ -179,7 +182,10 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             </h2>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Clear Browser Cache & Reload Button */}
+            <ClearCacheButton variant="icon" />
+
             {/* Notifications */}
             <Button variant="ghost" size="icon" className="relative text-gray-500">
               <Bell className="h-[18px] w-[18px]" />
@@ -203,7 +209,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 </div>
                 <ChevronDown className="h-3.5 w-3.5 text-gray-400 hidden sm:block" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52">
                 <div className="px-2 py-1.5 sm:hidden">
                   <p className="text-sm font-medium">{staff.name}</p>
                   <p className="text-xs text-gray-500">
@@ -214,6 +220,13 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => clearBrowserCacheAndReload()}
+                  className="text-gray-700 hover:text-rose-600 cursor-pointer"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4 text-rose-500" />
+                  Clear Cache & Refresh
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

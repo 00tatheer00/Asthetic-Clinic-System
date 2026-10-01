@@ -74,13 +74,13 @@ export default async function PublicGalleryPage() {
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold">
-            ✨ Verified Clinical Transformations
+            Real Patient Results • Peshawar
           </div>
           <h1 className="text-3xl md:text-5xl font-serif font-extrabold text-gray-900 tracking-tight">
-            Real Patients, <span className="text-rose-600">Visible Results</span>
+            Before & After <span className="text-rose-600">Results</span>
           </h1>
           <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-            Explore authentic before-and-after results achieved through our medical-grade skincare protocols, laser therapies, and advanced facial treatments in Peshawar.
+            Real photos and actual results from our acne, laser hair removal, and HydraFacial patients treated at our clinic on University Road, Peshawar.
           </p>
         </div>
 

@@ -1,6 +1,9 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+const FALLBACK_SUPABASE_URL = 'https://ucyulaqwnoarbbhlhdxn.supabase.co';
+const FALLBACK_SUPABASE_ANON_KEY = 'sb_publishable_AeIBkfn4hFRKY-gl7TSETA_2I0OCKYz';
+
 /**
  * Next.js middleware for:
  * 1. Refreshing Supabase auth session (token rotation)
@@ -26,23 +29,18 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY;
 
-  // Gracefully handle missing environment variables in production/Vercel
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('[Middleware] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY in environment variables.');
-    
-    // If attempting to access dashboard, redirect to login with explanatory error
-    if (pathname.startsWith('/dashboard')) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      url.searchParams.set('error', 'environment_not_configured');
-      return NextResponse.redirect(url);
-    }
-    
-    return supabaseResponse;
-  }
+  // Helper to construct a redirect response while preserving any session cookies
+  const createRedirectResponse = (targetUrl: URL): NextResponse => {
+    const redirectResponse = NextResponse.redirect(targetUrl);
+    // Copy all cookies from supabaseResponse so session tokens are preserved
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+    });
+    return redirectResponse;
+  };
 
   try {
     const supabase = createServerClient(
@@ -80,7 +78,7 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/login';
         url.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(url);
+        return createRedirectResponse(url);
       }
 
       // Verify user has an active staff record
@@ -96,23 +94,26 @@ export async function middleware(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/login';
         url.searchParams.set('error', 'unauthorized');
-        return NextResponse.redirect(url);
+        return createRedirectResponse(url);
       }
     }
 
-    // Redirect authenticated users away from login page
+    // Redirect authenticated users away from login page to dashboard
     if (pathname === '/auth/login' && user) {
+      const redirectTarget = request.nextUrl.searchParams.get('redirect') || '/dashboard';
       const url = request.nextUrl.clone();
-      url.pathname = '/dashboard';
-      return NextResponse.redirect(url);
+      url.pathname = redirectTarget;
+      url.searchParams.delete('redirect');
+      url.searchParams.delete('error');
+      return createRedirectResponse(url);
     }
   } catch (err) {
     console.error('[Middleware] Supabase auth execution error:', err);
-    // On unexpected auth error, redirect dashboard attempts to login rather than crashing the whole site with 500
+    // On unexpected auth error, redirect dashboard attempts to login
     if (pathname.startsWith('/dashboard')) {
       const url = request.nextUrl.clone();
       url.pathname = '/auth/login';
-      return NextResponse.redirect(url);
+      return createRedirectResponse(url);
     }
   }
 

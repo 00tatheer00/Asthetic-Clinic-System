@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Heart, MapPin, Phone, Mail, Clock, Globe, MessageCircle } from 'lucide-react';
 import { PUBLIC_NAV_ITEMS } from '@/lib/constants';
+import { ClearCacheButton } from '@/components/clear-cache-button';
 
 export function PublicFooter() {
   const currentYear = new Date().getFullYear();
@@ -133,13 +134,15 @@ export function PublicFooter() {
             <p className="text-xs text-gray-500">
               &copy; {currentYear} Brimish Skin Care. All rights reserved.
             </p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                 Privacy Policy
               </Link>
               <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
                 Terms of Service
               </Link>
+              <span className="text-gray-700 hidden sm:inline">•</span>
+              <ClearCacheButton variant="subtle" />
             </div>
             <p className="text-xs text-gray-600 flex items-center gap-1">
               Made with <Heart className="h-3 w-3 text-rose-500 fill-rose-500" /> in Peshawar

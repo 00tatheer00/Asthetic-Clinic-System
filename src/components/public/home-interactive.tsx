@@ -1,105 +1,127 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, CheckCircle2, Sparkles, Star, Shield, ArrowRight, Calendar, Phone } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { ChevronDown, CheckCircle2, Star, Shield, ArrowRight, Calendar, Phone, MessageCircle } from 'lucide-react';
 
 interface FaqItem {
   q: string;
   a: string;
 }
 
-const FAQS: FaqItem[] = [
+const HOME_FAQS: FaqItem[] = [
   {
-    q: 'Are the treatments safe for South Asian / Pakistani skin tones?',
-    a: 'Absolutely. South Asian skin requires specialized expertise due to a higher tendency for post-inflammatory hyperpigmentation (PIH). At Brimish Skin Care, Dr. Bilal and our clinical staff tailor peel concentrations, laser settings, and microneedling depths specifically calibrated for Asian skin types III to V.',
+    q: 'Where is Brimish Skin Care Clinic located in Peshawar?',
+    a: 'We are conveniently located on University Road, Peshawar. Dedicated parking and a comfortable, private clinic environment are available for all patients.',
   },
   {
-    q: 'What should I expect during my first consultation?',
-    a: 'Your initial visit begins with a thorough skin examination, reviewing your history, lifestyle, and goals. We analyze your skin barrier health before recommending any procedure. You will receive an honest assessment and a customized treatment plan with transparent pricing.',
+    q: 'Does Dr. Bilal personally examine and treat patients?',
+    a: 'Yes, all clinical evaluations, skin diagnoses, and advanced laser/aesthetic procedures are personally conducted or directly supervised by Dr. Bilal.',
   },
   {
-    q: 'Is there downtime after HydraFacial or Chemical Peels?',
-    a: 'Our signature HydraFacial MD has zero downtime — you leave with immediate glow and hydration, perfect before weddings and events. Mild superficial peels have zero to 24 hours of light flaking, while deeper corrective protocols may require 3-5 days of gentle hydration and sun protection.',
+    q: 'How do I book an appointment?',
+    a: 'You can select your preferred treatment and time directly through our online booking button, or simply send us a message on WhatsApp for instant confirmation.',
   },
   {
-    q: 'How many sessions are needed for acne scars or melasma?',
-    a: 'While you will notice immediate texture refinement after session one, collagen remodeling for pitted acne scars typically requires 3 to 6 microneedling sessions spaced 4 weeks apart. Pigmentation and melasma protocols are customized with combined clinical peels and home maintenance.',
+    q: 'Are the treatments safe for Pakistani skin tones?',
+    a: 'Absolutely. We use FDA-approved medical equipment and customize settings specifically suited to South Asian skin to prevent hyperpigmentation or burns.',
   },
   {
-    q: 'How do I book an appointment, and what payment methods are accepted?',
-    a: 'You can book directly on our website in under 60 seconds by selecting your preferred date and time slot. We accept Cash, Debit/Credit Cards, and direct Bank Transfers at the clinic counter.',
+    q: 'What are your clinic charges and consultation fees?',
+    a: 'Our rates are transparent and reasonable in PKR with zero hidden costs. You can view all procedure prices on our Treatments page or ask us directly on WhatsApp.',
   },
 ];
 
 export function HomeFaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const toggle = (idx: number) => {
+    setOpenIndex(openIndex === idx ? null : idx);
+  };
+
   return (
-    <div className="max-w-3xl mx-auto space-y-3">
-      {FAQS.map((faq, idx) => {
+    <div className="max-w-3xl mx-auto space-y-4">
+      {HOME_FAQS.map((faq, idx) => {
         const isOpen = openIndex === idx;
         return (
           <div
             key={idx}
-            className="border border-gray-200/80 rounded-2xl bg-white overflow-hidden transition-all duration-200 hover:border-rose-200 shadow-sm"
+            className="rounded-2xl border border-gray-200/90 bg-white overflow-hidden shadow-xs transition-colors"
           >
             <button
-              onClick={() => setOpenIndex(isOpen ? null : idx)}
-              className="w-full py-5 px-6 text-left flex items-center justify-between gap-4 font-semibold text-gray-900 hover:text-rose-600 transition-colors"
+              onClick={() => toggle(idx)}
+              className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors cursor-pointer"
               aria-expanded={isOpen}
             >
-              <span className="text-base sm:text-lg">{faq.q}</span>
-              <div
-                className={`h-8 w-8 rounded-full flex items-center justify-center bg-rose-50 text-rose-600 shrink-0 transition-transform duration-300 ${
-                  isOpen ? 'rotate-180 bg-rose-600 text-white' : ''
+              <span className="font-serif font-bold text-gray-900 text-base sm:text-lg">
+                {faq.q}
+              </span>
+              <span
+                className={`flex items-center justify-center h-8 w-8 rounded-full bg-rose-50 text-rose-600 transition-transform duration-200 shrink-0 ${
+                  isOpen ? 'rotate-180 bg-rose-100 text-rose-700' : ''
                 }`}
               >
                 <ChevronDown className="h-4 w-4" />
-              </div>
+              </span>
             </button>
+
             {isOpen && (
-              <div className="px-6 pb-5 pt-1 text-gray-600 text-sm sm:text-base leading-relaxed border-t border-gray-100 bg-rose-50/20">
+              <div className="px-6 pb-6 pt-1 text-gray-600 text-sm leading-relaxed border-t border-gray-100 bg-gray-50/30">
                 {faq.a}
               </div>
             )}
           </div>
         );
       })}
+
+      <div className="mt-8 p-6 rounded-2xl bg-rose-50/40 border border-rose-100 text-center space-y-3">
+        <p className="text-sm text-gray-700 font-medium">
+          Have more questions? Contact Dr. Bilal’s team directly on WhatsApp or call our clinic desk.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
+          <a
+            href="https://wa.me/923000000000"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-xs transition-colors cursor-pointer"
+          >
+            <MessageCircle className="h-4 w-4 fill-white text-white" />
+            <span>WhatsApp</span>
+          </a>
+          <a
+            href="tel:+923000000000"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-xs transition-colors cursor-pointer"
+          >
+            <Phone className="h-3.5 w-3.5 text-rose-600" />
+            <span>Call +92 300 0000000</span>
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
 
 export function QuickBookBanner() {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 p-8 sm:p-12 lg:p-16 text-white shadow-2xl border border-white/10">
-      {/* Background glow orbs */}
-      <div className="absolute top-0 right-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-rose-500/20 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-64 w-64 rounded-full bg-pink-500/20 blur-3xl pointer-events-none" />
-
-      <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold tracking-wide uppercase">
-          <Sparkles className="h-3.5 w-3.5" />
-          Start Your Transformation Today
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 p-8 sm:p-12 lg:p-14 text-white shadow-xl border border-white/10">
+      <div className="relative z-10 max-w-2xl mx-auto text-center space-y-5">
+        <div className="inline-block px-3.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold tracking-wide uppercase">
+          Book Your Visit Today
         </div>
 
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight text-white leading-tight">
-          Ready for Clear, Confident, <br />
-          <span className="bg-gradient-to-r from-rose-400 via-pink-300 to-rose-300 bg-clip-text text-transparent">
-            Naturally Glowing Skin?
-          </span>
+        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-white leading-tight">
+          Ready for Clear, Healthy & Glowing Skin?
         </h2>
 
-        <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          Book your private consultation with Dr. Bilal and our aesthetic specialists in Peshawar. Experience medical expertise in an atmosphere of warmth and luxury.
+        <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
+          Book an appointment with Dr. Bilal at Brimish Skin Care Clinic on University Road, Peshawar. Safe and effective skin treatments for real results.
         </p>
 
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/book" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-sm sm:text-base px-8 py-4 rounded-full shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 hover:scale-105 transition-all duration-300">
+            <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm px-7 py-3 rounded-full shadow-md transition-colors cursor-pointer">
               <Calendar className="h-4 w-4" />
-              <span>Book Appointment Online</span>
+              <span>Book Appointment</span>
               <ArrowRight className="h-4 w-4 ml-1" />
             </button>
           </Link>
@@ -107,24 +129,25 @@ export function QuickBookBanner() {
             href="https://wa.me/923000000000"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-sm sm:text-base px-8 py-4 rounded-full backdrop-blur-md transition-all duration-300"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold text-sm px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
           >
-            <span>Ask a Question on WhatsApp</span>
+            <MessageCircle className="h-4 w-4 fill-white text-white" />
+            <span>WhatsApp</span>
           </a>
         </div>
 
-        <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-400">
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-400">
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            Zero Waiting Time With Appointment
+            No Long Waiting Time
           </span>
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            Strict Hygiene & Sterilization
+            100% Clean & Safe Clinic
           </span>
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            Private Female Treatment Suites
+            Private Rooms for Ladies
           </span>
         </div>
       </div>

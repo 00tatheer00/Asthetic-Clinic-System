@@ -1,6 +1,6 @@
 import { BookingFlow } from './booking-flow';
 import type { Metadata } from 'next';
-import { Sparkles, Shield, Clock, Phone, MapPin, CheckCircle, Heart } from 'lucide-react';
+import { Shield, Clock, Phone, MapPin, CheckCircle, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -22,17 +22,16 @@ export default async function BookPage({ searchParams }: BookPageProps) {
   return (
     <div className="bg-gradient-to-b from-[#2D1226]/[0.03] via-rose-50/30 to-white min-h-screen py-10 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Subtle Top Clinic Banner */}
+        {/* Top Clinic Banner */}
         <div className="text-center max-w-xl mx-auto mb-8 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100/80 text-[#2D1226] text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5 text-rose-600" />
-            <span>VIP Aesthetic Clinic & Laser Studio</span>
+          <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold uppercase tracking-wider">
+            Dr. Bilal Skin Care Clinic
           </div>
-          <h2 className="text-xl sm:text-2xl font-serif text-gray-900 tracking-tight font-medium">
-            Personalized Clinical Consultations
-          </h2>
+          <h1 className="text-2xl sm:text-3xl font-serif text-gray-900 tracking-tight font-bold">
+            Book Your Appointment
+          </h1>
           <p className="text-xs sm:text-sm text-gray-600">
-            Peshawar&apos;s premier aesthetic dermatology center led by Dr. Bilal. Direct WhatsApp confirmation with zero advance fee.
+            Book your skin consultation with Dr. Bilal on University Road, Peshawar. No advance payment required.
           </p>
         </div>
 

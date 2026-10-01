@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Sparkles,
   ShieldCheck,
   Stethoscope,
   Award,
@@ -17,7 +16,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'About Us | Brimish Skin Care Clinic Peshawar',
   description:
-    'Learn about Brimish Skin Care Clinic in Peshawar. Founded on evidence-based dermatology, certified aesthetic physicians, and state-of-the-art laser technology.',
+    'Learn about Brimish Skin Care Clinic in Peshawar led by Dr. Bilal. Safe, genuine skin treatments, laser hair removal, and HydraFacial on University Road.',
 };
 
 export default function AboutPage() {
@@ -27,14 +26,14 @@ export default function AboutPage() {
       <section className="relative overflow-hidden bg-gradient-to-b from-rose-50/50 via-white to-white py-16 md:py-24 border-b border-rose-100/50">
         <div className="container mx-auto px-4 max-w-6xl text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold">
-            ✨ Peshawar&apos;s Premier Aesthetic Medicine Clinic
+            Dr. Bilal Skin Care & Laser Clinic • Peshawar
           </div>
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">
-            Scientific Skincare, <br className="hidden sm:inline" />
-            <span className="text-rose-600">Personalized for You</span>
+            Clear, Glowing Skin <br className="hidden sm:inline" />
+            <span className="text-rose-600">You Can Trust</span>
           </h1>
           <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-            At Brimish Skin Care Clinic, we bridge the gap between medical dermatology and aesthetic luxury. Every treatment plan is uniquely crafted by our licensed practitioners to deliver healthy, radiant, and sustainable skin transformations.
+            At Brimish Skin Care Clinic, Dr. Bilal and our trained team provide safe, genuine, and proven skin treatments for acne, dark spots, and glowing skin.
           </p>
         </div>
       </section>
@@ -54,7 +53,7 @@ export default function AboutPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
                   <h3 className="text-xl font-bold font-serif">Dr. Bilal</h3>
-                  <p className="text-rose-200 text-xs mt-0.5">Lead Aesthetic Physician & Dermatologist</p>
+                  <p className="text-rose-200 text-xs mt-0.5">Lead Doctor & Aesthetic Physician</p>
                 </div>
               </div>
             </div>
@@ -62,16 +61,16 @@ export default function AboutPage() {
             {/* Narrative */}
             <div className="lg:col-span-7 space-y-6">
               <div className="inline-block text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-3 py-1 rounded-full">
-                Our Medical Philosophy
+                Our Clinic Promise
               </div>
               <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-                No Quick Fixes. Only Long-Term, Evidence-Based Skin Health.
+                Honest Advice, Real Results. No Fake Whitening Claims.
               </h2>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Founded in Peshawar, Brimish Skin Care Clinic was established with a singular mission: to eliminate misleading beauty fads and deliver safe, medically validated aesthetic treatments suited to South Asian skin profiles.
+                Founded on University Road Peshawar, Brimish Skin Care Clinic was started with one goal: to protect patients from harmful formula creams and give proper, safe skin care suitable for Pakistani skin tones.
               </p>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Whether you are treating persistent cystic acne, hormonal pigmentation, sun damage, or seeking age-defying rejuvenation, our clinic utilizes medical-grade clinical equipment, sterile treatment protocols, and evidence-based home care regimens.
+                Whether you are dealing with stubborn acne, dark patches, pigmentation, or want a fresh bridal glow, we use genuine imported machines and doctor-approved methods.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
