@@ -27,10 +27,10 @@ export function PwaRegister() {
         const updateInfo = await checkForDeploymentUpdate();
         if (updateInfo.hasUpdate && !toastShownRef.current) {
           toastShownRef.current = true;
-          toast.info('🚀 New Version Deployed!', {
+          toast.info('New Version Available', {
             description: 'A new update is available. Refresh to load the latest changes.',
             action: {
-              label: 'Update Now (ریفریش)',
+              label: 'Update Now',
               onClick: () => {
                 isUpdatingRef.current = true;
                 clearBrowserCacheAndReload();
@@ -70,10 +70,10 @@ export function PwaRegister() {
 
                   if (!toastShownRef.current) {
                     toastShownRef.current = true;
-                    toast.info('✨ Update Available!', {
+                    toast.info('System Update Available', {
                       description: 'A fresh deployment of Brimish Clinic is ready.',
                       action: {
-                        label: 'Apply & Reload',
+                        label: 'Update Now',
                         onClick: () => {
                           isUpdatingRef.current = true;
                           clearBrowserCacheAndReload();

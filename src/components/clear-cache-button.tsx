@@ -24,14 +24,14 @@ export function ClearCacheButton({
   const handleClearCache = async () => {
     try {
       setClearing(true);
-      toast.loading('کیشے صاف کیا جا رہا ہے... (Purging browser cache...)', {
+      toast.loading('Purging browser cache...', {
         id: 'cache-purge-toast',
       });
 
       await clearBrowserCacheAndReload({ hardRedirect: true });
     } catch (err) {
       console.error('Failed to clear cache:', err);
-      toast.error('کیشے صاف کرنے میں مسئلہ پیش آیا (Failed to purge cache)', {
+      toast.error('Failed to purge cache', {
         id: 'cache-purge-toast',
       });
       setClearing(false);
@@ -50,14 +50,14 @@ export function ClearCacheButton({
             clearing && 'text-rose-600 opacity-70 cursor-not-allowed',
             className
           )}
-          title="Clear Cache & Reload (کیشے صاف کریں)"
+          title="Clear Cache & Reload"
         >
           <RefreshCw className={cn('h-4 w-4', clearing && 'animate-spin')} />
           <span className="sr-only">Clear Cache & Reload</span>
         </TooltipTrigger>
         <TooltipContent side="bottom">
           <p className="font-medium text-xs">Clear Cache & Fetch Updates</p>
-          <p className="text-[10px] text-gray-400">کیشے صاف کریں اور تازہ ترین ڈیٹا حاصل کریں</p>
+          <p className="text-[10px] text-gray-400">Purge cache and load latest updates</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -76,7 +76,7 @@ export function ClearCacheButton({
         )}
       >
         <RefreshCw className={cn('h-3 w-3', clearing && 'animate-spin text-rose-400')} />
-        <span>{clearing ? 'Clearing cache...' : 'Clear Cache (بروز ریفریش)'}</span>
+        <span>{clearing ? 'Clearing cache...' : 'Clear Cache & Reload'}</span>
       </button>
     );
   }

@@ -158,13 +158,13 @@ export function SettingsForm({
   const handlePurgeCache = async () => {
     try {
       setClearingCache(true);
-      toast.loading('کیشے صاف کیا جا رہا ہے... (Purging browser cache...)', {
+      toast.loading('Purging browser cache...', {
         id: 'settings-cache-purge',
       });
       await clearBrowserCacheAndReload({ hardRedirect: true });
     } catch (err) {
       console.error(err);
-      toast.error('کیشے صاف کرنے میں خرابی واقع ہوئی', {
+      toast.error('Failed to purge cache', {
         id: 'settings-cache-purge',
       });
       setClearingCache(false);
@@ -530,7 +530,7 @@ export function SettingsForm({
                     </Badge>
                   </div>
                   <CardDescription className="text-xs mt-0.5 text-gray-600">
-                    ڈیش بورڈ لاگ ان ای میل اور پاس ورڈ تبدیل کریں۔ Update login credentials for yourself or clinic staff.
+                    Update login credentials for yourself or clinic staff.
                   </CardDescription>
                 </div>
               </div>
@@ -585,7 +585,7 @@ export function SettingsForm({
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
                     <MailCheck className="h-4 w-4 text-rose-600" />
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900">
-                      1. Reset Login Email (لاگ ان ای میل تبدیل کریں)
+                      1. Reset Login Email
                     </h4>
                   </div>
 
@@ -609,7 +609,7 @@ export function SettingsForm({
                       className="h-9 text-xs font-mono"
                     />
                     <p className="text-[11px] text-gray-500">
-                      نیا ای میل درج کریں۔ لاگ ان کرتے وقت یہ نیا ای میل استعمال ہوگا۔
+                      Enter a valid new email address. This will be used for future logins.
                     </p>
                   </div>
                 </div>
@@ -638,7 +638,7 @@ export function SettingsForm({
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
                     <Lock className="h-4 w-4 text-purple-600" />
                     <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900">
-                      2. Reset Login Password (نیا پاس ورڈ سیٹ کریں)
+                      2. Reset Login Password
                     </h4>
                   </div>
 
@@ -684,7 +684,7 @@ export function SettingsForm({
                       className="h-9 text-xs"
                     />
                     <p className="text-[11px] text-gray-500">
-                      پاس ورڈ کم از کم 8 حروف پر مشتمل ہونا چاہیے۔ دونوں فیلڈز ایک جیسی ہونی چاہئیں۔
+                      Password must be at least 8 characters. Both fields must match.
                     </p>
                   </div>
                 </div>
@@ -752,7 +752,7 @@ export function SettingsForm({
               <div>
                 <CardTitle className="text-base">Browser Cache & Deployment Sync</CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  کیشے صاف کریں اور لائیو سرور سے نئی اپڈیٹس فوراً حاصل کریں۔
+                  Clear local browser cache and fetch latest updates immediately.
                 </CardDescription>
               </div>
             </div>
@@ -763,8 +763,8 @@ export function SettingsForm({
         </CardHeader>
         <CardContent className="space-y-4 pt-1">
           <p className="text-sm text-gray-600 leading-relaxed">
-            جب بھی کوئی نیا ورژن Vercel پر deploy ہوتا ہے، براؤزر اور سروس ورکر بعض اوقات پرانی فائلیں کیشے میں محفوظ رکھتے ہیں۔
-            اگر آپ کو کوئی نیا فیچر یا تبدیلی نظر نہ آرہی ہو، تو نیچے دیے گئے بٹن کو دبا کر براؤزر کیشے کو فوراً صاف کریں۔
+            When a new version is deployed, browsers occasionally cache older assets.
+            If you do not see the latest changes or features, purge the browser cache using the button below.
           </p>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-100">
             <div className="text-xs text-gray-500">
@@ -778,7 +778,7 @@ export function SettingsForm({
               className="border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 gap-2 text-xs shrink-0"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', clearingCache && 'animate-spin')} />
-              {clearingCache ? 'صاف کیا جا رہا ہے...' : 'Purge Cache & Reload (کیشے صاف کریں)'}
+              {clearingCache ? 'Purging Cache...' : 'Purge Cache & Reload'}
             </Button>
           </div>
         </CardContent>
