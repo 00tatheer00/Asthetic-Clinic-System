@@ -36,6 +36,12 @@ import { formatCurrency, formatDate, formatTime } from '@/lib/utils/helpers';
 import { searchClinicGlobal, completeFollowUp, type GlobalSearchResult } from '@/actions/intelligence';
 import { APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
 import { toast } from 'sonner';
+import {
+  DashboardCharts,
+  type ChartDayData,
+  type ChartStatusData,
+  type ChartPaymentData,
+} from '@/components/dashboard/dashboard-charts';
 
 interface DashboardIntelligenceProps {
   isAdmin: boolean;
@@ -92,6 +98,9 @@ interface DashboardIntelligenceProps {
     price: number | null;
     duration_minutes: number | null;
   }>;
+  dailyData: ChartDayData[];
+  statusData: ChartStatusData;
+  paymentData: ChartPaymentData;
   alerts: Array<{
     id: string;
     type: 'warning' | 'info' | 'critical';
@@ -110,6 +119,9 @@ export function DashboardIntelligence({
   recentInvoices,
   lowStockProducts,
   popularTreatments,
+  dailyData,
+  statusData,
+  paymentData,
   alerts,
 }: DashboardIntelligenceProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -377,7 +389,15 @@ export function DashboardIntelligence({
         </Link>
       </div>
 
-      {/* 4. SECTION 1: TODAY'S LIVE APPOINTMENTS & CLINIC TIMELINE (65%) + FRONT-DESK ACTIONS (35%) */}
+      {/* 4. Chart.js Interactive Visual Analytics Engine */}
+      <DashboardCharts
+        dailyData={dailyData}
+        statusData={statusData}
+        paymentData={paymentData}
+        isAdmin={isAdmin}
+      />
+
+      {/* 5. SECTION 1: TODAY'S LIVE APPOINTMENTS & CLINIC TIMELINE (65%) + FRONT-DESK ACTIONS (35%) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Today's Live Schedule */}
         <div className="lg:col-span-8 space-y-6">

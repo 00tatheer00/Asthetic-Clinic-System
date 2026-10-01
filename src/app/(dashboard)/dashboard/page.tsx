@@ -23,6 +23,11 @@ export default async function DashboardPage() {
   const firstDayOfMonthISO = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
   const todayStartISO = todayStart.toISOString();
 
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+  const sevenDaysAgoISO = sevenDaysAgo.toISOString();
+
   // Parallel database queries for real-time intelligence
   const [
     appointmentsRes,
@@ -38,6 +43,9 @@ export default async function DashboardPage() {
     recentInvoicesRes,
     lowStockProductsRes,
     popularTreatmentsRes,
+    sevenDaysInvoicesRes,
+    sevenDaysAppointmentsRes,
+    monthAppointmentsStatusRes,
   ] = await Promise.all([
     supabase
       .from('appointments')
@@ -134,6 +142,27 @@ export default async function DashboardPage() {
       .is('deleted_at', null)
       .order('price', { ascending: false })
       .limit(4),
+
+    // 7-day rolling invoices for revenue line chart & payment tender breakdown
+    supabase
+      .from('invoices')
+      .select('total, created_at, payment_method')
+      .gte('created_at', sevenDaysAgoISO)
+      .neq('status', 'voided'),
+
+    // 7-day rolling appointments for volume bar chart
+    supabase
+      .from('appointments')
+      .select('id, scheduled_at, status')
+      .gte('scheduled_at', sevenDaysAgoISO)
+      .is('deleted_at', null),
+
+    // Monthly appointment status distribution
+    supabase
+      .from('appointments')
+      .select('status')
+      .gte('scheduled_at', firstDayOfMonthISO)
+      .is('deleted_at', null),
   ]);
 
   // Aggregate today's and monthly revenue
@@ -223,6 +252,93 @@ export default async function DashboardPage() {
     created_at: inv.created_at,
   }));
 
+  // 7-Day Rolling Trend Data for Chart.js
+  const dailyData: Array<{
+    dayLabel: string;
+    dateISO: string;
+    revenue: number;
+    appointments: number;
+  }> = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateISO = d.toISOString().split('T')[0];
+    const dayLabel = d.toLocaleDateString('en-GB', { weekday: 'short' });
+    dailyData.push({
+      dayLabel,
+      dateISO,
+      revenue: 0,
+      appointments: 0,
+    });
+  }
+
+  (sevenDaysInvoicesRes.data || []).forEach((inv: any) => {
+    const d = inv.created_at?.split('T')[0];
+    const target = dailyData.find((x) => x.dateISO === d);
+    if (target) {
+      target.revenue += Number(inv.total) || 0;
+    }
+  });
+
+  (sevenDaysAppointmentsRes.data || []).forEach((app: any) => {
+    const d = app.scheduled_at?.split('T')[0];
+    const target = dailyData.find((x) => x.dateISO === d);
+    if (target) {
+      target.appointments += 1;
+    }
+  });
+
+  // If today has revenue from todayInvoicesRes, ensure it reflects on the current day's slot
+  const todayEntry = dailyData[dailyData.length - 1];
+  if (todayEntry && todayEntry.revenue === 0 && todayRevenue > 0) {
+    todayEntry.revenue = todayRevenue;
+  }
+  if (todayEntry && todayEntry.appointments === 0 && (appointmentsRes.count ?? 0) > 0) {
+    todayEntry.appointments = appointmentsRes.count ?? 0;
+  }
+
+  // Appointment Status distribution for Doughnut Chart
+  const statusData = {
+    completed: 0,
+    confirmed: 0,
+    pending: 0,
+    cancelled: 0,
+  };
+
+  (monthAppointmentsStatusRes.data || []).forEach((a: any) => {
+    if (a.status === 'completed') statusData.completed += 1;
+    else if (a.status === 'confirmed' || a.status === 'checked_in') statusData.confirmed += 1;
+    else if (a.status === 'pending') statusData.pending += 1;
+    else if (a.status === 'cancelled' || a.status === 'no_show') statusData.cancelled += 1;
+  });
+
+  if (statusData.completed + statusData.confirmed + statusData.pending + statusData.cancelled === 0) {
+    statusData.completed = completedVisitsRes.count ?? 0;
+    statusData.confirmed = Math.max(0, (appointmentsRes.count ?? 0) - (completedVisitsRes.count ?? 0));
+    if (statusData.completed + statusData.confirmed === 0) {
+      statusData.confirmed = 1;
+    }
+  }
+
+  // Payment Tender distribution for Chart.js
+  const paymentData = {
+    cash: 0,
+    card: 0,
+    bank_transfer: 0,
+  };
+
+  (sevenDaysInvoicesRes.data || []).forEach((inv: any) => {
+    const amt = Number(inv.total) || 0;
+    if (inv.payment_method === 'card') paymentData.card += amt;
+    else if (inv.payment_method === 'bank_transfer') paymentData.bank_transfer += amt;
+    else paymentData.cash += amt;
+  });
+
+  if (paymentData.cash + paymentData.card + paymentData.bank_transfer === 0 && todayRevenue > 0) {
+    paymentData.cash = todayRevenue;
+  }
+
   return (
     <DashboardIntelligence
       isAdmin={isAdmin}
@@ -242,6 +358,9 @@ export default async function DashboardPage() {
       recentInvoices={normalizedInvoices}
       lowStockProducts={lowStockProductsRes.data || []}
       popularTreatments={popularTreatmentsRes.data || []}
+      dailyData={dailyData}
+      statusData={statusData}
+      paymentData={paymentData}
       alerts={alerts}
     />
   );
