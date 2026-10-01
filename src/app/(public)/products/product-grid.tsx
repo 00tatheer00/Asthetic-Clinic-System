@@ -118,17 +118,32 @@ export function ProductGrid({ products, categories }: ProductGridProps) {
               key={product.id}
               className="group relative rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
             >
-              {/* Image Placeholder */}
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                {product.image_url ? (
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <ShoppingBag className="h-12 w-12 text-gray-200" />
-                )}
+              {/* Product Image */}
+              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+                {(() => {
+                  const getProductImage = (p: Product): string => {
+                    if (p.image_url && p.image_url.trim() !== '') return p.image_url;
+                    const n = (p.name + ' ' + (p.slug || '')).toLowerCase();
+                    if (n.includes('moist') || n.includes('cream') || n.includes('barrier') || n.includes('lipid')) {
+                      return '/images/products/moisturizer.jpg';
+                    }
+                    if (n.includes('sun') || n.includes('spf') || n.includes('shield') || n.includes('uv')) {
+                      return '/images/products/sunscreen.jpg';
+                    }
+                    if (n.includes('serum') || n.includes('vitamin') || n.includes('bright') || n.includes('active')) {
+                      return '/images/products/serum.jpg';
+                    }
+                    return '/images/products/cleanser.jpg';
+                  };
+
+                  return (
+                    <img
+                      src={getProductImage(product)}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  );
+                })()}
               </div>
 
               {/* Category Badge */}

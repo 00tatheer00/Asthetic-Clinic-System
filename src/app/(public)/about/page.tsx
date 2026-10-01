@@ -48,13 +48,13 @@ export default function AboutPage() {
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-rose-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=1000&q=80"
-                  alt="Doctor consultation at Brimish Skin Care Clinic"
-                  className="w-full h-[450px] object-cover"
+                  src="/images/dr-bilal.jpg"
+                  alt="Dr. Bilal at Brimish Skin Care Clinic"
+                  className="w-full h-[450px] object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
-                  <h3 className="text-xl font-bold">Dr. Brimish & Medical Team</h3>
-                  <p className="text-rose-200 text-xs mt-0.5">Chief Aesthetic Physician & Dermatological Specialists</p>
+                  <h3 className="text-xl font-bold font-serif">Dr. Bilal</h3>
+                  <p className="text-rose-200 text-xs mt-0.5">Lead Aesthetic Physician & Dermatologist</p>
                 </div>
               </div>
             </div>
