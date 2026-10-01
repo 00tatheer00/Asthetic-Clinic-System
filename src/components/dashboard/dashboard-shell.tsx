@@ -113,7 +113,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
   );
 
   return (
-    <div className="fixed inset-0 flex h-full w-full overflow-hidden bg-slate-50">
+    <div className="fixed inset-0 h-screen w-screen flex overflow-hidden bg-slate-50">
       <Suspense fallback={null}>
         <RouteProgressBar />
       </Suspense>
@@ -266,7 +266,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto min-h-0 bg-slate-50/60">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20 animate-page-enter">
             {children}
           </div>
         </main>

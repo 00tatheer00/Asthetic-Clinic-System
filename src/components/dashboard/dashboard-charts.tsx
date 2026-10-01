@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -80,6 +80,12 @@ export function DashboardCharts({
   paymentData,
   isAdmin,
 }: DashboardChartsProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Aggregate stats
   const total7DayRevenue = useMemo(
     () => dailyData.reduce((acc, curr) => acc + curr.revenue, 0),
@@ -112,6 +118,15 @@ export function DashboardCharts({
     return { label: 'Bank Transfer', percent: totalPaymentRevenue > 0 ? Math.round((paymentData.bank_transfer / totalPaymentRevenue) * 100) : 100 };
   }, [paymentData, totalPaymentRevenue]);
 
+  if (!mounted) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-8 h-80 rounded-2xl sm:rounded-3xl bg-white border border-gray-100 p-6 animate-pulse" />
+        <div className="lg:col-span-4 h-80 rounded-2xl sm:rounded-3xl bg-white border border-gray-100 p-6 animate-pulse" />
+      </div>
+    );
+  }
+
   // 1. Line Chart Data: 7-Day Revenue Velocity
   const lineChartData = {
     labels: dailyData.map((d) => d.dayLabel),
@@ -121,11 +136,16 @@ export function DashboardCharts({
         data: dailyData.map((d) => d.revenue),
         borderColor: '#e11d48',
         backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 240);
-          gradient.addColorStop(0, 'rgba(225, 29, 72, 0.28)');
-          gradient.addColorStop(1, 'rgba(225, 29, 72, 0.01)');
-          return gradient;
+          const ctx = context?.chart?.ctx;
+          if (!ctx) return 'rgba(225, 29, 72, 0.12)';
+          try {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, 'rgba(225, 29, 72, 0.28)');
+            gradient.addColorStop(1, 'rgba(225, 29, 72, 0.01)');
+            return gradient;
+          } catch {
+            return 'rgba(225, 29, 72, 0.12)';
+          }
         },
         fill: true,
         tension: 0.38,

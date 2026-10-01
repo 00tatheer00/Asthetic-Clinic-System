@@ -3,9 +3,5 @@ export default function DashboardTemplate({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="animate-page-enter">
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }

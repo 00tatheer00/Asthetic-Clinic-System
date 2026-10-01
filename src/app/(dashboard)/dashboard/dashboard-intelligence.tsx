@@ -36,12 +36,25 @@ import { formatCurrency, formatDate, formatTime } from '@/lib/utils/helpers';
 import { searchClinicGlobal, completeFollowUp, type GlobalSearchResult } from '@/actions/intelligence';
 import { APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
 import { toast } from 'sonner';
-import {
-  DashboardCharts,
-  type ChartDayData,
-  type ChartStatusData,
-  type ChartPaymentData,
+import dynamic from 'next/dynamic';
+import type {
+  ChartDayData,
+  ChartStatusData,
+  ChartPaymentData,
 } from '@/components/dashboard/dashboard-charts';
+
+const DashboardCharts = dynamic(
+  () => import('@/components/dashboard/dashboard-charts').then((mod) => mod.DashboardCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-8 h-80 rounded-2xl sm:rounded-3xl bg-white border border-gray-100 p-6 animate-pulse" />
+        <div className="lg:col-span-4 h-80 rounded-2xl sm:rounded-3xl bg-white border border-gray-100 p-6 animate-pulse" />
+      </div>
+    ),
+  }
+);
 
 interface DashboardIntelligenceProps {
   isAdmin: boolean;
@@ -166,7 +179,7 @@ export function DashboardIntelligence({
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-950 font-serif">
-              Welcome back, {staffName.split(' ')[0]}
+              Welcome back, {(staffName || 'Staff').split(' ')[0]}
             </h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
