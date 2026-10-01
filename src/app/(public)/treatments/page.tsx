@@ -1,10 +1,12 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { formatCurrency } from '@/lib/utils/helpers';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Clock, ArrowRight, Shield, CheckCircle2 } from 'lucide-react';
 import type { Metadata } from 'next';
+
+export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
   title: 'Our Treatments | Brimish Skin Care Clinic Peshawar',
@@ -113,7 +115,7 @@ export default async function TreatmentsPage() {
   let categories: any[] = [];
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('treatment_categories')
       .select('*, treatments(id, name, slug, short_description, price, price_label, duration_minutes, image_url, is_featured)')

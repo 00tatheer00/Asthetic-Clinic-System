@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 import { toast } from 'sonner';
 
 export function LoginForm() {
@@ -100,8 +101,15 @@ export function LoginForm() {
       <div className="w-full max-w-md">
         {/* Clinic Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg shadow-rose-200 mb-4">
-            <span className="text-2xl font-bold text-white">B</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl overflow-hidden shadow-xl shadow-rose-200/50 mb-4 border border-rose-100 bg-white p-1">
+            <Image
+              src="/images/logo.png"
+              alt="Brimish Skin Care Clinic Logo"
+              width={76}
+              height={76}
+              className="w-full h-full object-cover rounded-xl"
+              priority
+            />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             Brimish Skin Care

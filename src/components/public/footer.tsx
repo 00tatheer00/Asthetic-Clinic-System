@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Heart, MapPin, Phone, Mail, Clock, Globe, MessageCircle } from 'lucide-react';
 import { PUBLIC_NAV_ITEMS } from '@/lib/constants';
 import { ClearCacheButton } from '@/components/clear-cache-button';
@@ -13,13 +14,20 @@ export function PublicFooter() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600">
-                <span className="text-sm font-bold text-white">B</span>
+            <Link href="/" prefetch={true} className="flex items-center gap-3 mb-4 group">
+              <div className="relative h-11 w-11 rounded-2xl overflow-hidden bg-white p-0.5 shadow-md shadow-rose-950 border border-white/10 group-hover:scale-105 transition-transform shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="Brimish Skin Care Clinic Logo"
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-cover rounded-[14px]"
+                />
               </div>
               <div>
-                <span className="text-lg font-bold text-white">Brimish</span>
-                <span className="text-lg font-light text-gray-500 ml-1">Skin Care</span>
+                <span className="text-lg font-bold text-white font-serif">Brimish</span>
+                <span className="text-lg font-light text-rose-400 ml-1">Skin Care</span>
+                <div className="text-[10px] text-gray-500 uppercase tracking-widest">Clinic • Peshawar</div>
               </div>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
@@ -38,6 +46,7 @@ export function PublicFooter() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    prefetch={true}
                     className="text-sm text-gray-400 hover:text-rose-400 transition-colors"
                   >
                     {item.label}
@@ -54,22 +63,22 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/treatments" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                <Link href="/treatments" prefetch={true} className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
                   All Treatments
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                <Link href="/products" prefetch={true} className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
                   Shop Products
                 </Link>
               </li>
               <li>
-                <Link href="/gallery" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                <Link href="/gallery" prefetch={true} className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
                   Before & After
                 </Link>
               </li>
               <li>
-                <Link href="/book" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
+                <Link href="/book" prefetch={true} className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
                   Book Appointment
                 </Link>
               </li>

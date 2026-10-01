@@ -77,13 +77,16 @@ export function PublicHeader() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group focus:outline-none">
-              <div className="relative flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-rose-500 via-pink-500 to-rose-400 p-0.5 shadow-md shadow-rose-500/25 transition-transform duration-300 group-hover:scale-105">
-                <div className="h-full w-full bg-white rounded-[14px] flex items-center justify-center overflow-hidden">
-                  <span className="text-xl font-black bg-gradient-to-tr from-rose-600 to-pink-600 bg-clip-text text-transparent font-serif">
-                    B
-                  </span>
-                </div>
+            <Link href="/" prefetch={true} className="flex items-center gap-3 group focus:outline-none">
+              <div className="relative h-10 w-10 sm:h-11 sm:w-11 rounded-2xl overflow-hidden p-0.5 shadow-md shadow-rose-900/10 border border-rose-200/60 bg-white transition-transform duration-300 group-hover:scale-105 shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="Brimish Skin Care Clinic Logo"
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-cover rounded-[14px]"
+                  priority
+                />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
@@ -108,6 +111,7 @@ export function PublicHeader() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={true}
                     className={cn(
                       'px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200',
                       isActive
@@ -133,7 +137,7 @@ export function PublicHeader() {
               </a>
 
               {/* Shopping Bag Cart */}
-              <Link href="/order/cart" className="relative group" aria-label="Shopping Cart">
+              <Link href="/order/cart" prefetch={true} className="relative group" aria-label="Shopping Cart">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -151,7 +155,7 @@ export function PublicHeader() {
               </Link>
 
               {/* Book Appointment CTA Button */}
-              <Link href="/book" className="hidden sm:inline-block">
+              <Link href="/book" prefetch={true} className="hidden sm:inline-block">
                 <Button
                   className="bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-700 hover:to-pink-700 text-white font-medium text-xs rounded-full px-5 py-2 shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all duration-300 hover:scale-102 flex items-center gap-1.5"
                 >
@@ -172,8 +176,14 @@ export function PublicHeader() {
                     {/* Drawer Header */}
                     <div className="flex items-center justify-between p-5 border-b border-gray-100 bg-rose-50/40">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white font-serif font-bold text-lg">
-                          B
+                        <div className="h-10 w-10 rounded-xl overflow-hidden shadow-sm border border-rose-200 shrink-0 bg-white">
+                          <Image
+                            src="/images/logo.png"
+                            alt="Brimish Skin Care Logo"
+                            width={40}
+                            height={40}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                         <div>
                           <div className="font-serif font-bold text-base text-gray-900 leading-tight">
@@ -192,6 +202,7 @@ export function PublicHeader() {
                           <Link
                             key={item.href}
                             href={item.href}
+                            prefetch={true}
                             onClick={() => setMobileOpen(false)}
                             className={cn(
                               'flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-colors',
@@ -210,7 +221,7 @@ export function PublicHeader() {
 
                   {/* Drawer Footer Actions */}
                   <div className="p-5 border-t border-gray-100 bg-gray-50/60 space-y-3">
-                    <Link href="/book" onClick={() => setMobileOpen(false)} className="block">
+                    <Link href="/book" prefetch={true} onClick={() => setMobileOpen(false)} className="block">
                       <Button className="w-full bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-xl py-3 shadow-md shadow-rose-200">
                         <Calendar className="h-4 w-4 mr-2" />
                         Book Appointment
@@ -265,7 +276,7 @@ export function PublicHeader() {
           <Phone className="h-5 w-5 text-gray-700" />
           <span>Call</span>
         </a>
-        <Link href="/book" className="flex-1">
+        <Link href="/book" prefetch={true} className="flex-1">
           <Button className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-full text-xs font-semibold py-2.5 shadow-md shadow-rose-200">
             <Calendar className="h-3.5 w-3.5 mr-1.5" />
             Book Consultation

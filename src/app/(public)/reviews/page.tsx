@@ -1,7 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ReviewForm } from './review-form';
 import { Star, CheckCircle2, Shield } from 'lucide-react';
 import type { Metadata } from 'next';
+
+export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
   title: 'Patient Reviews & Experiences | Brimish Skin Care Clinic Peshawar',
@@ -78,7 +80,7 @@ export default async function ReviewsPage() {
   let treatments: any[] = [];
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data: revData, error: revErr } = await supabase
       .from('reviews')

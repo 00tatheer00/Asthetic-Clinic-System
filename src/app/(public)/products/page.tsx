@@ -1,7 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ProductGrid } from './product-grid';
 import type { Metadata } from 'next';
 import { Shield, Truck, RefreshCw } from 'lucide-react';
+
+export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
   title: 'Shop Clinical Skincare Products | Brimish Skin Care Clinic Peshawar',
@@ -76,7 +78,7 @@ export default async function ProductsPage() {
   let products: any[] = [];
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data: catData, error: catError } = await supabase
       .from('product_categories')

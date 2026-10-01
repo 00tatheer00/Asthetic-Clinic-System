@@ -1,6 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { GalleryShowcase } from './gallery-showcase';
 import type { Metadata } from 'next';
+
+export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
   title: 'Clinical Results & Before & After Gallery | Brimish Skin Care Clinic Peshawar',
@@ -20,7 +22,7 @@ export default async function PublicGalleryPage() {
   let formattedCases: any[] = [];
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Fetch treatments for filtering
     const { data: treatmentData, error: tErr } = await supabase

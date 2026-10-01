@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   BOOKING_CATALOG,
   type TreatmentOption,
@@ -531,14 +532,25 @@ export function BookingFlow({
 
         {activeMode === 'booking' ? (
           <>
-            <div className="pr-10">
-              <h1 className="font-serif text-2xl sm:text-3xl text-gray-900 font-normal tracking-tight">
-                Book an appointment
-              </h1>
-              <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
-                Choose your treatments, pick a time, and we will confirm on WhatsApp.
-                No deposit, no card.
-              </p>
+            <div className="pr-10 flex items-start gap-3.5">
+              <div className="hidden sm:block h-12 w-12 rounded-2xl overflow-hidden border border-rose-200 shadow-xs shrink-0 bg-white p-0.5 mt-0.5">
+                <Image
+                  src="/images/logo.png"
+                  alt="Brimish Skin Care"
+                  width={48}
+                  height={48}
+                  className="h-full w-full object-cover rounded-xl"
+                />
+              </div>
+              <div>
+                <h1 className="font-serif text-2xl sm:text-3xl text-gray-900 font-normal tracking-tight">
+                  Book an appointment
+                </h1>
+                <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
+                  Choose your treatments, pick a time, and we will confirm on WhatsApp.
+                  No deposit, no card.
+                </p>
+              </div>
             </div>
 
             {/* 3-Step Stepper Header */}
@@ -1468,10 +1480,19 @@ export function BookingFlow({
         {/* ========================================================================= */}
         {activeMode === 'booking' && currentStep === 4 && confirmedBooking && (
           <div className="py-6 text-center space-y-6 animate-slide-in-right">
-            {/* Celebration Badge */}
-            <div className="relative inline-flex items-center justify-center">
-              <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15">
-                <Check className="h-10 w-10 stroke-[3]" />
+            {/* Celebration Badge with Clinic Logo */}
+            <div className="flex items-center justify-center gap-4">
+              <div className="h-16 w-16 rounded-2xl overflow-hidden border border-rose-200/90 shadow-md p-0.5 bg-white shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="Brimish Skin Care Clinic Logo"
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-cover rounded-xl"
+                />
+              </div>
+              <div className="h-16 w-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15 shrink-0">
+                <Check className="h-8 w-8 stroke-[3]" />
               </div>
             </div>
 

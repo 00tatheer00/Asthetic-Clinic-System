@@ -27,9 +27,12 @@ export const metadata: Metadata = {
     'Experience world-class aesthetic dermatology and skin rejuvenation in Peshawar, Pakistan. HydraFacial, medical chemical peels, microneedling, and clinical skincare.',
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/icons/icon-192x192.png',
-    apple: '/icons/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/images/logo.png', type: 'image/png' },
+    ],
+    shortcut: '/images/logo.png',
+    apple: '/images/logo.png',
   },
   appleWebApp: {
     capable: true,

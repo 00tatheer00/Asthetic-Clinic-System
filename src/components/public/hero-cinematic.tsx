@@ -118,7 +118,7 @@ export function HeroCinematic() {
           {/* High-Impact Hero Action Buttons with Best Hover Effects & Padding */}
           <div className="pt-3 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3.5">
             {/* 1. Book Appointment */}
-            <Link href="/book" className="w-full sm:w-auto">
+            <Link href="/book" prefetch={true} className="w-full sm:w-auto">
               <Button
                 className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-7 py-3.5 h-12 text-sm font-semibold shadow-lg shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
               >
@@ -141,7 +141,7 @@ export function HeroCinematic() {
             </a>
 
             {/* 3. View Treatments */}
-            <Link href="/treatments" className="w-full sm:w-auto">
+            <Link href="/treatments" prefetch={true} className="w-full sm:w-auto">
               <Button
                 variant="outline"
                 className="w-full sm:w-auto rounded-full px-6 py-3.5 h-12 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"

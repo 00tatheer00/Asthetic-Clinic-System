@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
@@ -121,11 +122,17 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         {/* Logo */}
         <div className={cn('flex items-center h-16 px-4 border-b border-gray-100', collapsed && 'justify-center px-2')}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-pink-600 shrink-0">
-              <span className="text-xs font-bold text-white">B</span>
+            <div className="relative h-8 w-8 rounded-lg overflow-hidden border border-rose-100 shadow-sm shrink-0 bg-white">
+              <NextImage
+                src="/images/logo.png"
+                alt="Brimish Skin Care Logo"
+                width={32}
+                height={32}
+                className="h-full w-full object-cover"
+              />
             </div>
             {!collapsed && (
-              <span className="text-sm font-bold text-gray-900 tracking-tight">
+              <span className="text-sm font-bold text-gray-900 tracking-tight font-serif">
                 Brimish
               </span>
             )}
@@ -165,10 +172,16 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 <SheetTitle className="sr-only">Dashboard Navigation</SheetTitle>
                 <div className="flex items-center h-16 px-4 border-b border-gray-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-pink-600">
-                      <span className="text-xs font-bold text-white">B</span>
+                    <div className="relative h-8 w-8 rounded-lg overflow-hidden border border-rose-100 shadow-sm shrink-0 bg-white">
+                      <NextImage
+                        src="/images/logo.png"
+                        alt="Brimish Skin Care Logo"
+                        width={32}
+                        height={32}
+                        className="h-full w-full object-cover"
+                      />
                     </div>
-                    <span className="text-sm font-bold text-gray-900">Brimish</span>
+                    <span className="text-sm font-bold text-gray-900 font-serif">Brimish</span>
                   </div>
                 </div>
                 <div className="flex flex-col h-[calc(100%-4rem)]">
