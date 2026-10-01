@@ -60,6 +60,16 @@ export async function createPublicAppointment(formData: unknown) {
     }
   }
 
+  // Format combined message with WhatsApp and custom notes
+  const messageParts: string[] = [];
+  if (data.whatsapp_number && data.whatsapp_number.trim() && data.whatsapp_number.trim() !== data.customer_phone) {
+    messageParts.push(`WhatsApp Contact: ${data.whatsapp_number.trim()}`);
+  }
+  if (data.message && data.message.trim()) {
+    messageParts.push(data.message.trim());
+  }
+  const finalMessage = messageParts.length > 0 ? messageParts.join('\n\n') : null;
+
   // Create appointment
   const { data: appointment, error } = await supabase
     .from('appointments')
@@ -69,7 +79,7 @@ export async function createPublicAppointment(formData: unknown) {
       customer_email: data.customer_email || null,
       treatment_id: validTreatmentId,
       scheduled_at: data.scheduled_at,
-      message: data.message || null,
+      message: finalMessage,
       status: 'pending',
     })
     .select('id')
@@ -86,7 +96,7 @@ export async function createPublicAppointment(formData: unknown) {
     customerPhone: data.customer_phone,
     treatmentName: treatmentName,
     scheduledAt: formatDateTime(data.scheduled_at),
-    message: data.message || undefined,
+    message: finalMessage || undefined,
   }).catch(console.error);
 
   return { success: true, appointmentId: appointment.id };

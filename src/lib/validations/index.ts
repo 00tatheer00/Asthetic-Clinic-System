@@ -7,7 +7,15 @@ import { PK_PHONE_REGEX } from '@/lib/constants';
 
 export const phoneSchema = z
   .string()
-  .regex(PK_PHONE_REGEX, 'Enter a valid Pakistani phone number (e.g., 03001234567)');
+  .transform((val) => val.replace(/[\s\-\(\)\.]/g, '').replace(/^(\+92|0092|92)/, '0'))
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^03[0-9]{9}$/,
+        'Enter a valid Pakistani mobile number (e.g., 03001234567 or +923143176526)'
+      )
+  );
 
 export const emailSchema = z.string().email('Enter a valid email address');
 
@@ -39,12 +47,13 @@ export const appointmentBookingSchema = z.object({
     .max(100, 'Name must be at most 100 characters')
     .trim(),
   customer_phone: phoneSchema,
+  whatsapp_number: z.string().optional().or(z.literal('')),
   customer_email: optionalEmailSchema,
-  treatment_id: z.string().uuid('Select a treatment'),
+  treatment_id: z.string().min(1, 'Select a treatment'),
   scheduled_at: z.string().datetime({ message: 'Select a valid date and time' }),
   message: z
     .string()
-    .max(500, 'Message must be at most 500 characters')
+    .max(1000, 'Message must be at most 1000 characters')
     .optional()
     .or(z.literal('')),
 });
