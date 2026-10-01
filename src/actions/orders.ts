@@ -85,16 +85,15 @@ export async function placeOrder(formData: unknown) {
 
   // Generate order number
   const { data: orderNumber } = await supabase.rpc('generate_order_number');
-
-  if (!orderNumber) {
-    return { success: false, error: 'Failed to generate order number.' };
-  }
+  const finalOrderNumber =
+    orderNumber ||
+    `ORD-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}${Math.floor(1000 + Math.random() * 9000)}`;
 
   // Create order
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
-      order_number: orderNumber,
+      order_number: finalOrderNumber,
       customer_name: data.customer_name,
       customer_phone: data.customer_phone,
       customer_email: data.customer_email || null,
@@ -137,7 +136,7 @@ export async function placeOrder(formData: unknown) {
       p_product_id: item.product_id,
       p_quantity: item.quantity,
       p_order_id: order.id,
-      p_reason: `Stock reserved for order ${orderNumber}`,
+      p_reason: `Stock reserved for order ${finalOrderNumber}`,
     });
 
     if (rpcErr || !(rpcRes as { success?: boolean })?.success) {
@@ -155,7 +154,7 @@ export async function placeOrder(formData: unknown) {
         quantity_after: product.stock_quantity,
         reference_type: 'order',
         reference_id: order.id,
-        reason: `Stock reserved for order ${orderNumber}`,
+        reason: `Stock reserved for order ${finalOrderNumber}`,
       });
     }
   }
@@ -165,14 +164,14 @@ export async function placeOrder(formData: unknown) {
     sendOrderConfirmationEmail({
       customerEmail: data.customer_email,
       customerName: data.customer_name,
-      orderNumber,
+      orderNumber: finalOrderNumber,
       items: orderItems.map((i) => ({ name: i.name, quantity: i.quantity, price: i.line_total })),
       total,
       deliveryMethod: data.delivery_method,
     }).catch(console.error);
   }
 
-  return { success: true, orderNumber, orderId: order.id };
+  return { success: true, orderNumber: finalOrderNumber, orderId: order.id };
 }
 
 // ============================================================

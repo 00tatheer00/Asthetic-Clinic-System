@@ -111,8 +111,10 @@ export async function getDailyClosingSummary(dateString: string) {
         .lte('created_at', endISO),
       supabase
         .from('appointments')
-        .select('id, status, appointment_date')
-        .eq('appointment_date', dateString),
+        .select('id, status, scheduled_at')
+        .gte('scheduled_at', startISO)
+        .lte('scheduled_at', endISO)
+        .is('deleted_at', null),
     ]);
 
     const invoices = invoicesRes.data || [];

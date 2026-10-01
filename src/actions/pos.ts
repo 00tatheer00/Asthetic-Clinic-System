@@ -230,53 +230,59 @@ export async function createSale(formData: unknown) {
 
   const { data: invoiceNumber } = await supabase.rpc('generate_invoice_number');
 
-  let createdInvoiceId: string | null = null;
-  if (invoiceNumber && settings) {
-    const { data: invoice } = await supabase
-      .from('invoices')
-      .insert({
-        invoice_number: invoiceNumber,
-        sale_id: sale.id,
-        patient_id: data.patient_id || null,
-        customer_name: data.customer_name || 'Walk-in Customer',
-        clinic_name: settings.clinic_name,
-        clinic_address: settings.clinic_address || '',
-        clinic_phone: settings.clinic_phone || '',
-        clinic_email: settings.clinic_email || null,
-        clinic_ntn: settings.ntn || null,
-        clinic_strn: settings.strn || null,
-        subtotal,
-        discount_amount: saleDiscount,
-        tax_label: settings.default_tax_label || 'GST',
-        tax_rate: data.tax_rate,
-        tax_amount: taxAmount,
-        total,
-        payment_method: data.payment_method,
-        payment_status: 'paid',
-        status: 'paid',
-        paid_at: new Date().toISOString(),
-        created_by: staff.id,
-      })
-      .select('id')
-      .single();
+  let finalInvoiceNumber = invoiceNumber;
+  if (!finalInvoiceNumber) {
+    const year = new Date().getFullYear();
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    finalInvoiceNumber = `INV-${year}-${Date.now().toString().slice(-4)}${rand}`;
+  }
 
-    // Insert invoice line items
-    if (invoice) {
-      createdInvoiceId = invoice.id;
-      await supabase
-        .from('invoice_line_items')
-        .insert(
-          saleItems.map((item, index) => ({
-            invoice_id: invoice.id,
-            description: `${item.name}${item.item_type === 'service' ? ' (Service)' : ''}`,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            discount_amount: item.discount_amount,
-            line_total: item.line_total,
-            sort_order: index,
-          }))
-        );
-    }
+  let createdInvoiceId: string | null = null;
+  const { data: invoice, error: invErr } = await supabase
+    .from('invoices')
+    .insert({
+      invoice_number: finalInvoiceNumber,
+      sale_id: sale.id,
+      patient_id: data.patient_id || null,
+      customer_name: data.customer_name || 'Walk-in Customer',
+      clinic_name: settings?.clinic_name || 'Brimish Skin Care Clinic',
+      clinic_address: settings?.clinic_address || 'Peshawar, Khyber Pakhtunkhwa, Pakistan',
+      clinic_phone: settings?.clinic_phone || '+92 300 0000000',
+      clinic_email: settings?.clinic_email || null,
+      clinic_ntn: settings?.ntn || null,
+      clinic_strn: settings?.strn || null,
+      subtotal,
+      discount_amount: saleDiscount,
+      tax_label: settings?.default_tax_label || 'GST',
+      tax_rate: data.tax_rate,
+      tax_amount: taxAmount,
+      total,
+      payment_method: data.payment_method,
+      payment_status: 'paid',
+      status: 'paid',
+      paid_at: new Date().toISOString(),
+      created_by: staff.id,
+    })
+    .select('id')
+    .single();
+
+  if (invErr) {
+    console.error('[POS] Invoice insert failed:', invErr);
+  } else if (invoice) {
+    createdInvoiceId = invoice.id;
+    await supabase
+      .from('invoice_line_items')
+      .insert(
+        saleItems.map((item, index) => ({
+          invoice_id: invoice.id,
+          description: `${item.name}${item.item_type === 'service' ? ' (Service)' : ''}`,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          discount_amount: item.discount_amount,
+          line_total: item.line_total,
+          sort_order: index,
+        }))
+      );
   }
 
   // Audit log
@@ -292,7 +298,7 @@ export async function createSale(formData: unknown) {
   revalidatePath('/dashboard/invoices');
   revalidatePath('/dashboard/inventory');
 
-  return { success: true, saleId: sale.id, invoiceId: createdInvoiceId, invoiceNumber: invoiceNumber || null };
+  return { success: true, saleId: sale.id, invoiceId: createdInvoiceId, invoiceNumber: finalInvoiceNumber };
 }
 
 // ============================================================
