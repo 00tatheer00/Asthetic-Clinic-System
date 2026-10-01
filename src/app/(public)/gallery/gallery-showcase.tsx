@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,41 @@ function BeforeAfterSlider({ item }: { item: CaseItem }) {
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    let t1: NodeJS.Timeout;
+    let t2: NodeJS.Timeout;
+    let t3: NodeJS.Timeout;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          observer.disconnect();
+          t1 = setTimeout(() => {
+            setSliderPosition(35);
+            t2 = setTimeout(() => {
+              setSliderPosition(65);
+              t3 = setTimeout(() => {
+                setSliderPosition(50);
+              }, 600);
+            }, 600);
+          }, 350);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
+
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -97,7 +132,10 @@ function BeforeAfterSlider({ item }: { item: CaseItem }) {
 
         {/* BEFORE Image (Clipped overlay) */}
         <div
-          className="absolute inset-0 overflow-hidden pointer-events-none"
+          className={cn(
+            'absolute inset-0 overflow-hidden pointer-events-none',
+            !isDragging && 'transition-[width] duration-500 ease-out'
+          )}
           style={{ width: `${sliderPosition}%` }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -114,7 +152,10 @@ function BeforeAfterSlider({ item }: { item: CaseItem }) {
 
         {/* Slider Divider Line & Thumb */}
         <div
-          className="absolute top-0 bottom-0 z-20 pointer-events-none"
+          className={cn(
+            'absolute top-0 bottom-0 z-20 pointer-events-none',
+            !isDragging && 'transition-[left] duration-500 ease-out'
+          )}
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
           <div className="w-0.5 h-full bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)]" />

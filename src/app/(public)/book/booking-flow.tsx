@@ -542,7 +542,7 @@ export function BookingFlow({
         {/* STEP 1: TREATMENTS                                                        */}
         {/* ========================================================================= */}
         {currentStep === 1 && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-6 animate-slide-in-right">
             {/* Department Pills: Aesthetic Clinic vs Makeup Studio */}
             <div className="p-1 bg-gray-50/90 rounded-full border border-gray-200 flex items-center max-w-md mx-auto">
               <button
@@ -750,7 +750,7 @@ export function BookingFlow({
         {/* STEP 2: TIME & DATE                                                       */}
         {/* ========================================================================= */}
         {currentStep === 2 && (
-          <div className="space-y-7 animate-fadeIn">
+          <div className="space-y-7 animate-slide-in-right">
             {/* Choose a Day */}
             <div className="space-y-3">
               <h2 className="text-base font-semibold text-gray-950">
@@ -894,7 +894,7 @@ export function BookingFlow({
         {/* STEP 3: DETAILS                                                           */}
         {/* ========================================================================= */}
         {currentStep === 3 && (
-          <form onSubmit={handleConfirmBooking} className="space-y-5 animate-fadeIn">
+          <form onSubmit={handleConfirmBooking} className="space-y-5 animate-slide-in-right">
             {formError && (
               <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-700 font-medium flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-red-500" />
@@ -992,7 +992,7 @@ export function BookingFlow({
         {/* STEP 4: SUCCESS / INSTANT CONFIRMATION ("BEST THAN THIS")                  */}
         {/* ========================================================================= */}
         {currentStep === 4 && confirmedBooking && (
-          <div className="py-6 text-center space-y-6 animate-fadeIn">
+          <div className="py-6 text-center space-y-6 animate-slide-in-right">
             {/* Celebration Badge */}
             <div className="relative inline-flex items-center justify-center">
               <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15 animate-bounce">
@@ -1119,7 +1119,7 @@ export function BookingFlow({
                 type="button"
                 disabled={itemCount === 0}
                 onClick={() => setCurrentStep(2)}
-                className="px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102"
+                className="shine-sweep px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102"
               >
                 Continue
               </button>
@@ -1130,7 +1130,7 @@ export function BookingFlow({
                 type="button"
                 disabled={!selectedDayIso || !selectedTimeSlot}
                 onClick={() => setCurrentStep(3)}
-                className="px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102"
+                className="shine-sweep px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102"
               >
                 Continue
               </button>
@@ -1141,7 +1141,7 @@ export function BookingFlow({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleConfirmBooking}
-                className="px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-60 flex items-center gap-2 hover:scale-102"
+                className="shine-sweep px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-60 flex items-center gap-2 hover:scale-102"
               >
                 {isSubmitting ? (
                   <>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -16,12 +16,26 @@ import {
   Stethoscope,
   Sun,
   Moon,
+  Play,
+  Pause,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AmbientParticles } from '@/components/public/ambient-particles';
+import { AnimatedCounter } from '@/components/public/counter-stat';
 
 export function HeroCinematic() {
   // Theme mood: 'daylight' (bright day) or 'twilight' (ambient night)
   const [mood, setMood] = useState<'twilight' | 'daylight'>('daylight');
+  const [isAutoTour, setIsAutoTour] = useState(false);
+
+  // Auto 24h cycle tour effect (smoothly switches day/night every 9 seconds when active)
+  useEffect(() => {
+    if (!isAutoTour) return;
+    const interval = setInterval(() => {
+      setMood((prev) => (prev === 'daylight' ? 'twilight' : 'daylight'));
+    }, 9000);
+    return () => clearInterval(interval);
+  }, [isAutoTour]);
 
   const quickTreatments = [
     { name: 'HydraFacial MD', price: 'Rs. 5,000', id: 'hydrafacial' },
@@ -78,6 +92,9 @@ export function HeroCinematic() {
           }`}
         />
 
+        {/* Ambient Floating Light Particles (Ethereal sunbeams or warm twilight embers) */}
+        <AmbientParticles mood={mood} />
+
         {/* Top subtle fade from navbar */}
         <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/80 via-black/35 to-transparent" />
         
@@ -85,15 +102,34 @@ export function HeroCinematic() {
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#140612] via-[#140612]/70 to-transparent" />
 
         {/* Ambient atmospheric rose-gold radial glows */}
-        <div className="absolute top-1/4 left-1/4 -ml-40 h-[500px] w-[500px] rounded-full bg-rose-500/15 blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-purple-500/15 blur-[120px]" />
+        <div className="absolute top-1/4 left-1/4 -ml-40 h-[500px] w-[500px] rounded-full bg-rose-500/15 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-purple-500/15 blur-[120px] pointer-events-none" />
       </div>
 
-      {/* 3. Ambient Mood Switcher (Daylight / Twilight) */}
-      <div className="absolute top-6 right-6 z-20 flex items-center gap-1.5 p-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs shadow-lg shadow-black/20">
+      {/* 3. Ambient Mood & Auto Tour Switcher */}
+      <div className="absolute top-6 right-6 z-20 flex items-center gap-2 p-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs shadow-xl shadow-black/30">
+        {/* Auto Cycle Button */}
         <button
           type="button"
-          onClick={() => setMood('twilight')}
+          onClick={() => setIsAutoTour(!isAutoTour)}
+          className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
+            isAutoTour
+              ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-md animate-pulse'
+              : 'text-gray-300 hover:text-white bg-white/5'
+          }`}
+          title="Auto 24h day/night ambient tour"
+        >
+          {isAutoTour ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+          <span>{isAutoTour ? 'Touring...' : '24h Tour'}</span>
+        </button>
+
+        {/* Twilight Button */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsAutoTour(false);
+            setMood('twilight');
+          }}
           className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-300 ${
             mood === 'twilight'
               ? 'bg-[#2D1226] text-rose-200 border border-rose-400/40 shadow-sm font-semibold'
@@ -104,9 +140,14 @@ export function HeroCinematic() {
           <Moon className="h-3.5 w-3.5 text-rose-300" />
           <span>Twilight</span>
         </button>
+
+        {/* Daylight Button */}
         <button
           type="button"
-          onClick={() => setMood('daylight')}
+          onClick={() => {
+            setIsAutoTour(false);
+            setMood('daylight');
+          }}
           className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-300 ${
             mood === 'daylight'
               ? 'bg-amber-500/90 text-white border border-amber-300/40 shadow-sm font-semibold'
@@ -123,18 +164,21 @@ export function HeroCinematic() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28 flex flex-col justify-center min-h-[90vh]">
         <div className="max-w-3xl space-y-6 text-center sm:text-left">
           
-          {/* Doctor / Clinic Pill Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-xs font-semibold text-rose-200 border border-white/20 shadow-lg shadow-black/20">
-            <span className="flex h-2 w-2 rounded-full bg-rose-400 animate-ping" />
+          {/* Doctor / Clinic Pill Badge with Radar Ripple Animation */}
+          <div className="inline-flex items-center gap-2.5 rounded-full bg-white/10 backdrop-blur-md px-4 py-1.5 text-xs font-semibold text-rose-200 border border-white/20 shadow-lg shadow-black/20">
+            <div className="relative flex items-center justify-center h-2.5 w-2.5">
+              <span className="absolute h-5 w-5 rounded-full bg-rose-500/70 animate-radar-pulse" />
+              <span className="relative h-2 w-2 rounded-full bg-rose-400" />
+            </div>
             <span className="tracking-wider uppercase text-[11px] sm:text-xs">
               ✦ Peshawar’s Premier Aesthetic Clinic • Led by Dr. Bilal
             </span>
           </div>
 
-          {/* Main Headline (Bespoke Editorial Serif) */}
+          {/* Main Headline (Bespoke Editorial Serif + Liquid Gradient Shimmer) */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.08] drop-shadow-md">
             Where Medical Precision Meets{' '}
-            <span className="block italic text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-pink-100 to-amber-200">
+            <span className="block italic text-transparent bg-clip-text bg-gradient-to-r from-rose-200 via-amber-200 to-rose-200 animate-shimmer-flow">
               Flawless, Radiant Skin
             </span>
           </h1>
@@ -144,10 +188,10 @@ export function HeroCinematic() {
             Physician-guided aesthetic protocols engineered exclusively for South Asian skin profiles. Experience medical HydraFacial MD, targeted chemical peels, and precision laser dermatology in an atmosphere of refined luxury on University Road, Peshawar.
           </p>
 
-          {/* Quick Treatment Selector Glass Chips */}
+          {/* Quick Treatment Selector Glass Chips with Shine-Sweep Effect */}
           <div className="pt-2">
             <div className="text-[11px] font-bold uppercase tracking-wider text-rose-200/90 mb-3 flex items-center justify-center sm:justify-start gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
               <span>Signature Protocols • Direct Booking</span>
             </div>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
@@ -155,7 +199,7 @@ export function HeroCinematic() {
                 <Link
                   key={chip.name}
                   href={`/book?treatment=${chip.id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-xs font-medium text-white shadow-md hover:border-rose-300/60 hover:scale-105 transition-all duration-200"
+                  className="shine-sweep inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-xs font-medium text-white shadow-md hover:border-rose-300/60 hover:scale-105 transition-all duration-300"
                 >
                   <span>{chip.name}</span>
                   <span className="text-white/40">|</span>
@@ -165,12 +209,12 @@ export function HeroCinematic() {
             </div>
           </div>
 
-          {/* Luxury CTA Group */}
+          {/* Luxury CTA Group with Hover Light Sweep & Soft Lift */}
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
             <Link href="/book" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-full px-9 py-6 text-base font-semibold shadow-2xl shadow-rose-600/50 hover:shadow-rose-500/70 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 border border-rose-400/40"
+                className="shine-sweep w-full sm:w-auto bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-full px-9 py-6 text-base font-semibold shadow-2xl shadow-rose-600/50 hover:shadow-rose-500/70 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 border border-rose-400/40"
               >
                 <Calendar className="h-4 w-4" />
                 <span>Book In-Person Consultation</span>
@@ -182,7 +226,7 @@ export function HeroCinematic() {
               href="https://wa.me/923000000000"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full text-sm font-semibold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 backdrop-blur-md shadow-lg shadow-emerald-950/40 hover:scale-105 transition-all duration-300"
+              className="shine-sweep w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full text-sm font-semibold text-emerald-300 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 backdrop-blur-md shadow-lg shadow-emerald-950/40 hover:scale-105 transition-all duration-300"
             >
               <MessageCircle className="h-4 w-4 text-emerald-400 fill-emerald-400" />
               <span>Chat on WhatsApp</span>
@@ -200,29 +244,35 @@ export function HeroCinematic() {
           </div>
         </div>
 
-        {/* 5. Floating Bottom Credibility Dock */}
+        {/* 5. Floating Bottom Credibility Dock with Animated Number Counters */}
         <div className="mt-14 pt-8 border-t border-white/15 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-white/90">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
             <div className="h-10 w-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
               <Star className="h-5 w-5 fill-amber-300 text-amber-300" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-tight">4.9 / 5.0 Rating</div>
-              <div className="text-[11px] text-gray-300">1,200+ Peshawar Patients</div>
+              <div className="text-sm font-bold text-white leading-tight">
+                <AnimatedCounter value={4.9} decimals={1} suffix=" / 5.0 Rating" />
+              </div>
+              <div className="text-[11px] text-gray-300">
+                <AnimatedCounter value={1200} suffix="+ Peshawar Patients" />
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
             <div className="h-10 w-10 rounded-xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-300 shrink-0">
               <Stethoscope className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white leading-tight">100% Doctor Led</div>
+              <div className="text-sm font-bold text-white leading-tight">
+                <AnimatedCounter value={100} suffix="% Doctor Led" />
+              </div>
               <div className="text-[11px] text-gray-300">PMC Registered Specialist</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
             <div className="h-10 w-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0">
               <Shield className="h-5 w-5" />
             </div>
@@ -232,7 +282,7 @@ export function HeroCinematic() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/25 transition">
             <div className="h-10 w-10 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 shrink-0">
               <MapPin className="h-5 w-5" />
             </div>
