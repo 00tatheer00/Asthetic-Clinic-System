@@ -11,7 +11,7 @@ export default async function SettingsPage() {
 
   const isAdmin = staff.role === 'super_admin';
 
-  const [{ data: settings }, { data: hours }] = await Promise.all([
+  const [{ data: settings }, { data: hours }, { data: allStaff }] = await Promise.all([
     supabase
       .from('clinic_settings')
       .select('*')
@@ -21,6 +21,12 @@ export default async function SettingsPage() {
       .from('operating_hours')
       .select('*')
       .order('day_of_week'),
+    isAdmin
+      ? supabase
+          .from('staff')
+          .select('id, name, email, role, is_active')
+          .order('name')
+      : Promise.resolve({ data: [] }),
   ]);
 
   return (
@@ -28,7 +34,7 @@ export default async function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Clinic Settings</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Configure clinic identity, tax parameters, and weekly operating hours.
+          Configure clinic identity, tax parameters, weekly operating hours, and admin login security.
         </p>
       </div>
 
@@ -36,10 +42,12 @@ export default async function SettingsPage() {
         settings={settings || null}
         operatingHours={hours || []}
         staff={{
+          id: staff.id,
           name: staff.name,
           email: staff.email,
           role: staff.role,
         }}
+        allStaff={allStaff || []}
         isAdmin={isAdmin}
       />
     </div>
