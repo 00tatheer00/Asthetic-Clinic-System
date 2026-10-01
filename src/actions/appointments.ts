@@ -16,18 +16,22 @@ export async function createPublicAppointment(formData: unknown) {
   const parsed = appointmentBookingSchema.safeParse(formData);
 
   if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    const friendlyError = firstIssue ? firstIssue.message : 'Please check your details and try again.';
     return {
       success: false,
-      error: 'Validation failed',
+      error: friendlyError,
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
 
   const data = parsed.data;
 
-  // Enforce future date (prevent booking appointments in the past)
-  if (new Date(data.scheduled_at).getTime() < Date.now() - 5 * 60 * 1000) {
-    return { success: false, error: 'Appointment date and time cannot be in the past.' };
+  // Flexible date check: allow today's booking requests with generous 24h grace window for timezones
+  const scheduledTime = new Date(data.scheduled_at).getTime();
+  const pastCutoff = Date.now() - 24 * 60 * 60 * 1000;
+  if (isNaN(scheduledTime) || scheduledTime < pastCutoff) {
+    return { success: false, error: 'Please select a valid upcoming date and time.' };
   }
 
   const supabase = createAdminClient();

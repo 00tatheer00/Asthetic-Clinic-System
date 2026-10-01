@@ -35,8 +35,8 @@ export default async function BookPage({ searchParams }: BookPageProps) {
           </p>
         </div>
 
-        {/* Central Luxury Booking Flow Container */}
-        <div className="max-w-2xl mx-auto mb-16">
+        {/* Full-Width Booking Flow Container */}
+        <div className="w-full max-w-7xl mx-auto mb-16">
           <BookingFlow initialTreatmentId={initialTreatmentId} />
         </div>
 

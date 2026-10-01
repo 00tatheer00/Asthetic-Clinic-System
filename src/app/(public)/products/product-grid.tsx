@@ -116,10 +116,10 @@ export function ProductGrid({ products, categories }: ProductGridProps) {
           return (
             <div
               key={product.id}
-              className="group relative rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+              className="group relative rounded-2xl border border-gray-200/80 bg-white overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
             >
-              {/* Product Image */}
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+              {/* Product Image with Zoom Effect */}
+              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden relative cursor-pointer">
                 {(() => {
                   const getProductImage = (p: Product): string => {
                     if (p.image_url && p.image_url.trim() !== '') return p.image_url;
@@ -140,7 +140,7 @@ export function ProductGrid({ products, categories }: ProductGridProps) {
                     <img
                       src={getProductImage(product)}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover transform duration-500 ease-out group-hover:scale-110"
                     />
                   );
                 })()}
@@ -186,10 +186,10 @@ export function ProductGrid({ products, categories }: ProductGridProps) {
                     disabled={outOfStock}
                     onClick={() => handleAddToCart(product)}
                     className={cn(
-                      'rounded-full h-8 px-3 text-xs transition-all',
+                      'rounded-full h-8 px-4 text-xs font-semibold shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer',
                       justAdded
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-gray-900 hover:bg-rose-700 text-white'
                     )}
                   >
                     {justAdded ? (
@@ -200,7 +200,7 @@ export function ProductGrid({ products, categories }: ProductGridProps) {
                     ) : (
                       <>
                         <Plus className="h-3 w-3 mr-1" />
-                        Add
+                        Add to Bag
                       </>
                     )}
                   </Button>

@@ -7,7 +7,14 @@ import { PK_PHONE_REGEX } from '@/lib/constants';
 
 export const phoneSchema = z
   .string()
-  .transform((val) => val.replace(/[\s\-\(\)\.]/g, '').replace(/^(\+92|0092|92)/, '0'))
+  .transform((val) => {
+    let clean = val.replace(/[\s\-\(\)\.]/g, '');
+    if (clean.startsWith('+92')) clean = '0' + clean.slice(3);
+    else if (clean.startsWith('0092')) clean = '0' + clean.slice(4);
+    else if (clean.startsWith('92')) clean = '0' + clean.slice(2);
+    else if (/^3[0-9]{9}$/.test(clean)) clean = '0' + clean;
+    return clean;
+  })
   .pipe(
     z
       .string()

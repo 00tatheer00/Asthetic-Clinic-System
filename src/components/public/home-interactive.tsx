@@ -103,25 +103,32 @@ export function HomeFaqSection() {
 
 export function QuickBookBanner() {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 p-8 sm:p-12 lg:p-14 text-white shadow-xl border border-white/10">
-      <div className="relative z-10 max-w-2xl mx-auto text-center space-y-5">
-        <div className="inline-block px-3.5 py-1 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold tracking-wide uppercase">
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-gray-950 p-8 sm:p-12 lg:p-16 text-white shadow-2xl border border-white/10">
+      {/* Background glow orbs */}
+      <div className="absolute top-0 right-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-rose-500/20 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 h-64 w-64 rounded-full bg-pink-500/20 blur-3xl pointer-events-none" />
+
+      <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold tracking-wide uppercase">
           Book Your Visit Today
         </div>
 
-        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-white leading-tight">
-          Ready for Clear, Healthy & Glowing Skin?
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight text-white leading-tight">
+          Ready for Clear, Confident, <br />
+          <span className="bg-gradient-to-r from-rose-400 via-pink-300 to-rose-300 bg-clip-text text-transparent">
+            Naturally Glowing Skin?
+          </span>
         </h2>
 
-        <p className="text-gray-300 text-sm sm:text-base leading-relaxed">
-          Book an appointment with Dr. Bilal at Brimish Skin Care Clinic on University Road, Peshawar. Safe and effective skin treatments for real results.
+        <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+          Book your consultation with Dr. Bilal at Brimish Skin Care Clinic on University Road, Peshawar. Safe and effective skin treatments for real results.
         </p>
 
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/book" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm px-7 py-3 rounded-full shadow-md transition-colors cursor-pointer">
+            <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-sm sm:text-base px-8 py-4 rounded-full shadow-lg shadow-rose-600/30 hover:shadow-rose-600/50 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer">
               <Calendar className="h-4 w-4" />
-              <span>Book Appointment</span>
+              <span>Book Appointment Online</span>
               <ArrowRight className="h-4 w-4 ml-1" />
             </button>
           </Link>
@@ -129,21 +136,21 @@ export function QuickBookBanner() {
             href="https://wa.me/923000000000"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold text-sm px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold text-sm sm:text-base px-8 py-4 rounded-full shadow-lg shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"
           >
-            <MessageCircle className="h-4 w-4 fill-white text-white" />
+            <MessageCircle className="h-4 w-4 fill-white" />
             <span>WhatsApp</span>
           </a>
         </div>
 
-        <div className="pt-4 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-400">
+        <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-400">
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            No Long Waiting Time
+            Zero Waiting Time With Appointment
           </span>
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            100% Clean & Safe Clinic
+            100% Sterile & Clean Clinic
           </span>
           <span className="flex items-center gap-1.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />

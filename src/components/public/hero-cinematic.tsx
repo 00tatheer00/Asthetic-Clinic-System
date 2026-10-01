@@ -115,12 +115,12 @@ export function HeroCinematic() {
             Get clear, healthy skin with Dr. Bilal. We provide HydraFacial, laser hair removal, acne treatments, and chemical peels with complete safety.
           </p>
 
-          {/* Simple, Straightforward Buttons */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
+          {/* High-Impact Hero Action Buttons with Best Hover Effects & Padding */}
+          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3.5">
             {/* 1. Book Appointment */}
             <Link href="/book" className="w-full sm:w-auto">
               <Button
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white rounded-full px-6 py-2.5 h-11 text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-7 py-3.5 h-12 text-sm font-semibold shadow-lg shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
               >
                 <Calendar className="h-4 w-4" />
                 <span>Book Appointment</span>
@@ -133,7 +133,7 @@ export function HeroCinematic() {
               href="https://wa.me/923000000000"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 h-11 rounded-full text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md transition-colors cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 h-12 rounded-full text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-lg shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
               title="Chat with clinic on WhatsApp"
             >
               <MessageCircle className="h-4 w-4 fill-white text-white" />
@@ -144,7 +144,7 @@ export function HeroCinematic() {
             <Link href="/treatments" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="w-full sm:w-auto rounded-full px-5 py-2.5 h-11 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 transition-colors cursor-pointer"
+                className="w-full sm:w-auto rounded-full px-6 py-3.5 h-12 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
               >
                 View Treatments
               </Button>

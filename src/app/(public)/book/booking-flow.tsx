@@ -25,6 +25,7 @@ import {
   MessageCircle,
   Loader2,
   ArrowLeft,
+  ArrowRight,
   Stethoscope,
   Copy,
   CheckCheck,
@@ -148,9 +149,14 @@ export function BookingFlow({
         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
       ];
 
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const localIso = `${year}-${month}-${day}`;
+
       days.push({
         date: d,
-        isoDate: d.toISOString().split('T')[0],
+        isoDate: localIso,
         dayName: isToday ? 'Today' : dayNames[dayOfWeek],
         dayNumber: d.getDate(),
         monthName: monthNames[d.getMonth()],
@@ -178,6 +184,13 @@ export function BookingFlow({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
+  const formErrorRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (formError && formErrorRef.current) {
+      formErrorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [formError]);
 
   const [confirmedBooking, setConfirmedBooking] = useState<{
     id: string;
@@ -297,40 +310,51 @@ export function BookingFlow({
   ];
 
   // Handle Form Submission
-  const handleConfirmBooking = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleConfirmBooking = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     setFormError(null);
 
-    if (!customerName.trim()) {
-      setFormError('Please enter your full name.');
+    const trimmedName = customerName.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setFormError('Please enter your full name (at least 2 characters).');
       return;
     }
 
-    if (!customerPhone.trim()) {
-      setFormError('Please enter your mobile number.');
+    let cleanPhone = customerPhone.replace(/[\s\-\(\)\.]/g, '');
+    if (cleanPhone.startsWith('+92')) cleanPhone = '0' + cleanPhone.slice(3);
+    else if (cleanPhone.startsWith('0092')) cleanPhone = '0' + cleanPhone.slice(4);
+    else if (cleanPhone.startsWith('92')) cleanPhone = '0' + cleanPhone.slice(2);
+    else if (/^3[0-9]{9}$/.test(cleanPhone)) cleanPhone = '0' + cleanPhone;
+
+    if (!cleanPhone || !/^03[0-9]{9}$/.test(cleanPhone)) {
+      setFormError('Please enter a valid Pakistani mobile number (e.g. 0300 1234567 or +923143176526).');
       return;
     }
 
     if (selectedItems.length === 0) {
-      setFormError('Please select at least one treatment.');
+      setFormError('Please select at least one treatment before continuing.');
       setCurrentStep(1);
       return;
     }
 
-    const [timePart, modifier] = selectedTimeSlot.split(' ');
-    let [hoursStr, minutesStr] = timePart.split(':');
-    let hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
+    const [timePart, modifier] = (selectedTimeSlot || '12:00 pm').split(' ');
+    let [hoursStr, minutesStr] = (timePart || '12:00').split(':');
+    let hours = parseInt(hoursStr || '12', 10);
+    const minutes = parseInt(minutesStr || '0', 10);
 
-    if (modifier.toLowerCase() === 'pm' && hours < 12) {
+    if (modifier && modifier.toLowerCase() === 'pm' && hours < 12) {
       hours += 12;
     }
-    if (modifier.toLowerCase() === 'am' && hours === 12) {
+    if (modifier && modifier.toLowerCase() === 'am' && hours === 12) {
       hours = 0;
     }
 
-    const scheduledDate = new Date(`${selectedDayIso}T12:00:00`);
-    scheduledDate.setHours(hours, minutes, 0, 0);
+    const [sYear, sMonth, sDay] = (selectedDayIso || '').split('-').map(Number);
+    const scheduledDate = (sYear && sMonth && sDay)
+      ? new Date(sYear, sMonth - 1, sDay, hours, minutes, 0)
+      : new Date();
 
     const primaryDbId =
       selectedItems[0]?.dbId || '9803b3c3-2e1d-44dd-b684-3782c0c90a9b';
@@ -353,8 +377,8 @@ export function BookingFlow({
 
     try {
       const res = await createPublicAppointment({
-        customer_name: customerName.trim(),
-        customer_phone: customerPhone.trim(),
+        customer_name: trimmedName,
+        customer_phone: cleanPhone,
         whatsapp_number: whatsappNumber.trim() || undefined,
         treatment_id: primaryDbId,
         scheduled_at: scheduledDate.toISOString(),
@@ -383,12 +407,12 @@ export function BookingFlow({
           year: 'numeric',
         }),
         timeSlot: selectedTimeSlot,
-        patientName: customerName.trim(),
-        patientPhone: customerPhone.trim(),
+        patientName: trimmedName,
+        patientPhone: cleanPhone,
       });
 
       // Set default tracking query to patient name for convenience
-      setTrackSearchQuery(customerName.trim());
+      setTrackSearchQuery(trimmedName);
       setCurrentStep(4);
     } catch (err: any) {
       console.error('Booking error:', err);
@@ -814,9 +838,14 @@ export function BookingFlow({
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 1: TREATMENTS                                                        */}
+        {/* 2-COLUMN FULL-WIDTH LAYOUT (Desktop Grid: Steps on Left, Live Summary Right) */}
         {/* ========================================================================= */}
-        {activeMode === 'booking' && currentStep === 1 && (
+        {activeMode === 'booking' && currentStep !== 4 && (
+          <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+            {/* Left Column: Interactive Step (8 cols on lg) */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* STEP 1: TREATMENTS */}
+              {currentStep === 1 && (
           <div className="space-y-6 animate-slide-in-right">
             {/* Department Pills: Aesthetic Clinic vs Makeup Studio */}
             <div className="p-1 bg-gray-50/90 rounded-full border border-gray-200 flex items-center max-w-md mx-auto">
@@ -1020,10 +1049,8 @@ export function BookingFlow({
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* STEP 2: TIME & DATE                                                       */}
-        {/* ========================================================================= */}
-        {activeMode === 'booking' && currentStep === 2 && (
+        {/* STEP 2: TIME & DATE */}
+        {currentStep === 2 && (
           <div className="space-y-7 animate-slide-in-right">
             {/* Choose a Day */}
             <div className="space-y-3">
@@ -1163,15 +1190,16 @@ export function BookingFlow({
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* STEP 3: DETAILS                                                           */}
-        {/* ========================================================================= */}
-        {activeMode === 'booking' && currentStep === 3 && (
+        {/* STEP 3: DETAILS */}
+        {currentStep === 3 && (
           <form onSubmit={handleConfirmBooking} className="space-y-5 animate-slide-in-right">
             {formError && (
-              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-700 font-medium flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-red-500" />
-                {formError}
+              <div
+                ref={formErrorRef}
+                className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-700 font-medium flex items-center gap-2"
+              >
+                <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+                <span>{formError}</span>
               </div>
             )}
 
@@ -1186,8 +1214,8 @@ export function BookingFlow({
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. Tatheer Hussain"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-blue-50/20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
+                  placeholder="e.g. Dr. Bilal Patient"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
                 />
               </div>
 
@@ -1200,8 +1228,8 @@ export function BookingFlow({
                   required
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="+92 314 3176526"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-blue-50/20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
+                  placeholder="0300 1234567 or +923143176526"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
                 />
               </div>
             </div>
@@ -1209,13 +1237,13 @@ export function BookingFlow({
             {/* WhatsApp Number (if different) */}
             <div className="space-y-1.5">
               <label className="text-xs sm:text-sm font-semibold text-gray-900 block">
-                WhatsApp number (if different)
+                WhatsApp number (optional if same)
               </label>
               <input
                 type="tel"
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="Same as above"
+                placeholder="Leave empty if same as mobile"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
               />
             </div>
@@ -1223,13 +1251,13 @@ export function BookingFlow({
             {/* Anything we should know */}
             <div className="space-y-1.5">
               <label className="text-xs sm:text-sm font-semibold text-gray-900 block">
-                Anything we should know (optional)
+                Special notes / skin concerns (optional)
               </label>
               <textarea
                 rows={3}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Skin concern, past treatments, preferred artist"
+                placeholder="Mention acne, sensitivity, or previous treatments"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition resize-none"
               />
             </div>
@@ -1238,15 +1266,14 @@ export function BookingFlow({
             <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-600 leading-relaxed">
               <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
               <span>
-                We use your number to confirm the appointment. No email needed, and we
-                do not pass it on. No deposit, no card required.
+                No advance payment or card required. Pay on arrival at our clinic on University Road, Peshawar.
               </span>
             </div>
 
             {/* Summary preview */}
             <div className="p-4 rounded-xl bg-rose-50/50 border border-rose-100/80 space-y-2 text-xs">
               <div className="flex justify-between text-gray-700">
-                <span className="font-medium">Scheduled slot:</span>
+                <span className="font-medium">Selected Slot:</span>
                 <span className="font-semibold text-gray-950">
                   {selectedDayIso} at {selectedTimeSlot}
                 </span>
@@ -1257,9 +1284,184 @@ export function BookingFlow({
                   {selectedItems.map((i) => i.optionName).join(', ')}
                 </span>
               </div>
+              <div className="flex justify-between text-gray-900 font-bold pt-1 border-t border-rose-200/60">
+                <span>Estimated Total:</span>
+                <span>PKR {totalPKR.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Direct Form Submit Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-4 rounded-2xl bg-[#2D1226] hover:bg-[#431b39] text-white text-sm font-bold shadow-lg shadow-[#2D1226]/20 disabled:opacity-60 flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-95 transition-all cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <span>Confirming your booking...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Confirm Booking (PKR {totalPKR.toLocaleString()})</span>
+                  </>
+                )}
+              </button>
+              {formError && (
+                <p className="mt-2 text-xs text-red-600 font-semibold text-center">{formError}</p>
+              )}
             </div>
           </form>
         )}
+      </div>
+
+      {/* Right Column: Live Sticky Booking Summary (4 cols on lg) */}
+      <div className="hidden lg:block lg:col-span-4 sticky top-6 space-y-4">
+        <div className="rounded-3xl border border-gray-200/90 bg-gray-50/60 p-6 shadow-sm space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+            <h3 className="font-serif font-bold text-gray-900 text-base">Booking Summary</h3>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-semibold">
+              Step {currentStep} of 3
+            </span>
+          </div>
+
+          {/* Selected Treatments List */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
+              <span>Selected Treatments ({itemCount})</span>
+              {selectedItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedItems([])}
+                  className="text-rose-600 hover:text-rose-800 underline text-[11px]"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            {selectedItems.length === 0 ? (
+              <div className="p-4 rounded-2xl bg-white border border-dashed border-gray-300 text-center space-y-1">
+                <p className="text-xs font-medium text-gray-600">No treatments selected yet</p>
+                <p className="text-[11px] text-gray-400">Choose one or more treatments from the left</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {selectedItems.map((item) => (
+                  <div
+                    key={item.optionId}
+                    className="flex items-start justify-between gap-2 p-3 rounded-2xl bg-white border border-gray-200/80 text-xs shadow-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="font-semibold text-gray-900 leading-snug">{item.serviceName}</p>
+                      <p className="text-[11px] text-gray-500">{item.optionName} · {item.duration}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="font-bold text-gray-950 text-xs">PKR {item.price.toLocaleString()}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.optionId)}
+                        className="text-gray-400 hover:text-red-600 p-0.5 transition rounded-full hover:bg-gray-100 cursor-pointer"
+                        title="Remove"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Selected Schedule Time Preview */}
+          <div className="p-3.5 rounded-2xl bg-white border border-gray-200/80 space-y-1 text-xs">
+            <div className="flex items-center justify-between text-gray-600">
+              <span className="flex items-center gap-1.5 font-medium">
+                <CalendarIcon className="h-4 w-4 text-rose-600" />
+                Slot:
+              </span>
+              <span className="font-semibold text-gray-900">
+                {selectedTimeSlot} · {selectedDayIso}
+              </span>
+            </div>
+          </div>
+
+          {/* Total PKR Box */}
+          <div className="pt-2 border-t border-gray-200 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-gray-500 block font-medium">Estimated Total</span>
+              <span className="text-[10px] text-emerald-600 font-semibold">Pay at Clinic • No Advance</span>
+            </div>
+            <span className="font-serif text-2xl font-bold text-gray-950">
+              PKR {totalPKR.toLocaleString()}
+            </span>
+          </div>
+
+          {/* Sidebar Action Button */}
+          <div className="pt-1">
+            {currentStep === 1 && (
+              <button
+                type="button"
+                disabled={itemCount === 0}
+                onClick={() => setCurrentStep(2)}
+                className="w-full py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+              >
+                <span>Continue to Date & Time</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+
+            {currentStep === 2 && (
+              <button
+                type="button"
+                disabled={!selectedDayIso || !selectedTimeSlot}
+                onClick={() => setCurrentStep(3)}
+                className="w-full py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+              >
+                <span>Continue to Details</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+
+            {currentStep === 3 && (
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={handleConfirmBooking}
+                className="w-full py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-60 flex items-center justify-center gap-2 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <span>Confirming...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span>Confirm Booking</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Trust Badges */}
+          <div className="pt-2 text-[11px] text-gray-500 space-y-1.5 border-t border-gray-200/60">
+            <p className="flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              Zero card or advance deposit required
+            </p>
+            <p className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+              100% Sterile clinic on University Road
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
 
         {/* ========================================================================= */}
         {/* STEP 4: SUCCESS / LUXURY REASSURING CONFIRMATION                           */}
@@ -1429,7 +1631,7 @@ export function BookingFlow({
                 type="button"
                 disabled={itemCount === 0}
                 onClick={() => setCurrentStep(2)}
-                className="shine-sweep px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102"
+                className="px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg active:scale-95 cursor-pointer"
               >
                 Continue
               </button>
@@ -1440,7 +1642,7 @@ export function BookingFlow({
                 type="button"
                 disabled={!selectedDayIso || !selectedTimeSlot}
                 onClick={() => setCurrentStep(3)}
-                className="shine-sweep px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102"
+                className="px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-40 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-lg active:scale-95 cursor-pointer"
               >
                 Continue
               </button>
@@ -1451,7 +1653,7 @@ export function BookingFlow({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleConfirmBooking}
-                className="shine-sweep px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-60 flex items-center gap-2 hover:scale-102"
+                className="px-8 py-3.5 rounded-full bg-[#2D1226] hover:bg-[#431b39] text-white text-xs sm:text-sm font-semibold transition shadow-md shadow-[#2D1226]/20 disabled:opacity-60 flex items-center gap-2 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
