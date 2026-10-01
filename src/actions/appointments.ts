@@ -337,15 +337,14 @@ export async function deleteAppointment(appointmentId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized' };
 
-  // Only super_admin can delete
   const { data: staff } = await supabase
     .from('staff')
     .select('id, role')
     .eq('auth_user_id', user.id)
     .single();
 
-  if (!staff || staff.role !== 'super_admin') {
-    return { success: false, error: 'Only admin can delete appointments.' };
+  if (!staff) {
+    return { success: false, error: 'Staff access required to delete appointments.' };
   }
 
   const { error } = await supabase
@@ -366,6 +365,77 @@ export async function deleteAppointment(appointmentId: string) {
   });
 
   revalidatePath('/dashboard/appointments');
+  revalidatePath('/dashboard');
+  return { success: true };
+}
+
+// ============================================================
+// Dashboard: Staff edit/update appointment
+// ============================================================
+
+export async function updateAppointment(
+  appointmentId: string,
+  formData: {
+    customer_name: string;
+    customer_phone: string;
+    customer_email?: string | null;
+    treatment_id: string;
+    patient_id?: string | null;
+    scheduled_at: string;
+    duration_minutes?: number;
+    status: AppointmentStatus;
+    message?: string | null;
+  }
+) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff) return { success: false, error: 'Staff not found' };
+
+  if (!formData.customer_name?.trim()) return { success: false, error: 'Patient name is required.' };
+  if (!formData.customer_phone?.trim()) return { success: false, error: 'Phone number is required.' };
+  if (!formData.treatment_id) return { success: false, error: 'Treatment is required.' };
+  if (!formData.scheduled_at) return { success: false, error: 'Date and time is required.' };
+
+  const { error } = await supabase
+    .from('appointments')
+    .update({
+      customer_name: formData.customer_name.trim(),
+      customer_phone: formData.customer_phone.trim(),
+      customer_email: formData.customer_email?.trim() || null,
+      treatment_id: formData.treatment_id,
+      patient_id: formData.patient_id || null,
+      scheduled_at: formData.scheduled_at,
+      duration_minutes: formData.duration_minutes || 45,
+      status: formData.status,
+      message: formData.message?.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', appointmentId);
+
+  if (error) {
+    console.error('[Appointment] Update failed:', error);
+    return { success: false, error: 'Failed to update appointment.' };
+  }
+
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'update',
+    entity_type: 'appointment',
+    entity_id: appointmentId,
+    description: `Staff edited appointment for ${formData.customer_name}`,
+  });
+
+  revalidatePath('/dashboard/appointments');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 

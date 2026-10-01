@@ -9,26 +9,26 @@ export default async function POSPage() {
   await getAuthenticatedStaff();
   const supabase = await createClient();
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('id, name, sale_price, stock_quantity, reserved_quantity')
-    .eq('is_active', true)
-    .is('deleted_at', null)
-    .gt('stock_quantity', 0)
-    .order('name');
-
-  const { data: treatments } = await supabase
-    .from('treatments')
-    .select('id, name, price')
-    .eq('is_active', true)
-    .is('deleted_at', null)
-    .order('name');
-
-  const { data: settings } = await supabase
-    .from('clinic_settings')
-    .select('default_tax_rate')
-    .limit(1)
-    .single();
+  const [{ data: products }, { data: treatments }, { data: settings }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, name, sale_price, stock_quantity, reserved_quantity')
+      .eq('is_active', true)
+      .is('deleted_at', null)
+      .gt('stock_quantity', 0)
+      .order('name'),
+    supabase
+      .from('treatments')
+      .select('id, name, price')
+      .eq('is_active', true)
+      .is('deleted_at', null)
+      .order('name'),
+    supabase
+      .from('clinic_settings')
+      .select('default_tax_rate')
+      .limit(1)
+      .single(),
+  ]);
 
   return (
     <div>

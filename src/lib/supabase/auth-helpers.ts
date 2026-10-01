@@ -1,13 +1,15 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { UserRole, Staff } from '@/lib/types';
 
 /**
  * Get the current authenticated user and their staff record.
+ * Deduplicated per-request using React cache for ultra-fast navigation.
  * Redirects to login if not authenticated.
  * Returns the staff record with role information.
  */
-export async function getAuthenticatedStaff(): Promise<Staff> {
+export const getAuthenticatedStaff = cache(async (): Promise<Staff> => {
   const supabase = await createClient();
 
   const {
@@ -33,7 +35,7 @@ export async function getAuthenticatedStaff(): Promise<Staff> {
   }
 
   return staff as Staff;
-}
+});
 
 /**
  * Check if the current user has the required role.
@@ -109,9 +111,11 @@ const RECEPTIONIST_PERMISSIONS: StaffPermission[] = [
   'appointments.view',
   'appointments.create',
   'appointments.manage',
+  'appointments.delete',
   'patients.view',
   'patients.create',
   'patients.edit',
+  'patients.delete',
   'pos.create',
   'invoices.view',
   'invoices.print',

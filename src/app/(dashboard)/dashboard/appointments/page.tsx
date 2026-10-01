@@ -85,40 +85,45 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
   const from = (page - 1) * pageSize;
   query = query.range(from, from + pageSize - 1);
 
-  const { data: appointments, count } = await query;
-
   // Get stats for filter badges
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date(now);
   todayEnd.setHours(23, 59, 59, 999);
 
-  const [{ count: pendingCount }, { count: todayCount }, { data: treatments }, { data: patients }] =
-    await Promise.all([
-      supabase
-        .from('appointments')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-        .is('deleted_at', null),
-      supabase
-        .from('appointments')
-        .select('id', { count: 'exact', head: true })
-        .gte('scheduled_at', todayStart.toISOString())
-        .lte('scheduled_at', todayEnd.toISOString())
-        .is('deleted_at', null),
-      supabase
-        .from('treatments')
-        .select('id, name, price, duration_minutes')
-        .is('deleted_at', null)
-        .eq('is_active', true)
-        .order('name'),
-      supabase
-        .from('patients')
-        .select('id, name, phone')
-        .is('deleted_at', null)
-        .order('name')
-        .limit(100),
-    ]);
+  // Parallel database execution for blazing speed
+  const [
+    { data: appointments, count },
+    { count: pendingCount },
+    { count: todayCount },
+    { data: treatments },
+    { data: patients },
+  ] = await Promise.all([
+    query,
+    supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .is('deleted_at', null),
+    supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .gte('scheduled_at', todayStart.toISOString())
+      .lte('scheduled_at', todayEnd.toISOString())
+      .is('deleted_at', null),
+    supabase
+      .from('treatments')
+      .select('id, name, price, duration_minutes')
+      .is('deleted_at', null)
+      .eq('is_active', true)
+      .order('name'),
+    supabase
+      .from('patients')
+      .select('id, name, phone')
+      .is('deleted_at', null)
+      .order('name')
+      .limit(100),
+  ]);
 
   return (
     <div className="space-y-6">

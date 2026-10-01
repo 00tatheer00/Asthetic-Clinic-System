@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { createPatient, deletePatient } from '@/actions/patients';
+import { createPatient, updatePatient, deletePatient } from '@/actions/patients';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,12 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
-import { Search, Plus, Users, ChevronLeft, ChevronRight, Loader2, Phone } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Search, Plus, Users, ChevronLeft, ChevronRight, Loader2, Phone, Edit3, Trash2 } from 'lucide-react';
 import { formatPhone, formatDate } from '@/lib/utils/helpers';
 import { toast } from 'sonner';
 
@@ -70,6 +75,83 @@ export function PatientsList({
     }
   };
 
+  // Edit Patient State
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    gender: '',
+    date_of_birth: '',
+    address: '',
+    notes: '',
+  });
+  const [updating, setUpdating] = useState(false);
+
+  // Delete Patient State
+  const [deleteTarget, setDeleteTarget] = useState<Patient | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleOpenEdit = (e: React.MouseEvent, patient: Patient) => {
+    e.stopPropagation();
+    setEditingPatient(patient);
+    setEditForm({
+      name: patient.name || '',
+      phone: patient.phone || '',
+      email: patient.email || '',
+      gender: patient.gender || '',
+      date_of_birth: patient.date_of_birth ? patient.date_of_birth.split('T')[0] : '',
+      address: '',
+      notes: '',
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingPatient) return;
+    if (!editForm.name.trim() || !editForm.phone.trim()) {
+      toast.error('Name and phone are required.');
+      return;
+    }
+
+    setUpdating(true);
+    const result = await updatePatient(editingPatient.id, {
+      name: editForm.name.trim(),
+      phone: editForm.phone.trim(),
+      email: editForm.email?.trim() || undefined,
+      gender: (editForm.gender as any) || undefined,
+      date_of_birth: editForm.date_of_birth || undefined,
+      address: editForm.address?.trim() || undefined,
+      notes: editForm.notes?.trim() || undefined,
+    });
+    setUpdating(false);
+
+    if (result.success) {
+      toast.success('Patient record updated');
+      setShowEditDialog(false);
+      setEditingPatient(null);
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Failed to update patient');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const result = await deletePatient(deleteTarget.id);
+    setDeleting(false);
+
+    if (result.success) {
+      toast.success(`Patient "${deleteTarget.name}" deleted`);
+      setDeleteTarget(null);
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Failed to delete patient');
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Actions Bar */}
@@ -118,6 +200,7 @@ export function PatientsList({
                   <TableHead className="text-xs font-semibold">Gender</TableHead>
                   <TableHead className="text-xs font-semibold">DOB</TableHead>
                   <TableHead className="text-xs font-semibold">Registered</TableHead>
+                  <TableHead className="text-xs font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -149,6 +232,33 @@ export function PatientsList({
                     </TableCell>
                     <TableCell>
                       <span className="text-xs text-gray-400">{formatDate(patient.created_at)}</span>
+                    </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => handleOpenEdit(e, patient)}
+                          className="h-7 px-2 text-xs border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg flex items-center gap-1 shadow-2xs font-medium"
+                          title="Edit Patient Record"
+                        >
+                          <Edit3 className="h-3.5 w-3.5 text-blue-600" />
+                          <span>Edit</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(patient);
+                          }}
+                          className="h-7 px-2 text-xs border-rose-200 hover:border-rose-400 hover:bg-rose-50 text-rose-600 rounded-lg flex items-center gap-1 shadow-2xs font-medium"
+                          title="Delete Patient Record"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -214,6 +324,150 @@ export function PatientsList({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Patient Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+              <Edit3 className="h-4 w-4 text-rose-600" />
+              Edit Patient Record
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Update contact information and demographic details for {editingPatient?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Name *</Label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                placeholder="Patient full name"
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Phone *</Label>
+              <Input
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                placeholder="03001234567"
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Email</Label>
+                <Input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  placeholder="patient@example.com"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Gender</Label>
+                <select
+                  value={editForm.gender}
+                  onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                  className="flex h-8 w-full rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Date of Birth</Label>
+              <Input
+                type="date"
+                value={editForm.date_of_birth}
+                onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Address</Label>
+              <Input
+                value={editForm.address}
+                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                placeholder="e.g. Hayatabad, Peshawar"
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Clinical / Administrative Notes</Label>
+              <Input
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                placeholder="e.g. Sensitive skin, allergy notes"
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="pt-2 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEditDialog(false)}
+                className="h-8 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleUpdate}
+                disabled={updating || !editForm.name.trim() || !editForm.phone.trim()}
+                className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium"
+              >
+                {updating ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Patient Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Delete Patient Record
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete patient record for <strong>{deleteTarget?.name}</strong> ({deleteTarget?.phone})? This will archive the patient profile.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Patient'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

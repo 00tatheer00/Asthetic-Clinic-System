@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import {
   LayoutDashboard, Calendar, ShoppingCart, Package, Users,
   FileText, Warehouse, Stethoscope, Box, Image, Star,
@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { ClearCacheButton } from '@/components/clear-cache-button';
 import { clearBrowserCacheAndReload } from '@/lib/cache-utils';
 import { RefreshCw } from 'lucide-react';
+import { RouteProgressBar } from '@/components/public/route-progress-bar';
 
 // Map icon strings to components
 const iconMap: Record<string, React.ElementType> = {
@@ -79,11 +80,12 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
                     'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all mx-2',
                     isActive
-                      ? 'bg-rose-50 text-rose-700'
+                      ? 'bg-rose-50 text-rose-700 font-semibold shadow-xs'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
                     collapsed && 'justify-center px-2'
                   )}
@@ -112,6 +114,9 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
 
   return (
     <div className="fixed inset-0 flex h-full w-full overflow-hidden bg-slate-50">
+      <Suspense fallback={null}>
+        <RouteProgressBar />
+      </Suspense>
       {/* Desktop Sidebar */}
       <aside
         className={cn(

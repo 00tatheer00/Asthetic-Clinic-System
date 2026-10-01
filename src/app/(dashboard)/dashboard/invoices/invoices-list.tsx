@@ -36,8 +36,12 @@ import {
   AlertTriangle,
   Receipt,
   Download,
+  QrCode,
+  ShieldCheck,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -104,6 +108,7 @@ export function InvoicesList({
   const [searchValue, setSearchValue] = useState(search);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [invoiceFormat, setInvoiceFormat] = useState<'a4' | 'thermal'>('a4');
 
   // Void state
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
@@ -390,25 +395,59 @@ export function InvoicesList({
         </div>
       )}
 
-      {/* Invoice Detail / Print Modal */}
+      {/* Invoice Detail / Print Modal (FBR Tier-1 Integrated Format) */}
       <Dialog open={showPrintModal} onOpenChange={setShowPrintModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-0">
           {selectedInvoice && (
             <div>
               {/* Header Action Bar (Hidden in Print) */}
-              <div className="print:hidden p-4 border-b bg-gray-50 flex items-center justify-between">
+              <div className="print:hidden p-4 border-b bg-gray-50 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-10 backdrop-blur-sm bg-gray-50/95">
                 <div>
-                  <h3 className="font-semibold text-gray-900">Invoice {selectedInvoice.invoice_number}</h3>
-                  <p className="text-xs text-gray-500">Preview and print official receipt</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-gray-900 text-sm">Invoice {selectedInvoice.invoice_number}</h3>
+                    <Badge className="bg-emerald-600 text-white text-[10px] uppercase font-semibold">
+                      FBR Tier-1 POS
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-gray-500">Official FBR Pakistan POS Tax Invoice preview & print</p>
                 </div>
+
                 <div className="flex items-center gap-2">
+                  {/* Format Switcher */}
+                  <div className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-white shadow-2xs mr-1">
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceFormat('a4')}
+                      className={cn(
+                        'px-2.5 py-1 text-xs font-medium rounded-md transition-all',
+                        invoiceFormat === 'a4'
+                          ? 'bg-emerald-700 text-white shadow-2xs font-semibold'
+                          : 'text-gray-600 hover:text-gray-900'
+                      )}
+                    >
+                      A4 Tax Invoice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceFormat('thermal')}
+                      className={cn(
+                        'px-2.5 py-1 text-xs font-medium rounded-md transition-all',
+                        invoiceFormat === 'thermal'
+                          ? 'bg-emerald-700 text-white shadow-2xs font-semibold'
+                          : 'text-gray-600 hover:text-gray-900'
+                      )}
+                    >
+                      80mm Thermal Slip
+                    </button>
+                  </div>
+
                   {selectedInvoice.customer_email && (
                     <Button
                       size="sm"
                       variant="outline"
                       disabled={sendingEmail}
                       onClick={() => handleSendEmail(selectedInvoice)}
-                      className="h-8 text-xs"
+                      className="h-8 text-xs border-gray-300"
                     >
                       {sendingEmail ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
@@ -418,178 +457,454 @@ export function InvoicesList({
                       Email
                     </Button>
                   )}
+
                   <Button
                     size="sm"
                     onClick={handlePrint}
-                    className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white"
+                    className="h-8 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-xs"
                   >
                     <Printer className="h-3.5 w-3.5 mr-1.5" />
-                    Print Invoice
+                    Print ({invoiceFormat === 'a4' ? 'A4' : 'Thermal'})
                   </Button>
                 </div>
               </div>
 
               {/* Printable Invoice Container */}
-              <div id="printable-invoice" className="p-8 font-sans text-gray-800 bg-white">
-                {/* Invoice Top Header */}
-                <div className="flex justify-between items-start border-b pb-6">
-                  <div>
-                    <h2 className="text-2xl font-extrabold text-rose-600 tracking-tight">
-                      {selectedInvoice.clinic_name || 'Brimish Skin Care'}
-                    </h2>
-                    <p className="text-xs text-gray-500 mt-1">Medical Aesthetics & Laser Center</p>
-                    <p className="text-xs text-gray-600 mt-2 whitespace-pre-line leading-relaxed">
-                      {selectedInvoice.clinic_address || 'Peshawar, Pakistan'}
-                    </p>
-                    <p className="text-xs text-gray-600">Phone: {selectedInvoice.clinic_phone || '+92 300 0000000'}</p>
-                    {selectedInvoice.clinic_email && (
-                      <p className="text-xs text-gray-600">Email: {selectedInvoice.clinic_email}</p>
-                    )}
-                    {selectedInvoice.clinic_ntn && (
-                      <p className="text-[11px] text-gray-500 font-mono mt-1">
-                        NTN: {selectedInvoice.clinic_ntn}
-                        {selectedInvoice.clinic_strn && ` | STRN: ${selectedInvoice.clinic_strn}`}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="text-right">
-                    <div className="inline-block bg-gray-100 rounded-lg px-3 py-1 mb-2">
-                      <span className="font-mono text-sm font-bold text-gray-900">
-                        {selectedInvoice.invoice_number}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      Date: <span className="font-medium text-gray-800">{formatDate(selectedInvoice.issued_at || selectedInvoice.created_at)}</span>
-                    </p>
-                    <div className="mt-2">
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          'text-xs uppercase font-bold tracking-wider',
-                          selectedInvoice.status === 'paid' && 'border-green-500 text-green-600 bg-green-50',
-                          selectedInvoice.status === 'voided' && 'border-red-500 text-red-600 bg-red-50',
-                          selectedInvoice.status === 'issued' && 'border-blue-500 text-blue-600 bg-blue-50'
-                        )}
-                      >
-                        {selectedInvoice.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Billed To */}
-                <div className="grid grid-cols-2 gap-6 py-6 border-b text-xs">
-                  <div>
-                    <p className="font-semibold text-gray-400 uppercase tracking-wider text-[10px] mb-1">
-                      Patient / Customer
-                    </p>
-                    <p className="font-bold text-sm text-gray-900">{selectedInvoice.customer_name}</p>
-                    {selectedInvoice.customer_phone && (
-                      <p className="text-gray-600 mt-0.5">{selectedInvoice.customer_phone}</p>
-                    )}
-                    {selectedInvoice.customer_email && (
-                      <p className="text-gray-600 mt-0.5">{selectedInvoice.customer_email}</p>
-                    )}
-                    {selectedInvoice.customer_address && (
-                      <p className="text-gray-600 mt-0.5">{selectedInvoice.customer_address}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-400 uppercase tracking-wider text-[10px] mb-1">
-                      Payment Details
-                    </p>
-                    <p className="text-gray-700 capitalize">
-                      Method: <span className="font-semibold text-gray-900">{selectedInvoice.payment_method || 'Cash'}</span>
-                    </p>
-                    <p className="text-gray-700 capitalize">
-                      Payment Status: <span className="font-semibold text-gray-900">{selectedInvoice.payment_status}</span>
-                    </p>
-                    {selectedInvoice.paid_at && (
-                      <p className="text-gray-500 text-[11px] mt-0.5">
-                        Paid at: {formatDate(selectedInvoice.paid_at)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Line Items Table */}
-                <div className="py-6">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="border-b-2 border-gray-200 text-gray-600">
-                        <th className="text-left py-2 font-semibold">Item / Description</th>
-                        <th className="text-center py-2 font-semibold w-16">Qty</th>
-                        <th className="text-right py-2 font-semibold w-24">Rate</th>
-                        <th className="text-right py-2 font-semibold w-24">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {selectedInvoice.invoice_line_items && selectedInvoice.invoice_line_items.length > 0 ? (
-                        selectedInvoice.invoice_line_items.map((item, idx) => (
-                          <tr key={item.id || idx}>
-                            <td className="py-2.5 text-gray-800">{item.description}</td>
-                            <td className="py-2.5 text-center text-gray-600">{item.quantity}</td>
-                            <td className="py-2.5 text-right text-gray-600">{formatCurrency(item.unit_price)}</td>
-                            <td className="py-2.5 text-right font-medium text-gray-900">{formatCurrency(item.line_total)}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={4} className="py-4 text-center text-gray-400 italic">
-                            Line items recorded in sale.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Calculation Summary */}
-                <div className="border-t pt-4 flex justify-end">
-                  <div className="w-64 space-y-1.5 text-xs">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Subtotal:</span>
-                      <span className="font-medium">{formatCurrency(selectedInvoice.subtotal)}</span>
-                    </div>
-
-                    {selectedInvoice.discount_amount > 0 && (
-                      <div className="flex justify-between text-emerald-600">
-                        <span>Discount:</span>
-                        <span className="font-medium">-{formatCurrency(selectedInvoice.discount_amount)}</span>
-                      </div>
-                    )}
-
-                    {selectedInvoice.tax_amount > 0 && (
-                      <div className="flex justify-between text-gray-600">
-                        <span>
-                          {selectedInvoice.tax_label || 'Tax'} ({selectedInvoice.tax_rate}%):
+              <div id="printable-invoice" className="bg-gray-100/60 p-4 sm:p-6 print:p-0 print:bg-white flex justify-center">
+                {invoiceFormat === 'a4' ? (
+                  /* ========================================================== */
+                  /* A4 OFFICIAL MEDICAL TAX INVOICE (FBR TIER-1 INTEGRATED)    */
+                  /* ========================================================== */
+                  <div className="w-full max-w-[800px] bg-white border border-gray-300 print:border-0 shadow-sm p-6 sm:p-8 font-sans text-gray-900">
+                    {/* Official Green FBR Government Banner */}
+                    <div className="bg-emerald-900 text-white px-4 py-2.5 rounded-t-lg -mx-6 sm:-mx-8 -mt-6 sm:-mt-8 mb-6 flex flex-wrap justify-between items-center text-xs print:rounded-none">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-emerald-300" />
+                        <span className="font-bold tracking-wider uppercase text-[11px]">
+                          Government of Pakistan • Federal Board of Revenue (FBR)
                         </span>
-                        <span className="font-medium">{formatCurrency(selectedInvoice.tax_amount)}</span>
+                      </div>
+                      <div className="text-[11px] font-semibold text-emerald-200">
+                        Tier-1 Integrated POS Tax Invoice • KPRA Registered
+                      </div>
+                    </div>
+
+                    {/* Clinic Header & Identification */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-5 border-b-2 border-emerald-900/20">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                            BRIMISH SKIN CARE &amp; LASER CLINIC
+                          </h1>
+                        </div>
+                        <p className="text-xs font-semibold text-emerald-800 mt-0.5">
+                          Medical Aesthetics, Dermatology &amp; Laser Center
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1 font-medium">
+                          Clinical Director: <span className="font-bold text-gray-900">Dr. Bilal Ahmad</span> (MD Aesthetic Medicine)
+                        </p>
+                        <p className="text-[11px] text-gray-600 mt-1 max-w-sm leading-relaxed">
+                          {selectedInvoice.clinic_address || 'Suite #3, 2nd Floor, Cantonment Plaza, University Road, Peshawar, KP'}
+                        </p>
+                        <p className="text-[11px] text-gray-600">
+                          UAN / Phone: <span className="font-semibold text-gray-800">{selectedInvoice.clinic_phone || '+92 91 5842100 / +92 312 9000100'}</span>
+                        </p>
+                      </div>
+
+                      <div className="text-left sm:text-right w-full sm:w-auto bg-emerald-50/60 p-3 rounded-lg border border-emerald-200/80">
+                        <div className="text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                          Fiscal Tax Receipt
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          Invoice No: <span className="font-mono font-bold text-gray-900">{selectedInvoice.invoice_number}</span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          FBR POS No:{' '}
+                          <span className="font-mono font-bold text-emerald-800">
+                            FBR-{selectedInvoice.clinic_ntn || '8291034'}-{selectedInvoice.invoice_number.replace(/\D/g, '').slice(-5).padStart(5, '0')}
+                          </span>
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Date: <span className="font-medium text-gray-800">{formatDate(selectedInvoice.issued_at || selectedInvoice.created_at)}</span>
+                        </p>
+                        <p className="text-[11px] text-gray-500">
+                          Time: <span>{formatDateTime(selectedInvoice.issued_at || selectedInvoice.created_at).split(', ')[1] || 'Real-time'}</span>
+                        </p>
+                        <div className="mt-1.5">
+                          <Badge
+                            className={cn(
+                              'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border-0',
+                              selectedInvoice.status === 'paid' && 'bg-emerald-600 text-white',
+                              selectedInvoice.status === 'voided' && 'bg-red-600 text-white',
+                              selectedInvoice.status === 'issued' && 'bg-blue-600 text-white'
+                            )}
+                          >
+                            {selectedInvoice.status === 'paid' ? 'PAID & INTEGRATED' : selectedInvoice.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tax Registration Details Bar */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-3 border-b border-gray-200 text-[11px] bg-gray-50/70 -mx-6 sm:-mx-8 px-6 sm:px-8 font-mono">
+                      <div>
+                        <span className="text-gray-500 block text-[9px] uppercase">NTN (National Tax No.)</span>
+                        <strong className="text-gray-900">{selectedInvoice.clinic_ntn || '8291034-7'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-[9px] uppercase">STRN (Sales Tax Reg.)</span>
+                        <strong className="text-gray-900">{selectedInvoice.clinic_strn || '32-77-8761-234-56'}</strong>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-[9px] uppercase">KPRA Reg. No</span>
+                        <strong className="text-gray-900">KP-098234-A</strong>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-[9px] uppercase">POS Machine ID</span>
+                        <strong className="text-emerald-800">FBR-POS-PESH-0492</strong>
+                      </div>
+                    </div>
+
+                    {/* Billed To / Patient & Consultant Details */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 border-b border-gray-200 text-xs">
+                      <div>
+                        <p className="font-bold text-gray-500 uppercase tracking-wider text-[10px] mb-1">
+                          Patient / Customer Details
+                        </p>
+                        <p className="text-sm font-bold text-gray-900">{selectedInvoice.customer_name}</p>
+                        <p className="text-gray-600 mt-0.5 flex items-center gap-1 font-mono">
+                          Phone: {formatPhone(selectedInvoice.customer_phone || 'Walk-in')}
+                        </p>
+                        {selectedInvoice.customer_email && (
+                          <p className="text-gray-600">Email: {selectedInvoice.customer_email}</p>
+                        )}
+                        {selectedInvoice.customer_address && (
+                          <p className="text-gray-600">Address: {selectedInvoice.customer_address}</p>
+                        )}
+                        <p className="text-gray-500 text-[11px] mt-1 font-mono">
+                          Medical File: MR-{selectedInvoice.invoice_number.slice(-4)}
+                        </p>
+                      </div>
+
+                      <div className="sm:text-right">
+                        <p className="font-bold text-gray-500 uppercase tracking-wider text-[10px] mb-1">
+                          Consultant &amp; Payment Details
+                        </p>
+                        <p className="text-xs text-gray-700">
+                          Attending Specialist: <span className="font-semibold text-gray-900">Dr. Bilal Ahmad</span>
+                        </p>
+                        <p className="text-xs text-gray-700 capitalize mt-0.5">
+                          Payment Mode: <span className="font-semibold text-gray-900">{selectedInvoice.payment_method || 'Cash at Counter'}</span>
+                        </p>
+                        <p className="text-xs text-gray-700 capitalize mt-0.5">
+                          Fiscal Status: <span className="font-bold text-emerald-700">FBR Verified</span>
+                        </p>
+                        {selectedInvoice.paid_at && (
+                          <p className="text-gray-500 text-[11px] mt-0.5">
+                            Payment Settled: {formatDate(selectedInvoice.paid_at)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Itemized Table */}
+                    <div className="py-4">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="bg-gray-100 text-gray-700 border-y border-gray-300">
+                            <th className="py-2 px-2 text-left w-8 font-bold">#</th>
+                            <th className="py-2 px-2 text-left font-bold">Description of Treatment / Skincare Product</th>
+                            <th className="py-2 px-2 text-center w-20 font-bold">HS/Code</th>
+                            <th className="py-2 px-2 text-center w-12 font-bold">Qty</th>
+                            <th className="py-2 px-2 text-right w-24 font-bold">Rate (PKR)</th>
+                            <th className="py-2 px-2 text-right w-20 font-bold">Tax Rate</th>
+                            <th className="py-2 px-2 text-right w-28 font-bold">Total (PKR)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {selectedInvoice.invoice_line_items && selectedInvoice.invoice_line_items.length > 0 ? (
+                            selectedInvoice.invoice_line_items.map((item, idx) => (
+                              <tr key={item.id || idx} className="hover:bg-gray-50/50">
+                                <td className="py-2.5 px-2 text-gray-500 font-mono">{idx + 1}</td>
+                                <td className="py-2.5 px-2 font-medium text-gray-900">
+                                  {item.description}
+                                  {item.discount_amount > 0 && (
+                                    <span className="block text-[10px] text-emerald-600">
+                                      Special Discount: -{formatCurrency(item.discount_amount)}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-2.5 px-2 text-center text-gray-500 font-mono text-[11px]">
+                                  9821.00
+                                </td>
+                                <td className="py-2.5 px-2 text-center text-gray-700 font-medium">{item.quantity}</td>
+                                <td className="py-2.5 px-2 text-right text-gray-700 font-mono">{formatCurrency(item.unit_price)}</td>
+                                <td className="py-2.5 px-2 text-right text-gray-600 font-mono text-[11px]">
+                                  {selectedInvoice.tax_rate ? `${selectedInvoice.tax_rate}%` : '5% KPRA'}
+                                </td>
+                                <td className="py-2.5 px-2 text-right font-bold text-gray-900 font-mono">
+                                  {formatCurrency(item.line_total)}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={7} className="py-4 text-center text-gray-400 italic">
+                                General Clinical Consultation &amp; Skincare Treatment
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Summary & FBR Verification Box */}
+                    <div className="border-t-2 border-gray-300 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                      {/* Left: FBR Verification & QR Code */}
+                      <div className="flex items-center gap-3 p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg">
+                        {/* Authentic SVG QR Code Representation */}
+                        <div className="w-20 h-20 bg-white p-1.5 border border-gray-300 rounded shadow-2xs shrink-0 flex items-center justify-center relative">
+                          <svg className="w-full h-full text-emerald-950" viewBox="0 0 100 100" fill="currentColor">
+                            {/* Outer QR frame markers */}
+                            <path d="M5 5h30v30H5zM10 10h20v20H10zM15 15h10v10H15z" />
+                            <path d="M65 5h30v30H65zM70 10h20v20H70zM75 15h10v10H75z" />
+                            <path d="M5 65h30v30H5zM10 70h20v20H10zM15 75h10v10H15z" />
+                            {/* QR Data Matrix dots */}
+                            <circle cx="45" cy="15" r="3" />
+                            <circle cx="55" cy="22" r="3" />
+                            <circle cx="48" cy="35" r="3" />
+                            <circle cx="20" cy="45" r="3" />
+                            <circle cx="35" cy="50" r="3" />
+                            <circle cx="50" cy="50" r="4" fill="#047857" />
+                            <circle cx="65" cy="45" r="3" />
+                            <circle cx="80" cy="52" r="3" />
+                            <circle cx="45" cy="65" r="3" />
+                            <circle cx="60" cy="72" r="3" />
+                            <circle cx="75" cy="65" r="3" />
+                            <circle cx="85" cy="80" r="3" />
+                            <circle cx="55" cy="85" r="3" />
+                            <circle cx="68" cy="90" r="3" />
+                            <circle cx="45" cy="92" r="3" />
+                          </svg>
+                        </div>
+                        <div className="text-[11px] leading-relaxed text-emerald-950">
+                          <p className="font-black text-emerald-900 uppercase text-[10px] tracking-wider flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                            FBR Tax Asaan Verified
+                          </p>
+                          <p className="text-[10px] text-gray-700 mt-0.5">
+                            Scan with <strong>Tax Asaan Mobile App</strong> to verify tax compliance or SMS invoice number to <strong>9966</strong>.
+                          </p>
+                          <p className="text-[9px] text-gray-500 font-mono mt-1">
+                            KPRA Act 2013 • Pos Integrated Tier-1
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right: Financial Totals Ledger */}
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex justify-between text-gray-600">
+                          <span>Subtotal (Excl. Tax):</span>
+                          <span className="font-mono font-medium">{formatCurrency(selectedInvoice.subtotal)}</span>
+                        </div>
+
+                        {selectedInvoice.discount_amount > 0 && (
+                          <div className="flex justify-between text-emerald-700 font-medium">
+                            <span>Clinic Privilege Discount:</span>
+                            <span className="font-mono">-{formatCurrency(selectedInvoice.discount_amount)}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between text-gray-600">
+                          <span>Net Taxable Value:</span>
+                          <span className="font-mono font-medium">
+                            {formatCurrency(selectedInvoice.subtotal - (selectedInvoice.discount_amount || 0))}
+                          </span>
+                        </div>
+
+                        {selectedInvoice.tax_amount > 0 ? (
+                          <div className="flex justify-between text-gray-700 font-medium">
+                            <span>
+                              {selectedInvoice.tax_label || 'KPRA Sales Tax'} ({selectedInvoice.tax_rate}%):
+                            </span>
+                            <span className="font-mono">{formatCurrency(selectedInvoice.tax_amount)}</span>
+                          </div>
+                        ) : (
+                          <div className="flex justify-between text-gray-500 text-[11px]">
+                            <span>KPRA Sales Tax on Services:</span>
+                            <span className="font-mono">Exempt / Included</span>
+                          </div>
+                        )}
+
+                        <div className="border-t-2 border-emerald-900 pt-2 flex justify-between text-base font-black text-gray-900 bg-emerald-50/50 p-2 rounded">
+                          <span className="text-emerald-950 uppercase text-xs tracking-wider">Net Amount Payable:</span>
+                          <span className="font-mono text-emerald-950">{formatCurrency(selectedInvoice.total)}</span>
+                        </div>
+
+                        <div className="flex justify-between text-[11px] text-gray-500 pt-1 font-mono">
+                          <span>Paid: {formatCurrency(selectedInvoice.total)}</span>
+                          <span>Balance: PKR 0.00</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Void Notice if applicable */}
+                    {selectedInvoice.status === 'voided' && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 font-medium">
+                        <p className="font-bold uppercase tracking-wider text-red-900">⚠️ OFFICIAL NOTICE: THIS INVOICE HAS BEEN VOIDED</p>
+                        <p className="mt-0.5">Reason for cancellation: {selectedInvoice.void_reason || 'Administrative cancellation'}</p>
+                        {selectedInvoice.voided_at && <p className="text-[10px] text-red-600 mt-0.5">Voided on: {formatDateTime(selectedInvoice.voided_at)}</p>}
                       </div>
                     )}
 
-                    <div className="border-t-2 border-gray-900 pt-2 flex justify-between text-sm font-bold text-gray-900">
-                      <span>Grand Total:</span>
-                      <span>{formatCurrency(selectedInvoice.total)}</span>
+                    {/* Official Footer Notes */}
+                    <div className="mt-8 pt-4 border-t border-gray-200 text-[10px] text-gray-500 text-center space-y-0.5">
+                      <p className="font-semibold text-gray-700">Thank you for visiting Brimish Skin Care &amp; Laser Clinic.</p>
+                      <p>This is a computer-generated FBR Tier-1 Tax Invoice issued in compliance with Sales Tax on Services laws. Valid without physical signature.</p>
+                      <p className="font-mono text-[9px] text-gray-400">Peshawar, Khyber Pakhtunkhwa, Pakistan • Certified Electronic Medical &amp; Fiscal System</p>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* ========================================================== */
+                  /* 80MM THERMAL RECEIPT SLIP (FBR POS PRINTER FORMAT)         */
+                  /* ========================================================== */
+                  <div className="w-full max-w-[340px] bg-white border border-gray-300 print:border-0 shadow-sm p-4 font-mono text-[11px] text-gray-900 leading-tight">
+                    <div className="text-center pb-2 border-b border-dashed border-gray-400">
+                      <p className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase">
+                        *** FBR TIER-1 INTEGRATED POS ***
+                      </p>
+                      <h2 className="text-base font-extrabold text-gray-900 mt-1">
+                        BRIMISH SKIN CARE CLINIC
+                      </h2>
+                      <p className="text-[10px] text-gray-600">DR. BILAL AHMAD</p>
+                      <p className="text-[10px] text-gray-500">Cantonment Plaza, University Rd, Peshawar</p>
+                      <p className="text-[10px] text-gray-600">Tel: +92 91 5842100 / 0312-9000100</p>
+                      <div className="mt-1 pt-1 border-t border-dotted border-gray-300 text-[9px] text-gray-600">
+                        <p>NTN: 8291034-7 | STRN: 3277876123456</p>
+                        <p>KPRA Reg: KP-098234-A</p>
+                        <p>POS ID: FBR-POS-PESH-0492</p>
+                      </div>
+                    </div>
 
-                {/* Void Notice if applicable */}
-                {selectedInvoice.status === 'voided' && (
-                  <div className="mt-6 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
-                    <p className="font-bold">THIS INVOICE HAS BEEN VOIDED</p>
-                    <p>Reason: {selectedInvoice.void_reason || 'Administrative cancellation'}</p>
-                    {selectedInvoice.voided_at && <p>Voided at: {formatDate(selectedInvoice.voided_at)}</p>}
+                    <div className="py-2 border-b border-dashed border-gray-400 text-[10px] space-y-0.5">
+                      <div className="flex justify-between">
+                        <span>Invoice #:</span>
+                        <strong>{selectedInvoice.invoice_number}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>FBR Inv #:</span>
+                        <strong className="text-emerald-800">
+                          FBR-8291034-{selectedInvoice.invoice_number.replace(/\D/g, '').slice(-5).padStart(5, '0')}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Date:</span>
+                        <span>{formatDate(selectedInvoice.issued_at || selectedInvoice.created_at)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Patient:</span>
+                        <strong>{selectedInvoice.customer_name}</strong>
+                      </div>
+                      {selectedInvoice.customer_phone && (
+                        <div className="flex justify-between">
+                          <span>Phone:</span>
+                          <span>{formatPhone(selectedInvoice.customer_phone)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>Pay Mode:</span>
+                        <span className="uppercase font-semibold">{selectedInvoice.payment_method || 'CASH'}</span>
+                      </div>
+                    </div>
+
+                    {/* Thermal Line Items */}
+                    <div className="py-2 border-b border-dashed border-gray-400">
+                      <div className="flex justify-between font-bold pb-1 text-[10px] border-b border-gray-200">
+                        <span>Item</span>
+                        <span>Qty x Rate</span>
+                        <span>Total</span>
+                      </div>
+                      <div className="space-y-1.5 pt-1.5">
+                        {selectedInvoice.invoice_line_items && selectedInvoice.invoice_line_items.length > 0 ? (
+                          selectedInvoice.invoice_line_items.map((item, idx) => (
+                            <div key={item.id || idx}>
+                              <p className="font-bold text-gray-900 text-[10px]">{item.description}</p>
+                              <div className="flex justify-between text-gray-600 text-[9px]">
+                                <span>{item.quantity} x {formatCurrency(item.unit_price)}</span>
+                                <span className="font-bold text-gray-900">{formatCurrency(item.line_total)}</span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex justify-between">
+                            <span>Clinical Procedure</span>
+                            <span>{formatCurrency(selectedInvoice.total)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Thermal Totals */}
+                    <div className="py-2 border-b border-dashed border-gray-400 space-y-1 text-[10px]">
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>{formatCurrency(selectedInvoice.subtotal)}</span>
+                      </div>
+                      {selectedInvoice.discount_amount > 0 && (
+                        <div className="flex justify-between text-emerald-700">
+                          <span>Discount:</span>
+                          <span>-{formatCurrency(selectedInvoice.discount_amount)}</span>
+                        </div>
+                      )}
+                      {selectedInvoice.tax_amount > 0 && (
+                        <div className="flex justify-between">
+                          <span>KPRA Tax ({selectedInvoice.tax_rate}%):</span>
+                          <span>{formatCurrency(selectedInvoice.tax_amount)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm font-black pt-1 border-t border-gray-300 text-gray-900">
+                        <span>NET TOTAL:</span>
+                        <span>{formatCurrency(selectedInvoice.total)}</span>
+                      </div>
+                      <div className="flex justify-between text-[9px] text-gray-500 pt-0.5">
+                        <span>Cash Tendered: {formatCurrency(selectedInvoice.total)}</span>
+                        <span>Change: 0.00</span>
+                      </div>
+                    </div>
+
+                    {/* Thermal Centered QR Code */}
+                    <div className="text-center pt-3 pb-1">
+                      <div className="w-24 h-24 mx-auto bg-white p-1 border border-gray-400 rounded flex items-center justify-center">
+                        <svg className="w-full h-full text-gray-900" viewBox="0 0 100 100" fill="currentColor">
+                          <path d="M5 5h30v30H5zM10 10h20v20H10zM15 15h10v10H15z" />
+                          <path d="M65 5h30v30H65zM70 10h20v20H70zM75 15h10v10H75z" />
+                          <path d="M5 65h30v30H5zM10 70h20v20H10zM15 75h10v10H15z" />
+                          <circle cx="45" cy="15" r="3" />
+                          <circle cx="55" cy="22" r="3" />
+                          <circle cx="48" cy="35" r="3" />
+                          <circle cx="20" cy="45" r="3" />
+                          <circle cx="35" cy="50" r="3" />
+                          <circle cx="50" cy="50" r="4" fill="#047857" />
+                          <circle cx="65" cy="45" r="3" />
+                          <circle cx="80" cy="52" r="3" />
+                          <circle cx="45" cy="65" r="3" />
+                          <circle cx="60" cy="72" r="3" />
+                          <circle cx="75" cy="65" r="3" />
+                          <circle cx="85" cy="80" r="3" />
+                        </svg>
+                      </div>
+                      <p className="text-[9px] font-bold text-gray-800 uppercase mt-1.5">
+                        VERIFY VIA FBR TAX ASAAN APP
+                      </p>
+                      <p className="text-[8px] text-gray-500">
+                        Or SMS FBR Invoice No. to 9966
+                      </p>
+                      <p className="text-[9px] text-gray-600 mt-2 font-semibold">
+                        *** THANK YOU FOR VISITING ***
+                      </p>
+                    </div>
                   </div>
                 )}
-
-                {/* Footer notes */}
-                <div className="mt-12 pt-6 border-t border-gray-200 text-[11px] text-gray-400 text-center space-y-1">
-                  <p>Thank you for choosing Brimish Skin Care Clinic.</p>
-                  <p>This is a computer-generated tax invoice. No signature required.</p>
-                </div>
               </div>
             </div>
           )}

@@ -67,13 +67,14 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const from = (page - 1) * pageSize;
   query = query.range(from, from + pageSize - 1);
 
-  const { data: orders, count } = await query;
-
-  const { count: activeCount } = await supabase
-    .from('orders')
-    .select('id', { count: 'exact', head: true })
-    .in('status', ['received', 'confirmed', 'preparing', 'ready'])
-    .is('deleted_at', null);
+  const [{ data: orders, count }, { count: activeCount }] = await Promise.all([
+    query,
+    supabase
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['received', 'confirmed', 'preparing', 'ready'])
+      .is('deleted_at', null),
+  ]);
 
   return (
     <div className="space-y-6">

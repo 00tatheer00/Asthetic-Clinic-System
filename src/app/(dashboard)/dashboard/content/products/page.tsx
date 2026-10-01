@@ -26,12 +26,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const supabase = await createClient();
 
-  // Fetch categories for filter & dialog
-  const { data: categories } = await supabase
-    .from('product_categories')
-    .select('id, name')
-    .order('name');
-
   let query = supabase
     .from('products')
     .select(
@@ -56,7 +50,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const to = from + pageSize - 1;
   query = query.range(from, to);
 
-  const { data: products, count, error } = await query;
+  const [{ data: categories }, { data: products, count, error }] = await Promise.all([
+    supabase
+      .from('product_categories')
+      .select('id, name')
+      .order('name'),
+    query,
+  ]);
 
   if (error) {
     console.error('[ProductsPage] Error fetching products:', error);

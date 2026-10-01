@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { updateAppointmentStatus, deleteAppointment, createStaffAppointment } from '@/actions/appointments';
+import { updateAppointmentStatus, deleteAppointment, createStaffAppointment, updateAppointment } from '@/actions/appointments';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Search, MoreVertical, CheckCircle2, XCircle, Clock, UserCheck,
-  ChevronLeft, ChevronRight, Loader2, Phone, Calendar, Plus,
+  ChevronLeft, ChevronRight, Loader2, Phone, Calendar, Plus, Edit3, Trash2,
 } from 'lucide-react';
 import { formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
@@ -125,6 +125,78 @@ export function AppointmentsList({
     status: 'confirmed' as AppointmentStatus,
     message: '',
   });
+
+  // Edit Appointment State
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [updating, setUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    patient_id: '',
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    treatment_id: '',
+    scheduled_at: '',
+    duration_minutes: 45,
+    status: 'confirmed' as AppointmentStatus,
+    message: '',
+  });
+
+  const handleOpenEdit = (apt: Appointment) => {
+    setEditingAppointment(apt);
+    let localIso = '';
+    try {
+      const d = new Date(apt.scheduled_at);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      localIso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    } catch {
+      localIso = '';
+    }
+
+    setEditForm({
+      customer_name: apt.customer_name || '',
+      customer_phone: apt.customer_phone || '',
+      customer_email: apt.customer_email || '',
+      treatment_id: apt.treatments?.id || treatments[0]?.id || '',
+      patient_id: apt.patients?.id || '',
+      scheduled_at: localIso,
+      duration_minutes: 45,
+      status: apt.status,
+      message: apt.message || '',
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateAppointment = async () => {
+    if (!editingAppointment) return;
+    if (!editForm.customer_name.trim() || !editForm.customer_phone.trim() || !editForm.treatment_id || !editForm.scheduled_at) {
+      toast.error('Please fill in required fields (Name, Phone, Treatment, Date & Time).');
+      return;
+    }
+
+    setUpdating(true);
+    const result = await updateAppointment(editingAppointment.id, {
+      customer_name: editForm.customer_name,
+      customer_phone: editForm.customer_phone,
+      customer_email: editForm.customer_email || null,
+      treatment_id: editForm.treatment_id,
+      patient_id: editForm.patient_id || null,
+      scheduled_at: new Date(editForm.scheduled_at).toISOString(),
+      duration_minutes: Number(editForm.duration_minutes) || 45,
+      status: editForm.status,
+      message: editForm.message || null,
+    });
+    setUpdating(false);
+
+    if (result.success) {
+      toast.success('Appointment updated successfully!');
+      setShowEditDialog(false);
+      setEditingAppointment(null);
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Failed to update appointment');
+    }
+  };
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -396,80 +468,98 @@ export function AppointmentsList({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      {apt.status === 'pending' ? (
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Button
-                            size="sm"
-                            disabled={isPending}
-                            onClick={() => handleStatusChange(apt.id, 'confirmed')}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 h-7 rounded-lg font-semibold flex items-center gap-1 shadow-xs"
-                          >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            <span>Approve</span>
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={isPending}
-                            onClick={() => handleStatusChange(apt.id, 'cancelled')}
-                            className="border-rose-200 text-rose-700 hover:bg-rose-50 text-xs px-2 py-1 h-7 rounded-lg font-medium flex items-center gap-1"
-                          >
-                            <XCircle className="h-3.5 w-3.5" />
-                            <span>Decline</span>
-                          </Button>
-                        </div>
-                      ) : (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreVertical className="h-4 w-4" />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            {/* Contextual status actions */}
-                            {apt.status === 'confirmed' && (
-                            <>
-                              <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'checked_in')}>
-                                <UserCheck className="mr-2 h-4 w-4 text-indigo-600" />
-                                Check In
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'no_show')}>
-                                <Clock className="mr-2 h-4 w-4 text-amber-500" />
-                                No Show
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'cancelled')}>
-                                <XCircle className="mr-2 h-4 w-4 text-red-500" />
-                                Cancel
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {apt.status === 'checked_in' && (
-                            <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'completed')}>
-                              <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
-                              Complete
-                            </DropdownMenuItem>
-                          )}
+                      <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                        {apt.status === 'pending' && (
+                          <>
+                            <Button
+                              size="sm"
+                              disabled={isPending}
+                              onClick={() => handleStatusChange(apt.id, 'confirmed')}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 h-7 rounded-lg font-semibold flex items-center gap-1 shadow-xs"
+                              title="Approve Appointment"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Approve</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={isPending}
+                              onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                              className="border-rose-200 text-rose-700 hover:bg-rose-50 text-xs px-2 py-1 h-7 rounded-lg font-medium flex items-center gap-1"
+                              title="Decline Appointment"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Decline</span>
+                            </Button>
+                          </>
+                        )}
 
-                          {isAdmin && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                variant="destructive"
-                                onClick={() =>
-                                  setConfirmDialog({
-                                    open: true,
-                                    appointmentId: apt.id,
-                                    action: 'delete',
-                                    title: 'Delete Appointment',
-                                    description: `Are you sure you want to delete the appointment for ${apt.customer_name}? This action cannot be undone.`,
-                                  })
-                                }
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+                        {/* Always Visible Edit Button */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenEdit(apt)}
+                          className="h-7 px-2 text-xs border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg flex items-center gap-1 shadow-2xs font-medium"
+                          title="Edit Appointment Details"
+                        >
+                          <Edit3 className="h-3.5 w-3.5 text-blue-600" />
+                          <span>Edit</span>
+                        </Button>
+
+                        {/* Always Visible Delete Button */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setConfirmDialog({
+                              open: true,
+                              appointmentId: apt.id,
+                              action: 'delete',
+                              title: 'Delete Appointment',
+                              description: `Are you sure you want to delete the appointment for ${apt.customer_name}? This action will permanently remove it.`,
+                            })
+                          }
+                          className="h-7 px-2 text-xs border-rose-200 hover:border-rose-400 hover:bg-rose-50 text-rose-600 rounded-lg flex items-center gap-1 shadow-2xs font-medium"
+                          title="Delete Appointment"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          <span>Delete</span>
+                        </Button>
+
+                        {/* Quick Status Dropdown */}
+                        {(apt.status === 'confirmed' || apt.status === 'checked_in') && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-lg p-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-100 border border-gray-200 h-7 w-7 transition-colors">
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              {apt.status === 'confirmed' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'checked_in')}>
+                                    <UserCheck className="mr-2 h-4 w-4 text-indigo-600" />
+                                    Check In
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'no_show')}>
+                                    <Clock className="mr-2 h-4 w-4 text-amber-500" />
+                                    No Show
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'cancelled')}>
+                                    <XCircle className="mr-2 h-4 w-4 text-red-500" />
+                                    Cancel
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              {apt.status === 'checked_in' && (
+                                <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'completed')}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
+                                  Mark Completed
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -697,6 +787,153 @@ export function AppointmentsList({
                   </>
                 ) : (
                   'Confirm Booking'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Appointment Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+              <Edit3 className="h-4 w-4 text-rose-600" />
+              Edit Appointment
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Update booking details, treatment procedure, date/time, and status.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Patient Name *</Label>
+                <Input
+                  placeholder="Full Name"
+                  value={editForm.customer_name}
+                  onChange={(e) => setEditForm({ ...editForm, customer_name: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Phone Number *</Label>
+                <Input
+                  placeholder="03001234567"
+                  value={editForm.customer_phone}
+                  onChange={(e) => setEditForm({ ...editForm, customer_phone: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Email Address (Optional)</Label>
+              <Input
+                type="email"
+                placeholder="patient@example.com"
+                value={editForm.customer_email}
+                onChange={(e) => setEditForm({ ...editForm, customer_email: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Treatment / Procedure *</Label>
+              <select
+                value={editForm.treatment_id}
+                onChange={(e) => {
+                  const t = treatments.find((item) => item.id === e.target.value);
+                  setEditForm({
+                    ...editForm,
+                    treatment_id: e.target.value,
+                    duration_minutes: t?.duration_minutes || 45,
+                  });
+                }}
+                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 text-gray-800"
+              >
+                <option value="">Select Treatment</option>
+                {treatments.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} {t.price ? `(PKR ${t.price.toLocaleString()})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Date & Time *</Label>
+                <Input
+                  type="datetime-local"
+                  value={editForm.scheduled_at}
+                  onChange={(e) => setEditForm({ ...editForm, scheduled_at: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Status</Label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value as AppointmentStatus })}
+                  className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 text-gray-800"
+                >
+                  <option value="pending">Pending Review</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="checked_in">Checked In</option>
+                  <option value="completed">Completed</option>
+                  <option value="no_show">No Show</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Duration (Minutes)</Label>
+              <Input
+                type="number"
+                min={15}
+                step={15}
+                value={editForm.duration_minutes}
+                onChange={(e) => setEditForm({ ...editForm, duration_minutes: Number(e.target.value) || 45 })}
+                className="h-8 text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Patient Notes / Concern</Label>
+              <Input
+                placeholder="e.g. Follow-up consultation or specific instructions"
+                value={editForm.message}
+                onChange={(e) => setEditForm({ ...editForm, message: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEditDialog(false)}
+                className="h-8 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleUpdateAppointment}
+                disabled={updating || !editForm.customer_name || !editForm.customer_phone || !editForm.treatment_id || !editForm.scheduled_at}
+                className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium"
+              >
+                {updating ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  'Save Changes'
                 )}
               </Button>
             </div>

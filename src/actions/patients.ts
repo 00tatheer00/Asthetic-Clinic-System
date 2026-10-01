@@ -138,8 +138,8 @@ export async function deletePatient(patientId: string) {
     .eq('auth_user_id', user.id)
     .single();
 
-  if (!staff || staff.role !== 'super_admin') {
-    return { success: false, error: 'Only admin can delete patients.' };
+  if (!staff) {
+    return { success: false, error: 'Staff access required to delete patients.' };
   }
 
   const { error } = await supabase

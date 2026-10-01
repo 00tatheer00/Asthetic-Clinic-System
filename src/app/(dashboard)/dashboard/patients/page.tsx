@@ -31,12 +31,13 @@ export default async function PatientsPage({ searchParams }: PageProps) {
   const from = (page - 1) * pageSize;
   query = query.range(from, from + pageSize - 1);
 
-  const { data: patients, count } = await query;
-
-  const { count: totalPatients } = await supabase
-    .from('patients')
-    .select('id', { count: 'exact', head: true })
-    .is('deleted_at', null);
+  const [{ data: patients, count }, { count: totalPatients }] = await Promise.all([
+    query,
+    supabase
+      .from('patients')
+      .select('id', { count: 'exact', head: true })
+      .is('deleted_at', null),
+  ]);
 
   return (
     <div className="space-y-6">

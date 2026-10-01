@@ -26,12 +26,6 @@ export default async function TreatmentsPage({ searchParams }: TreatmentsPagePro
 
   const supabase = await createClient();
 
-  // Fetch categories
-  const { data: categories } = await supabase
-    .from('treatment_categories')
-    .select('id, name')
-    .order('name');
-
   let query = supabase
     .from('treatments')
     .select(
@@ -56,7 +50,13 @@ export default async function TreatmentsPage({ searchParams }: TreatmentsPagePro
   const to = from + pageSize - 1;
   query = query.range(from, to);
 
-  const { data: treatments, count, error } = await query;
+  const [{ data: categories }, { data: treatments, count, error }] = await Promise.all([
+    supabase
+      .from('treatment_categories')
+      .select('id, name')
+      .order('name'),
+    query,
+  ]);
 
   if (error) {
     console.error('[TreatmentsPage] Error fetching treatments:', error);
