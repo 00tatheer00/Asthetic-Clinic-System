@@ -270,6 +270,52 @@ export async function saveTreatment(treatmentId: string | null, formData: unknow
 }
 
 // ============================================================
+// Dashboard: Delete Treatment (Admin - Soft Delete)
+// ============================================================
+
+export async function deleteTreatment(treatmentId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff || staff.role !== 'super_admin') {
+    return { success: false, error: 'Only admin can delete treatments.' };
+  }
+
+  const { error } = await supabase
+    .from('treatments')
+    .update({
+      deleted_at: new Date().toISOString(),
+      is_active: false,
+      updated_by: staff.id,
+    })
+    .eq('id', treatmentId);
+
+  if (error) {
+    console.error('[Treatment] Delete failed:', error);
+    return { success: false, error: 'Failed to delete treatment.' };
+  }
+
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'delete',
+    entity_type: 'treatment',
+    entity_id: treatmentId,
+    description: 'Treatment soft-deleted',
+  });
+
+  revalidatePath('/dashboard/content/treatments');
+  revalidatePath('/treatments');
+  return { success: true };
+}
+
+// ============================================================
 // Dashboard: Create/Update Product (Admin)
 // ============================================================
 
@@ -336,6 +382,54 @@ export async function saveProduct(productId: string | null, formData: unknown) {
       });
     }
   }
+
+  revalidatePath('/dashboard/content/products');
+  revalidatePath('/dashboard/inventory');
+  revalidatePath('/products');
+  return { success: true };
+}
+
+// ============================================================
+// Dashboard: Delete Product (Admin - Soft Delete)
+// ============================================================
+
+export async function deleteProduct(productId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff || staff.role !== 'super_admin') {
+    return { success: false, error: 'Only admin can delete products.' };
+  }
+
+  const { error } = await supabase
+    .from('products')
+    .update({
+      deleted_at: new Date().toISOString(),
+      is_active: false,
+      is_published: false,
+      updated_by: staff.id,
+    })
+    .eq('id', productId);
+
+  if (error) {
+    console.error('[Product] Delete failed:', error);
+    return { success: false, error: 'Failed to delete product.' };
+  }
+
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'delete',
+    entity_type: 'product',
+    entity_id: productId,
+    description: 'Product soft-deleted',
+  });
 
   revalidatePath('/dashboard/content/products');
   revalidatePath('/dashboard/inventory');

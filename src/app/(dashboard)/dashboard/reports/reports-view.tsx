@@ -39,9 +39,9 @@ interface InvoiceRecord {
 interface AppointmentRecord {
   id: string;
   status: string;
-  appointment_date: string;
-  start_time: string;
+  scheduled_at: string;
   created_at: string;
+  duration_minutes?: number | null;
   treatments?: { name: string } | null;
   patients?: { name: string } | null;
 }
@@ -221,13 +221,16 @@ export function ReportsView({
 
   const handleExportAppointments = () => {
     const headers = ['Date', 'Time', 'Patient', 'Treatment', 'Status'];
-    const rows = appointments.map((a) => [
-      a.appointment_date,
-      a.start_time,
-      a.patients?.name || 'Walk-in',
-      a.treatments?.name || 'General Consultation',
-      a.status,
-    ]);
+    const rows = appointments.map((a) => {
+      const d = a.scheduled_at ? new Date(a.scheduled_at) : null;
+      return [
+        d ? formatDate(a.scheduled_at) : '—',
+        d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        a.patients?.name || 'Walk-in',
+        a.treatments?.name || 'General Consultation',
+        a.status,
+      ];
+    });
     exportToCSV('brimish-appointments', headers, rows);
     toast.success('Appointments CSV exported');
   };

@@ -249,6 +249,81 @@ export async function linkPatientToAppointment(
 }
 
 // ============================================================
+// Dashboard: Staff create appointment
+// ============================================================
+
+export async function createStaffAppointment(formData: {
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  treatment_id: string;
+  patient_id?: string | null;
+  scheduled_at: string;
+  duration_minutes?: number;
+  status?: AppointmentStatus;
+  message?: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff) return { success: false, error: 'Staff not found' };
+
+  if (!formData.customer_name?.trim()) return { success: false, error: 'Customer name is required' };
+  if (!formData.customer_phone?.trim()) return { success: false, error: 'Customer phone is required' };
+  if (!formData.treatment_id) return { success: false, error: 'Treatment is required' };
+  if (!formData.scheduled_at) return { success: false, error: 'Appointment date and time is required' };
+
+  const initialStatus = formData.status || 'confirmed';
+
+  const insertData: Record<string, unknown> = {
+    customer_name: formData.customer_name.trim(),
+    customer_phone: formData.customer_phone.trim(),
+    customer_email: formData.customer_email?.trim() || null,
+    treatment_id: formData.treatment_id,
+    patient_id: formData.patient_id || null,
+    scheduled_at: formData.scheduled_at,
+    duration_minutes: formData.duration_minutes || 45,
+    status: initialStatus,
+    message: formData.message?.trim() || null,
+  };
+
+  if (initialStatus === 'confirmed') {
+    insertData.confirmed_at = new Date().toISOString();
+    insertData.confirmed_by = staff.id;
+  }
+
+  const { data: appointment, error } = await supabase
+    .from('appointments')
+    .insert(insertData)
+    .select('id')
+    .single();
+
+  if (error || !appointment) {
+    console.error('[Appointment] Staff create failed:', error);
+    return { success: false, error: 'Failed to create appointment.' };
+  }
+
+  // Audit log
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'create',
+    entity_type: 'appointment',
+    entity_id: appointment.id,
+    description: `Staff booked appointment for ${formData.customer_name}`,
+  });
+
+  revalidatePath('/dashboard/appointments');
+  return { success: true, appointmentId: appointment.id };
+}
+
+// ============================================================
 // Dashboard: Delete (soft) appointment
 // ============================================================
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createVisit } from '@/actions/clinic';
-import { createClinicalNote } from '@/actions/patients';
+import { createClinicalNote, updatePatient, deletePatient } from '@/actions/patients';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,8 +15,13 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   ArrowLeft, Phone, Mail, Calendar, Clock, User, CreditCard,
   FileText, Stethoscope, Plus, Loader2, Eye, EyeOff, Image as ImageIcon,
+  Edit, Trash2,
 } from 'lucide-react';
 import { formatCurrency, formatDate, formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from '@/lib/constants';
@@ -69,6 +74,50 @@ export function PatientDetail({
   const [visitForm, setVisitForm] = useState({ treatment_id: '', visit_date: new Date().toISOString().split('T')[0], notes: '' });
   const [noteForm, setNoteForm] = useState({ note_text: '', diagnosis: '', prescription: '' });
   const [saving, setSaving] = useState(false);
+
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: patient.name,
+    phone: patient.phone,
+    email: patient.email || '',
+    gender: patient.gender || '',
+    date_of_birth: patient.date_of_birth ? patient.date_of_birth.split('T')[0] : '',
+    address: patient.address || '',
+    notes: patient.notes || '',
+  });
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleUpdatePatient = async () => {
+    if (!editForm.name.trim() || !editForm.phone.trim()) {
+      toast.error('Patient name and phone are required.');
+      return;
+    }
+    setUpdating(true);
+    const result = await updatePatient(patient.id, editForm);
+    setUpdating(false);
+    if (result.success) {
+      toast.success('Patient details updated successfully!');
+      setShowEditDialog(false);
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Failed to update patient');
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    setDeleting(true);
+    const result = await deletePatient(patient.id);
+    setDeleting(false);
+    if (result.success) {
+      toast.success('Patient deleted');
+      setShowDeleteDialog(false);
+      router.push('/dashboard/patients');
+    } else {
+      toast.error(result.error || 'Failed to delete patient');
+    }
+  };
 
   const handleCreateVisit = async () => {
     setSaving(true);
@@ -156,13 +205,26 @@ export function PatientDetail({
             {patient.date_of_birth && <span>DOB: {formatDate(patient.date_of_birth)}</span>}
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => setShowVisitDialog(true)} className="rounded-lg">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setShowVisitDialog(true)} className="rounded-lg h-8 text-xs">
             <Plus className="h-3.5 w-3.5 mr-1" />Visit
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setShowEditDialog(true)} className="rounded-lg h-8 text-xs">
+            <Edit className="h-3.5 w-3.5 mr-1" />Edit
+          </Button>
           {isAdmin && (
-            <Button size="sm" variant="outline" onClick={() => setShowNoteDialog(true)} className="rounded-lg">
+            <Button size="sm" variant="outline" onClick={() => setShowNoteDialog(true)} className="rounded-lg h-8 text-xs">
               <Plus className="h-3.5 w-3.5 mr-1" />Note
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowDeleteDialog(true)}
+              className="rounded-lg h-8 text-xs text-rose-600 border-rose-200 hover:bg-rose-50"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" />Delete
             </Button>
           )}
         </div>
@@ -467,6 +529,121 @@ export function PatientDetail({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Patient Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Patient Details</DialogTitle>
+            <DialogDescription>Update record details for {patient.name}.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3.5 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Name *</Label>
+              <Input
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Phone *</Label>
+              <Input
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Email</Label>
+                <Input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Gender</Label>
+                <select
+                  value={editForm.gender}
+                  onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                  className="w-full text-xs rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 h-8"
+                >
+                  <option value="">Select</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Date of Birth</Label>
+              <Input
+                type="date"
+                value={editForm.date_of_birth}
+                onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Address</Label>
+              <Input
+                value={editForm.address}
+                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                className="h-8 text-xs"
+                placeholder="City, Area"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Internal Notes</Label>
+              <Textarea
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                rows={2}
+                className="text-xs"
+                placeholder="Skin type, allergies, special preferences..."
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setShowEditDialog(false)} className="h-8 text-xs">
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleUpdatePatient}
+                disabled={updating || !editForm.name || !editForm.phone}
+                className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium"
+              >
+                {updating ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Saving...</> : 'Save Changes'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Patient Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Patient Record</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {patient.name}? This will remove the patient profile from active records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePatient}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? 'Deleting...' : 'Delete Patient'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

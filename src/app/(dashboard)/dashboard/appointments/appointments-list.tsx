@@ -3,14 +3,18 @@
 import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { updateAppointmentStatus, deleteAppointment } from '@/actions/appointments';
+import { updateAppointmentStatus, deleteAppointment, createStaffAppointment } from '@/actions/appointments';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -22,7 +26,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Search, MoreVertical, CheckCircle2, XCircle, Clock, UserCheck,
-  ChevronLeft, ChevronRight, Loader2, Phone, Calendar,
+  ChevronLeft, ChevronRight, Loader2, Phone, Calendar, Plus,
 } from 'lucide-react';
 import { formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
@@ -42,6 +46,19 @@ interface Appointment {
   patients: { id: string; name: string; phone: string } | null;
 }
 
+interface TreatmentOption {
+  id: string;
+  name: string;
+  price: number | null;
+  duration_minutes: number | null;
+}
+
+interface PatientOption {
+  id: string;
+  name: string;
+  phone: string;
+}
+
 interface AppointmentsListProps {
   appointments: Appointment[];
   totalCount: number;
@@ -50,6 +67,8 @@ interface AppointmentsListProps {
   filters: { status: string; date: string; search: string };
   stats: { pending: number; today: number };
   isAdmin: boolean;
+  treatments?: TreatmentOption[];
+  patients?: PatientOption[];
 }
 
 const STATUS_FILTERS = [
@@ -78,6 +97,8 @@ export function AppointmentsList({
   filters,
   stats,
   isAdmin,
+  treatments = [],
+  patients = [],
 }: AppointmentsListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -89,6 +110,21 @@ export function AppointmentsList({
     title: string;
     description: string;
   }>({ open: false, appointmentId: '', action: '', title: '', description: '' });
+
+  // Create Appointment State
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    patient_id: '',
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    treatment_id: treatments[0]?.id || '',
+    scheduled_at: '',
+    duration_minutes: 45,
+    status: 'confirmed' as AppointmentStatus,
+    message: '',
+  });
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -120,6 +156,46 @@ export function AppointmentsList({
         toast.error(result.error || 'Failed to update');
       }
     });
+  };
+
+  const handleCreateAppointment = async () => {
+    if (!createForm.customer_name.trim() || !createForm.customer_phone.trim() || !createForm.treatment_id || !createForm.scheduled_at) {
+      toast.error('Please fill in required fields (Name, Phone, Treatment, and Date/Time).');
+      return;
+    }
+
+    setCreating(true);
+    const result = await createStaffAppointment({
+      customer_name: createForm.customer_name,
+      customer_phone: createForm.customer_phone,
+      customer_email: createForm.customer_email || undefined,
+      treatment_id: createForm.treatment_id,
+      patient_id: createForm.patient_id || undefined,
+      scheduled_at: new Date(createForm.scheduled_at).toISOString(),
+      duration_minutes: Number(createForm.duration_minutes) || 45,
+      status: createForm.status,
+      message: createForm.message || undefined,
+    });
+    setCreating(false);
+
+    if (result.success) {
+      toast.success('Appointment booked successfully!');
+      setShowCreateDialog(false);
+      setCreateForm({
+        patient_id: '',
+        customer_name: '',
+        customer_phone: '',
+        customer_email: '',
+        treatment_id: treatments[0]?.id || '',
+        scheduled_at: '',
+        duration_minutes: 45,
+        status: 'confirmed',
+        message: '',
+      });
+      router.refresh();
+    } else {
+      toast.error(result.error || 'Failed to book appointment');
+    }
   };
 
   const handleDelete = async (appointmentId: string) => {
@@ -184,8 +260,8 @@ export function AppointmentsList({
           ))}
         </div>
 
-        {/* Search */}
-        <div className="flex gap-2 flex-1 sm:max-w-xs ml-auto">
+        {/* Search & Actions */}
+        <div className="flex gap-2 items-center flex-1 sm:max-w-md ml-auto">
           <Input
             placeholder="Search name or phone..."
             value={searchValue}
@@ -195,6 +271,14 @@ export function AppointmentsList({
           />
           <Button size="sm" variant="outline" onClick={handleSearch} className="h-8 px-2">
             <Search className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setShowCreateDialog(true)}
+            className="h-8 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold px-3 shrink-0 flex items-center gap-1 shadow-xs"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>New Booking</span>
           </Button>
         </div>
       </div>
@@ -459,6 +543,166 @@ export function AppointmentsList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* New Appointment Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Book Clinic Appointment</DialogTitle>
+            <DialogDescription>
+              Schedule a new appointment for a walk-in, phone, or online patient.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            {/* Existing Patient Quick Pick */}
+            {patients.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Existing Patient (Optional)</Label>
+                <select
+                  value={createForm.patient_id}
+                  onChange={(e) => {
+                    const selId = e.target.value;
+                    const pat = patients.find((p) => p.id === selId);
+                    if (pat) {
+                      setCreateForm({
+                        ...createForm,
+                        patient_id: pat.id,
+                        customer_name: pat.name,
+                        customer_phone: pat.phone,
+                      });
+                    } else {
+                      setCreateForm({ ...createForm, patient_id: '' });
+                    }
+                  }}
+                  className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2"
+                >
+                  <option value="">-- Choose Existing Patient or enter custom name below --</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.phone})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Patient Name *</Label>
+                <Input
+                  placeholder="e.g. Fatima Khan"
+                  value={createForm.customer_name}
+                  onChange={(e) => setCreateForm({ ...createForm, customer_name: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Phone Number *</Label>
+                <Input
+                  placeholder="03001234567"
+                  value={createForm.customer_phone}
+                  onChange={(e) => setCreateForm({ ...createForm, customer_phone: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Email Address (Optional)</Label>
+              <Input
+                type="email"
+                placeholder="patient@example.com"
+                value={createForm.customer_email}
+                onChange={(e) => setCreateForm({ ...createForm, customer_email: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Treatment / Service *</Label>
+              <select
+                value={createForm.treatment_id}
+                onChange={(e) => {
+                  const t = treatments.find((item) => item.id === e.target.value);
+                  setCreateForm({
+                    ...createForm,
+                    treatment_id: e.target.value,
+                    duration_minutes: t?.duration_minutes || 45,
+                  });
+                }}
+                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2"
+              >
+                <option value="">Select Treatment</option>
+                {treatments.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} {t.price ? `(PKR ${t.price.toLocaleString()})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Date & Time *</Label>
+                <Input
+                  type="datetime-local"
+                  value={createForm.scheduled_at}
+                  onChange={(e) => setCreateForm({ ...createForm, scheduled_at: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-700">Initial Status</Label>
+                <select
+                  value={createForm.status}
+                  onChange={(e) => setCreateForm({ ...createForm, status: e.target.value as AppointmentStatus })}
+                  className="w-full text-xs rounded-lg border border-gray-200 bg-white px-3 py-2"
+                >
+                  <option value="confirmed">Confirmed (Default)</option>
+                  <option value="pending">Pending Review</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-gray-700">Staff Notes / Medical Concern</Label>
+              <Input
+                placeholder="e.g. Skin rejuvenation, first session"
+                value={createForm.message}
+                onChange={(e) => setCreateForm({ ...createForm, message: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreateDialog(false)}
+                className="h-8 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCreateAppointment}
+                disabled={creating || !createForm.customer_name || !createForm.customer_phone || !createForm.treatment_id || !createForm.scheduled_at}
+                className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium"
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Booking...
+                  </>
+                ) : (
+                  'Confirm Booking'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

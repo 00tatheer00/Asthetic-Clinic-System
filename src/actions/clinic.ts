@@ -239,6 +239,48 @@ export async function updateBeforeAfterVisibility(caseId: string, isPublic: bool
   return { success: true };
 }
 
+export async function deleteBeforeAfter(caseId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff || staff.role !== 'super_admin') {
+    return { success: false, error: 'Only admin can delete before & after cases.' };
+  }
+
+  const { error } = await supabase
+    .from('before_after')
+    .update({
+      deleted_at: new Date().toISOString(),
+      is_public: false,
+      updated_by: staff.id,
+    })
+    .eq('id', caseId);
+
+  if (error) {
+    console.error('[BeforeAfter] Delete failed:', error);
+    return { success: false, error: 'Failed to delete case.' };
+  }
+
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'delete',
+    entity_type: 'before_after',
+    entity_id: caseId,
+    description: 'Before/After case deleted',
+  });
+
+  revalidatePath('/dashboard/gallery');
+  revalidatePath('/gallery');
+  return { success: true };
+}
+
 // ============================================================
 // Invoice Actions
 // ============================================================
@@ -335,5 +377,108 @@ export async function voidInvoice(invoiceId: string, reason: string) {
   });
 
   revalidatePath('/dashboard/invoices');
+  return { success: true };
+}
+
+// ============================================================
+// Clinic Settings Management (Admin)
+// ============================================================
+
+export async function updateClinicSettings(formData: {
+  clinic_name: string;
+  clinic_phone: string;
+  clinic_email?: string | null;
+  clinic_address: string;
+  default_tax_label?: string | null;
+  default_tax_rate?: number;
+  ntn?: string | null;
+  strn?: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff || staff.role !== 'super_admin') {
+    return { success: false, error: 'Only admin can update clinic settings.' };
+  }
+
+  const { data: current } = await supabase
+    .from('clinic_settings')
+    .select('id')
+    .limit(1)
+    .single();
+
+  if (!current) {
+    return { success: false, error: 'Clinic settings record not found.' };
+  }
+
+  const { error } = await supabase
+    .from('clinic_settings')
+    .update({
+      clinic_name: formData.clinic_name.trim(),
+      clinic_phone: formData.clinic_phone.trim(),
+      clinic_email: formData.clinic_email?.trim() || null,
+      clinic_address: formData.clinic_address.trim(),
+      default_tax_label: formData.default_tax_label?.trim() || 'GST',
+      default_tax_rate: Number(formData.default_tax_rate) || 0,
+      ntn: formData.ntn?.trim() || null,
+      strn: formData.strn?.trim() || null,
+      updated_by: staff.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', current.id);
+
+  if (error) {
+    console.error('[ClinicSettings] Update failed:', error);
+    return { success: false, error: 'Failed to update clinic settings.' };
+  }
+
+  await supabase.from('audit_log').insert({
+    staff_id: staff.id,
+    action: 'update',
+    entity_type: 'clinic_settings',
+    entity_id: current.id,
+    description: 'Clinic settings updated',
+  });
+
+  revalidatePath('/dashboard/settings');
+  return { success: true };
+}
+
+export async function updateOperatingHours(
+  hours: Array<{ id: string; open_time: string; close_time: string; is_closed: boolean }>
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: staff } = await supabase
+    .from('staff')
+    .select('id, role')
+    .eq('auth_user_id', user.id)
+    .single();
+
+  if (!staff || staff.role !== 'super_admin') {
+    return { success: false, error: 'Only admin can update operating hours.' };
+  }
+
+  for (const h of hours) {
+    await supabase
+      .from('operating_hours')
+      .update({
+        open_time: h.open_time,
+        close_time: h.close_time,
+        is_closed: h.is_closed,
+      })
+      .eq('id', h.id);
+  }
+
+  revalidatePath('/dashboard/settings');
   return { success: true };
 }

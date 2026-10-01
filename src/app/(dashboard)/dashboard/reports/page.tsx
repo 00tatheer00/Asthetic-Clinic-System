@@ -32,8 +32,9 @@ export default async function ReportsPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('appointments')
-      .select('id, status, appointment_date, start_time, treatment_id, treatments(name), patient_id, patients(name), created_at')
-      .order('appointment_date', { ascending: false }),
+      .select('id, status, scheduled_at, duration_minutes, treatment_id, treatments(name), patient_id, patients(name), created_at')
+      .is('deleted_at', null)
+      .order('scheduled_at', { ascending: false }),
     supabase
       .from('orders')
       .select('id, order_number, total, status, delivery_method, payment_method, created_at, customer_name')

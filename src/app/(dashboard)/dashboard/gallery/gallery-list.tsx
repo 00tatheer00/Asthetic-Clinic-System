@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBeforeAfter, updateBeforeAfterVisibility } from '@/actions/clinic';
+import { createBeforeAfter, updateBeforeAfterVisibility, deleteBeforeAfter } from '@/actions/clinic';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Plus,
   ShieldCheck,
   ShieldAlert,
@@ -27,6 +37,7 @@ import {
   Image as ImageIcon,
   Loader2,
   Lock,
+  Trash2,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils/helpers';
 import { toast } from 'sonner';
@@ -66,6 +77,22 @@ export function GalleryList({ cases, treatments, patients, isAdmin }: GalleryLis
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<BACase | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    const res = await deleteBeforeAfter(deleteTarget.id);
+    setDeleting(false);
+    if (res.success) {
+      toast.success('Before & After case deleted');
+      setDeleteTarget(null);
+      router.refresh();
+    } else {
+      toast.error(res.error || 'Failed to delete case');
+    }
+  };
 
   // Form fields
   const [title, setTitle] = useState('');
@@ -291,6 +318,14 @@ export function GalleryList({ cases, treatments, patients, isAdmin }: GalleryLis
                           disabled={isToggling || (c.patient_id !== null && !hasConsent && !c.is_public)}
                           onCheckedChange={() => handleToggleVisibility(c)}
                         />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setDeleteTarget(c)}
+                          className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -462,6 +497,28 @@ export function GalleryList({ cases, treatments, patients, isAdmin }: GalleryLis
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Case</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteTarget?.title || 'this Before & After case'}&quot;?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? 'Deleting...' : 'Delete Case'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

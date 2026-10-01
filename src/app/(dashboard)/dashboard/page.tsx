@@ -14,9 +14,14 @@ export default async function DashboardPage() {
   const isAdmin = staff.role === 'super_admin';
 
   const today = new Date();
+  const todayStart = new Date(today);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(today);
+  todayEnd.setHours(23, 59, 59, 999);
+
   const todayDateStr = today.toISOString().split('T')[0];
   const firstDayOfMonthISO = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
-  const todayStartISO = `${todayDateStr}T00:00:00.000Z`;
+  const todayStartISO = todayStart.toISOString();
 
   // Parallel database queries for real-time intelligence
   const [
@@ -33,33 +38,41 @@ export default async function DashboardPage() {
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
-      .eq('appointment_date', todayDateStr),
+      .gte('scheduled_at', todayStart.toISOString())
+      .lte('scheduled_at', todayEnd.toISOString())
+      .is('deleted_at', null),
 
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
-      .eq('appointment_date', todayDateStr)
-      .eq('status', 'completed'),
+      .gte('scheduled_at', todayStart.toISOString())
+      .lte('scheduled_at', todayEnd.toISOString())
+      .eq('status', 'completed')
+      .is('deleted_at', null),
 
     supabase
       .from('orders')
       .select('id', { count: 'exact', head: true })
-      .in('status', ['received', 'confirmed', 'preparing']),
+      .in('status', ['received', 'confirmed', 'preparing'])
+      .is('deleted_at', null),
 
     supabase
       .from('products')
-      .select('id, name, stock_quantity, reorder_level')
+      .select('id, name, stock_quantity, low_stock_threshold')
       .lte('stock_quantity', 5)
-      .eq('is_active', true),
+      .eq('is_active', true)
+      .is('deleted_at', null),
 
     supabase
       .from('reviews')
       .select('id', { count: 'exact', head: true })
-      .eq('is_approved', false),
+      .eq('status', 'pending')
+      .is('deleted_at', null),
 
     supabase
       .from('patients')
-      .select('id', { count: 'exact', head: true }),
+      .select('id', { count: 'exact', head: true })
+      .is('deleted_at', null),
 
     supabase
       .from('invoices')
