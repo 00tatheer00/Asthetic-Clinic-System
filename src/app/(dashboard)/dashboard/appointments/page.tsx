@@ -22,7 +22,8 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
   const params = await searchParams;
 
   const status = params.status || 'all';
-  const dateFilter = params.date || 'today';
+  // If viewing pending requests, show all dates so staff doesn't miss future requests
+  const dateFilter = params.date || (status === 'pending' ? 'all' : 'today');
   const search = params.search || '';
   const page = parseInt(params.page || '1', 10);
   const pageSize = 20;

@@ -217,6 +217,33 @@ export function AppointmentsList({
         ))}
       </div>
 
+      {/* Pending Online Requests Alert Banner */}
+      {stats.pending > 0 && filters.status !== 'pending' && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
+            </span>
+            <div>
+              <p className="text-sm font-bold">
+                {stats.pending} Online Booking Request{stats.pending > 1 ? 's' : ''} Awaiting Review
+              </p>
+              <p className="text-xs text-amber-700">
+                Patients are waiting for your confirmation. Review and approve or decline their slot.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => updateFilter('status', 'pending')}
+            className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-full px-4 py-1.5 h-8 shrink-0 shadow-xs"
+          >
+            Review Requests ({stats.pending})
+          </Button>
+        </div>
+      )}
+
       {/* Table */}
       {isPending && (
         <div className="flex items-center justify-center py-8">
@@ -285,25 +312,36 @@ export function AppointmentsList({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreVertical className="h-4 w-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          {/* Contextual status actions */}
-                          {apt.status === 'pending' && (
-                            <>
-                              <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'confirmed')}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
-                                Confirm
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'cancelled')}>
-                                <XCircle className="mr-2 h-4 w-4 text-red-500" />
-                                Cancel
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          {apt.status === 'confirmed' && (
+                      {apt.status === 'pending' ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => handleStatusChange(apt.id, 'confirmed')}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 h-7 rounded-lg font-semibold flex items-center gap-1 shadow-xs"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            <span>Approve</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isPending}
+                            onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                            className="border-rose-200 text-rose-700 hover:bg-rose-50 text-xs px-2 py-1 h-7 rounded-lg font-medium flex items-center gap-1"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                            <span>Decline</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <MoreVertical className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            {/* Contextual status actions */}
+                            {apt.status === 'confirmed' && (
                             <>
                               <DropdownMenuItem onClick={() => handleStatusChange(apt.id, 'checked_in')}>
                                 <UserCheck className="mr-2 h-4 w-4 text-indigo-600" />
@@ -347,6 +385,7 @@ export function AppointmentsList({
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
+                    )}
                     </TableCell>
                   </TableRow>
                 ))}

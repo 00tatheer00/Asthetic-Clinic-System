@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BOOKING_CATALOG,
   type TreatmentOption,
   type TreatmentService,
 } from '@/lib/booking-catalog';
-import { createPublicAppointment } from '@/actions/appointments';
+import {
+  createPublicAppointment,
+  trackPublicAppointment,
+} from '@/actions/appointments';
 import {
   Search,
   ChevronDown,
@@ -23,8 +26,15 @@ import {
   Loader2,
   ArrowLeft,
   Stethoscope,
-  HeartHandshake,
+  Copy,
+  CheckCheck,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
 } from 'lucide-react';
+import { formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { APPOINTMENT_STATUS_COLORS, APPOINTMENT_STATUS_LABELS } from '@/lib/constants';
 
 interface SelectedTreatmentItem {
   serviceId: string;
@@ -49,8 +59,15 @@ export function BookingFlow({
 }: BookingFlowProps) {
   const router = useRouter();
 
+  // Navigation mode: 'booking' (the 3-step booking flow) or 'tracking' (search booking by name/phone)
+  const [activeMode, setActiveMode] = useState<'booking' | 'tracking'>('booking');
+
   // Active step: 1 = Treatments, 2 = Time, 3 = Details, 4 = Success
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+
+  // References for smooth scroll to top on step transition
+  const headerTopRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Department switcher
   const [department, setDepartment] = useState<'aesthetic' | 'studio'>('aesthetic');
@@ -69,7 +86,6 @@ export function BookingFlow({
   // Multi-selection state
   const [selectedItems, setSelectedItems] = useState<SelectedTreatmentItem[]>(() => {
     if (initialTreatmentId) {
-      // Find matching service
       const match = BOOKING_CATALOG.find(
         (s) => s.id === initialTreatmentId || s.dbId === initialTreatmentId
       );
@@ -88,7 +104,6 @@ export function BookingFlow({
         ];
       }
     }
-    // Default initial selection matching reference screenshot (HydraFacial Classic PKR 5,000)
     const hydra = BOOKING_CATALOG.find((s) => s.id === 'hydrafacial');
     if (hydra && hydra.options[0]) {
       return [
@@ -107,7 +122,6 @@ export function BookingFlow({
   });
 
   // Date and Time selection
-  // Generate 14 upcoming days
   const upcomingDays = useMemo(() => {
     const days: {
       date: Date;
@@ -125,23 +139,13 @@ export function BookingFlow({
       d.setDate(now.getDate() + i);
 
       const isToday = i === 0;
-      const dayOfWeek = d.getDay(); // 0 = Sunday
+      const dayOfWeek = d.getDay();
       const isSunday = dayOfWeek === 0;
 
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const monthNames = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
       ];
 
       days.push({
@@ -157,13 +161,11 @@ export function BookingFlow({
     return days;
   }, []);
 
-  // Pick first available non-Sunday day by default
   const [selectedDayIso, setSelectedDayIso] = useState<string>(() => {
     const firstAvailable = upcomingDays.find((d) => !d.isSunday) || upcomingDays[0];
     return firstAvailable.isoDate;
   });
 
-  // Selected time slot
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('3:30 pm');
 
   // Customer details form
@@ -175,6 +177,8 @@ export function BookingFlow({
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [copiedRef, setCopiedRef] = useState(false);
+
   const [confirmedBooking, setConfirmedBooking] = useState<{
     id: string;
     refNumber: string;
@@ -186,6 +190,29 @@ export function BookingFlow({
     patientPhone: string;
   } | null>(null);
 
+  // Tracking search state
+  const [trackSearchQuery, setTrackSearchQuery] = useState('');
+  const [trackResults, setTrackResults] = useState<any[]>([]);
+  const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+  const [trackError, setTrackError] = useState<string | null>(null);
+  const [hasSearchedTrack, setHasSearchedTrack] = useState(false);
+
+  // AUTOMATIC SMOOTH SCROLL TO TOP ON STEP OR MODE CHANGE
+  useEffect(() => {
+    // 1. Scroll the inner body container to top
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // 2. Scroll the outer modal card into view smoothly
+    if (headerTopRef.current) {
+      headerTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // 3. Ensure window page scrolls to top if in full page mode
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep, activeMode]);
+
   // Calculate totals
   const totalPKR = useMemo(() => {
     return selectedItems.reduce((sum, item) => sum + item.price, 0);
@@ -193,7 +220,6 @@ export function BookingFlow({
 
   const itemCount = selectedItems.length;
 
-  // Toggle item selection
   const toggleItemSelection = (
     service: TreatmentService,
     option: TreatmentOption
@@ -232,7 +258,6 @@ export function BookingFlow({
   const filteredCatalog = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return BOOKING_CATALOG.filter((service) => {
-      // Must match department unless user is searching
       if (!q && service.department !== department) {
         return false;
       }
@@ -250,7 +275,6 @@ export function BookingFlow({
     });
   }, [department, searchQuery]);
 
-  // Group filtered catalog by section
   const groupedSections = useMemo(() => {
     const groups: Record<string, TreatmentService[]> = {};
     filteredCatalog.forEach((service) => {
@@ -262,27 +286,14 @@ export function BookingFlow({
     return groups;
   }, [filteredCatalog]);
 
-  // Afternoon & Evening time slots matching reference screenshot
   const afternoonSlots = [
-    '11:30 am',
-    '12:00 pm',
-    '12:30 pm',
-    '1:00 pm',
-    '2:00 pm',
-    '2:30 pm',
-    '3:00 pm',
-    '3:30 pm',
-    '4:00 pm',
-    '4:30 pm',
+    '11:30 am', '12:00 pm', '12:30 pm', '1:00 pm',
+    '2:00 pm', '2:30 pm', '3:00 pm', '3:30 pm',
+    '4:00 pm', '4:30 pm',
   ];
 
   const eveningSlots = [
-    '5:00 pm',
-    '5:30 pm',
-    '6:00 pm',
-    '6:30 pm',
-    '7:00 pm',
-    '7:30 pm',
+    '5:00 pm', '5:30 pm', '6:00 pm', '6:30 pm', '7:00 pm', '7:30 pm',
   ];
 
   // Handle Form Submission
@@ -306,8 +317,6 @@ export function BookingFlow({
       return;
     }
 
-    // Convert date + timeSlot into ISO string
-    // e.g. selectedDayIso: '2026-10-01', selectedTimeSlot: '3:30 pm'
     const [timePart, modifier] = selectedTimeSlot.split(' ');
     let [hoursStr, minutesStr] = timePart.split(':');
     let hours = parseInt(hoursStr, 10);
@@ -323,11 +332,9 @@ export function BookingFlow({
     const scheduledDate = new Date(`${selectedDayIso}T12:00:00`);
     scheduledDate.setHours(hours, minutes, 0, 0);
 
-    // Primary treatment ID for database foreign key
     const primaryDbId =
       selectedItems[0]?.dbId || '9803b3c3-2e1d-44dd-b684-3782c0c90a9b';
 
-    // Detailed booking breakdown for notes
     const itemsSummary = selectedItems
       .map((it) => `• ${it.serviceName} - ${it.optionName} (${it.duration}) : PKR ${it.price.toLocaleString()}`)
       .join('\n');
@@ -380,6 +387,8 @@ export function BookingFlow({
         patientPhone: customerPhone.trim(),
       });
 
+      // Set default tracking query to patient name for convenience
+      setTrackSearchQuery(customerName.trim());
       setCurrentStep(4);
     } catch (err: any) {
       console.error('Booking error:', err);
@@ -390,28 +399,67 @@ export function BookingFlow({
   };
 
   // WhatsApp Link generator
-  const getWhatsAppLink = () => {
-    if (!confirmedBooking) return '#';
-    const clinicNumber = '923000000000'; // Official clinic WhatsApp
-    const treatmentNames = confirmedBooking.items
+  const getWhatsAppLink = (booking = confirmedBooking) => {
+    if (!booking) return '#';
+    const clinicNumber = '923000000000';
+    const treatmentNames = booking.items
       .map((it) => `${it.serviceName} (${it.optionName})`)
       .join(', ');
     const text = encodeURIComponent(
       `Assalam-o-Alaikum Dr. Bilal Clinic! I have booked an appointment online:\n\n` +
-        `• Ref: ${confirmedBooking.refNumber}\n` +
-        `• Name: ${confirmedBooking.patientName}\n` +
-        `• Phone: ${confirmedBooking.patientPhone}\n` +
+        `• Ref: ${booking.refNumber}\n` +
+        `• Name: ${booking.patientName}\n` +
+        `• Phone: ${booking.patientPhone}\n` +
         `• Treatments: ${treatmentNames}\n` +
-        `• Date: ${confirmedBooking.dateStr}\n` +
-        `• Time: ${confirmedBooking.timeSlot}\n` +
-        `• Total: PKR ${confirmedBooking.total.toLocaleString()}\n\n` +
+        `• Date: ${booking.dateStr}\n` +
+        `• Time: ${booking.timeSlot}\n` +
+        `• Total: PKR ${booking.total.toLocaleString()}\n\n` +
         `Please confirm my slot. Thank you!`
     );
     return `https://wa.me/${clinicNumber}?text=${text}`;
   };
 
+  const copyRefToClipboard = (ref: string) => {
+    navigator.clipboard.writeText(ref);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 2500);
+  };
+
+  // Perform tracking search
+  const handleTrackSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = trackSearchQuery.trim();
+    if (!query || query.length < 2) {
+      setTrackError('Please enter at least 2 characters to search.');
+      return;
+    }
+
+    setIsTrackingLoading(true);
+    setTrackError(null);
+    setHasSearchedTrack(true);
+
+    try {
+      const res = await trackPublicAppointment(query);
+      if (res.success) {
+        setTrackResults(res.appointments || []);
+        if ((res.appointments || []).length === 0) {
+          setTrackError(`No bookings found matching "${query}". Please verify your name, phone or reference ID.`);
+        }
+      } else {
+        setTrackError(res.error || 'Failed to search appointments.');
+      }
+    } catch (err: any) {
+      setTrackError(err.message || 'An error occurred while tracking appointment.');
+    } finally {
+      setIsTrackingLoading(false);
+    }
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl sm:rounded-[28px] shadow-2xl border border-gray-100 overflow-hidden flex flex-col relative transition-all duration-300">
+    <div
+      ref={headerTopRef}
+      className="w-full max-w-2xl mx-auto bg-white rounded-3xl sm:rounded-[28px] shadow-2xl border border-gray-100 overflow-hidden flex flex-col relative transition-all duration-300"
+    >
       {/* Top Header Card */}
       <div className="p-6 sm:p-8 pb-4 relative border-b border-gray-100/80 bg-white">
         {/* Close Button */}
@@ -425,123 +473,350 @@ export function BookingFlow({
           </button>
         )}
 
-        <div className="pr-10">
-          <h1 className="font-serif text-2xl sm:text-3xl text-gray-900 font-normal tracking-tight">
-            Book an appointment
-          </h1>
-          <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
-            Choose your treatments, pick a time, and we will confirm on WhatsApp.
-            No deposit, no card.
-          </p>
+        {/* Mode Switcher Tabs: [Book an appointment] / [Track my booking] */}
+        <div className="flex items-center gap-1 p-1 bg-gray-100/80 rounded-full max-w-xs mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveMode('booking')}
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold transition-all ${
+              activeMode === 'booking'
+                ? 'bg-white text-gray-950 shadow-xs'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            Book Appointment
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveMode('tracking');
+              if (trackSearchQuery.trim()) {
+                handleTrackSearch();
+              }
+            }}
+            className={`flex-1 py-1.5 px-3 rounded-full text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
+              activeMode === 'tracking'
+                ? 'bg-[#2D1226] text-white shadow-xs'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <Search className="h-3 w-3" />
+            <span>Track Status</span>
+          </button>
         </div>
 
-        {/* 3-Step Stepper Header */}
-        {currentStep !== 4 && (
-          <div className="flex items-center gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-100">
-            {/* Step 1: Treatments */}
-            <div
-              onClick={() => setCurrentStep(1)}
-              className={`flex items-center gap-2 cursor-pointer transition ${
-                currentStep === 1
-                  ? 'text-gray-950 font-semibold'
-                  : currentStep > 1
-                  ? 'text-rose-900 font-medium'
-                  : 'text-gray-400'
-              }`}
-            >
-              <span
-                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                  currentStep === 1
-                    ? 'bg-[#2D1226] text-white shadow-sm'
-                    : currentStep > 1
-                    ? 'bg-rose-100 text-rose-800'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                1
-              </span>
-              <span className="text-xs sm:text-sm">Treatments</span>
+        {activeMode === 'booking' ? (
+          <>
+            <div className="pr-10">
+              <h1 className="font-serif text-2xl sm:text-3xl text-gray-900 font-normal tracking-tight">
+                Book an appointment
+              </h1>
+              <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
+                Choose your treatments, pick a time, and we will confirm on WhatsApp.
+                No deposit, no card.
+              </p>
             </div>
 
-            {/* Separator line */}
-            <div
-              className={`h-0.5 w-6 sm:w-10 rounded-full transition-colors ${
-                currentStep > 1 ? 'bg-rose-200' : 'bg-gray-200'
-              }`}
-            />
+            {/* 3-Step Stepper Header */}
+            {currentStep !== 4 && (
+              <div className="flex items-center gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-100">
+                {/* Step 1: Treatments */}
+                <div
+                  onClick={() => setCurrentStep(1)}
+                  className={`flex items-center gap-2 cursor-pointer transition ${
+                    currentStep === 1
+                      ? 'text-gray-950 font-semibold'
+                      : currentStep > 1
+                      ? 'text-rose-900 font-medium'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  <span
+                    className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      currentStep === 1
+                        ? 'bg-[#2D1226] text-white shadow-sm'
+                        : currentStep > 1
+                        ? 'bg-rose-100 text-rose-800'
+                        : 'bg-gray-100 text-gray-400'
+                    }`}
+                  >
+                    1
+                  </span>
+                  <span className="text-xs sm:text-sm">Treatments</span>
+                </div>
 
-            {/* Step 2: Time */}
-            <div
-              onClick={() => {
-                if (selectedItems.length > 0) setCurrentStep(2);
-              }}
-              className={`flex items-center gap-2 transition ${
-                selectedItems.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-              } ${
-                currentStep === 2
-                  ? 'text-gray-950 font-semibold'
-                  : currentStep > 2
-                  ? 'text-rose-900 font-medium'
-                  : 'text-gray-400'
-              }`}
-            >
-              <span
-                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                  currentStep === 2
-                    ? 'bg-[#2D1226] text-white shadow-sm'
-                    : currentStep > 2
-                    ? 'bg-rose-100 text-rose-800'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                2
-              </span>
-              <span className="text-xs sm:text-sm">Time</span>
-            </div>
+                <div
+                  className={`h-0.5 w-6 sm:w-10 rounded-full transition-colors ${
+                    currentStep > 1 ? 'bg-rose-200' : 'bg-gray-200'
+                  }`}
+                />
 
-            {/* Separator line */}
-            <div
-              className={`h-0.5 w-6 sm:w-10 rounded-full transition-colors ${
-                currentStep > 2 ? 'bg-rose-200' : 'bg-gray-200'
-              }`}
-            />
+                {/* Step 2: Time */}
+                <div
+                  onClick={() => {
+                    if (selectedItems.length > 0) setCurrentStep(2);
+                  }}
+                  className={`flex items-center gap-2 transition ${
+                    selectedItems.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                  } ${
+                    currentStep === 2
+                      ? 'text-gray-950 font-semibold'
+                      : currentStep > 2
+                      ? 'text-rose-900 font-medium'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  <span
+                    className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      currentStep === 2
+                        ? 'bg-[#2D1226] text-white shadow-sm'
+                        : currentStep > 2
+                        ? 'bg-rose-100 text-rose-800'
+                        : 'bg-gray-100 text-gray-400'
+                    }`}
+                  >
+                    2
+                  </span>
+                  <span className="text-xs sm:text-sm">Time</span>
+                </div>
 
-            {/* Step 3: Details */}
-            <div
-              onClick={() => {
-                if (selectedItems.length > 0 && selectedDayIso && selectedTimeSlot) {
-                  setCurrentStep(3);
-                }
-              }}
-              className={`flex items-center gap-2 transition ${
-                selectedItems.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-              } ${
-                currentStep === 3
-                  ? 'text-gray-950 font-semibold'
-                  : 'text-gray-400'
-              }`}
-            >
-              <span
-                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                  currentStep === 3
-                    ? 'bg-[#2D1226] text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-400'
-                }`}
-              >
-                3
-              </span>
-              <span className="text-xs sm:text-sm">Details</span>
-            </div>
+                <div
+                  className={`h-0.5 w-6 sm:w-10 rounded-full transition-colors ${
+                    currentStep > 2 ? 'bg-rose-200' : 'bg-gray-200'
+                  }`}
+                />
+
+                {/* Step 3: Details */}
+                <div
+                  onClick={() => {
+                    if (selectedItems.length > 0 && selectedDayIso && selectedTimeSlot) {
+                      setCurrentStep(3);
+                    }
+                  }}
+                  className={`flex items-center gap-2 transition ${
+                    selectedItems.length > 0 ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                  } ${
+                    currentStep === 3
+                      ? 'text-gray-950 font-semibold'
+                      : 'text-gray-400'
+                  }`}
+                >
+                  <span
+                    className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+                      currentStep === 3
+                        ? 'bg-[#2D1226] text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-400'
+                    }`}
+                  >
+                    3
+                  </span>
+                  <span className="text-xs sm:text-sm">Details</span>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="pr-10">
+            <h2 className="font-serif text-2xl sm:text-3xl text-gray-900 font-normal tracking-tight">
+              Track Your Appointment Status
+            </h2>
+            <p className="text-gray-600 text-xs sm:text-sm mt-1 leading-relaxed">
+              Enter your name or mobile number below to see if Dr. Bilal has approved your appointment.
+            </p>
           </div>
         )}
       </div>
 
-      {/* Main Body Area */}
-      <div className="p-6 sm:p-8 pt-5 overflow-y-auto max-h-[64vh] sm:max-h-[68vh] min-h-[380px]">
+      {/* Main Scrollable Body Area with ref for auto-scroll to top */}
+      <div
+        ref={scrollContainerRef}
+        className="p-6 sm:p-8 pt-5 overflow-y-auto max-h-[64vh] sm:max-h-[68vh] min-h-[380px]"
+      >
+        {/* ========================================================================= */}
+        {/* TRACKING MODE (Lookup booking by patient name or phone)                    */}
+        {/* ========================================================================= */}
+        {activeMode === 'tracking' && (
+          <div className="space-y-6 animate-slide-in-right">
+            <form onSubmit={handleTrackSearch} className="space-y-3">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
+                Search Your Booking by Name or Mobile
+              </label>
+              <div className="relative flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={trackSearchQuery}
+                    onChange={(e) => setTrackSearchQuery(e.target.value)}
+                    placeholder="Enter your name (e.g. Tatheer) or phone number"
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition shadow-xs"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isTrackingLoading}
+                  className="shine-sweep px-5 py-3 rounded-2xl bg-[#2D1226] text-white text-xs sm:text-sm font-semibold hover:bg-[#431b39] transition shadow-md disabled:opacity-50 shrink-0"
+                >
+                  {isTrackingLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Search'
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {trackError && (
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs sm:text-sm text-amber-900 flex items-center gap-2.5">
+                <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                <span>{trackError}</span>
+              </div>
+            )}
+
+            {/* Results List */}
+            {trackResults.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Found {trackResults.length} Appointment{trackResults.length > 1 ? 's' : ''}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => handleTrackSearch()}
+                    className="inline-flex items-center gap-1 text-xs text-rose-700 hover:text-rose-900 font-medium"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {trackResults.map((apt) => {
+                    const isPending = apt.status === 'pending';
+                    const isConfirmed = apt.status === 'confirmed';
+                    const isCancelled = apt.status === 'cancelled';
+                    const isCompleted = apt.status === 'completed';
+
+                    return (
+                      <div
+                        key={apt.id}
+                        className={`p-5 rounded-2xl border transition-all ${
+                          isConfirmed
+                            ? 'bg-emerald-50/50 border-emerald-200/90 shadow-sm'
+                            : isPending
+                            ? 'bg-amber-50/40 border-amber-200/90 shadow-sm'
+                            : isCancelled
+                            ? 'bg-red-50/40 border-red-200/90'
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div>
+                            <span className="text-[10px] font-mono text-gray-400 font-semibold block">
+                              REF: #BSC-{apt.id.slice(0, 8).toUpperCase()}
+                            </span>
+                            <h4 className="text-base font-bold text-gray-950 font-serif">
+                              {apt.customer_name}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              {apt.customer_phone ? formatPhone(apt.customer_phone) : ''}
+                            </p>
+                          </div>
+
+                          {/* Live Status Pill */}
+                          <div className="text-right">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                                isConfirmed
+                                  ? 'bg-emerald-600 text-white shadow-xs'
+                                  : isPending
+                                  ? 'bg-amber-500 text-white shadow-xs'
+                                  : isCancelled
+                                  ? 'bg-red-600 text-white shadow-xs'
+                                  : 'bg-blue-600 text-white'
+                              }`}
+                            >
+                              {isConfirmed && <CheckCircle2 className="h-3.5 w-3.5" />}
+                              {isPending && <Clock className="h-3.5 w-3.5 animate-spin" />}
+                              {isCancelled && <XCircle className="h-3.5 w-3.5" />}
+                              <span>
+                                {isConfirmed
+                                  ? 'Approved / Confirmed'
+                                  : isPending
+                                  ? 'Pending Approval'
+                                  : isCancelled
+                                  ? 'Declined / Cancelled'
+                                  : APPOINTMENT_STATUS_LABELS[apt.status] || apt.status}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status Message Explanation */}
+                        <div className="p-3 rounded-xl bg-white/80 border border-gray-200/60 text-xs text-gray-700 space-y-1.5 mb-3">
+                          {isPending && (
+                            <p className="text-amber-800 font-medium">
+                              ⏳ <strong>Pending Review:</strong> Your booking is with Dr. Bilal&apos;s reception team. Approval usually takes under 15 minutes.
+                            </p>
+                          )}
+                          {isConfirmed && (
+                            <p className="text-emerald-800 font-medium">
+                              🎉 <strong>Slot Confirmed!</strong> Dr. Bilal has approved your appointment. Please arrive 10 minutes prior to your time at University Road, Peshawar.
+                            </p>
+                          )}
+                          {isCancelled && (
+                            <p className="text-red-800 font-medium">
+                              ✕ <strong>Declined / Cancelled:</strong>{' '}
+                              {apt.cancellation_reason || 'This slot was not confirmed. Please contact our reception on WhatsApp to reschedule.'}
+                            </p>
+                          )}
+                          {isCompleted && (
+                            <p className="text-blue-800 font-medium">
+                              ✓ <strong>Completed:</strong> Thank you for your visit to Brimish Skin Care Clinic!
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs border-t border-gray-200/60 pt-3">
+                          <div>
+                            <span className="text-gray-400 block text-[11px]">Treatment</span>
+                            <span className="font-semibold text-gray-900">
+                              {apt.treatments?.name || 'Aesthetic Consultation'}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400 block text-[11px]">Appointment Slot</span>
+                            <span className="font-semibold text-gray-900">
+                              {formatDateTime(apt.scheduled_at)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Direct WhatsApp button for this booking */}
+                        <div className="mt-3 pt-2 flex items-center justify-end">
+                          <a
+                            href={`https://wa.me/923000000000?text=Assalam-o-Alaikum%20Dr.%20Bilal%20Clinic,%20inquiring%20about%20my%20booking%20Ref:%20#BSC-${apt.id.slice(0, 8).toUpperCase()}%20for%20${encodeURIComponent(apt.customer_name)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-900 font-semibold"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+                            <span>Inquire on WhatsApp</span>
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ========================================================================= */}
         {/* STEP 1: TREATMENTS                                                        */}
         {/* ========================================================================= */}
-        {currentStep === 1 && (
+        {activeMode === 'booking' && currentStep === 1 && (
           <div className="space-y-6 animate-slide-in-right">
             {/* Department Pills: Aesthetic Clinic vs Makeup Studio */}
             <div className="p-1 bg-gray-50/90 rounded-full border border-gray-200 flex items-center max-w-md mx-auto">
@@ -615,7 +890,6 @@ export function BookingFlow({
                     <div className="space-y-3">
                       {services.map((service) => {
                         const isExpanded = !!expandedServices[service.id];
-                        // Count how many options from this service are selected
                         const selectedCountInThisService = selectedItems.filter(
                           (item) => item.serviceId === service.id
                         ).length;
@@ -749,7 +1023,7 @@ export function BookingFlow({
         {/* ========================================================================= */}
         {/* STEP 2: TIME & DATE                                                       */}
         {/* ========================================================================= */}
-        {currentStep === 2 && (
+        {activeMode === 'booking' && currentStep === 2 && (
           <div className="space-y-7 animate-slide-in-right">
             {/* Choose a Day */}
             <div className="space-y-3">
@@ -757,7 +1031,6 @@ export function BookingFlow({
                 Choose a day
               </h2>
 
-              {/* Horizontal Date Picker Cards */}
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
                 {upcomingDays.map((day) => {
                   const isSelected = selectedDayIso === day.isoDate;
@@ -861,7 +1134,7 @@ export function BookingFlow({
               </div>
             </div>
 
-            {/* Selected Treatment Chips with ✕ remover */}
+            {/* Selected Treatment Chips */}
             <div className="space-y-2 pt-2 border-t border-gray-100">
               <span className="text-xs text-gray-500 font-medium block">
                 Selected treatments ({selectedItems.length}):
@@ -893,7 +1166,7 @@ export function BookingFlow({
         {/* ========================================================================= */}
         {/* STEP 3: DETAILS                                                           */}
         {/* ========================================================================= */}
-        {currentStep === 3 && (
+        {activeMode === 'booking' && currentStep === 3 && (
           <form onSubmit={handleConfirmBooking} className="space-y-5 animate-slide-in-right">
             {formError && (
               <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-700 font-medium flex items-center gap-2">
@@ -989,9 +1262,9 @@ export function BookingFlow({
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 4: SUCCESS / INSTANT CONFIRMATION ("BEST THAN THIS")                  */}
+        {/* STEP 4: SUCCESS / LUXURY REASSURING CONFIRMATION                           */}
         {/* ========================================================================= */}
-        {currentStep === 4 && confirmedBooking && (
+        {activeMode === 'booking' && currentStep === 4 && confirmedBooking && (
           <div className="py-6 text-center space-y-6 animate-slide-in-right">
             {/* Celebration Badge */}
             <div className="relative inline-flex items-center justify-center">
@@ -1003,32 +1276,60 @@ export function BookingFlow({
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <span className="inline-block px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold uppercase tracking-wider">
-                Appointment Requested
+            <div className="space-y-2">
+              <span className="inline-block px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
+                ✓ Booking Received & Reserved
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-gray-950">
-                We received your booking!
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-gray-950 tracking-tight">
+                Thank You, {confirmedBooking.patientName}!
               </h2>
-              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto">
-                Thank you, <span className="font-semibold text-gray-900">{confirmedBooking.patientName}</span>. Your appointment has been booked. Reference:{' '}
-                <span className="font-mono font-bold text-rose-700">
-                  {confirmedBooking.refNumber}
-                </span>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                Your consultation request has been logged in Dr. Bilal&apos;s clinic scheduling system.
+              </p>
+            </div>
+
+            {/* Reference Badge with 1-Click Copy */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gray-100 border border-gray-200">
+              <span className="text-xs text-gray-500">Booking Reference:</span>
+              <span className="font-mono font-bold text-gray-950 text-sm">
+                {confirmedBooking.refNumber}
+              </span>
+              <button
+                type="button"
+                onClick={() => copyRefToClipboard(confirmedBooking.refNumber)}
+                className="ml-1 text-gray-500 hover:text-gray-900 p-1 rounded-md transition"
+                title="Copy reference"
+              >
+                {copiedRef ? (
+                  <CheckCheck className="h-4 w-4 text-emerald-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
+            {/* Status Callout Box */}
+            <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 text-left max-w-md mx-auto space-y-1.5">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs uppercase tracking-wide">
+                <Clock className="h-3.5 w-3.5 text-amber-600 animate-spin" />
+                <span>Status: Under Review by Doctor Coordinator</span>
+              </div>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                Dr. Bilal&apos;s senior coordinator is reviewing doctor availability for your chosen slot. You will receive an official approval message on WhatsApp shortly.
               </p>
             </div>
 
             {/* Booking Details Card */}
             <div className="p-5 rounded-2xl bg-gray-50 border border-gray-200 text-left space-y-3.5 max-w-md mx-auto">
               <div className="flex items-center justify-between pb-3 border-b border-gray-200 text-xs">
-                <span className="text-gray-500 font-medium">Date & Time</span>
+                <span className="text-gray-500 font-medium">Scheduled Time</span>
                 <span className="font-bold text-gray-900">
                   {confirmedBooking.dateStr} · {confirmedBooking.timeSlot}
                 </span>
               </div>
 
               <div className="space-y-1.5 text-xs">
-                <span className="text-gray-500 font-medium block">Treatments:</span>
+                <span className="text-gray-500 font-medium block">Treatments Selected:</span>
                 {confirmedBooking.items.map((it) => (
                   <div key={it.optionId} className="flex justify-between font-medium">
                     <span className="text-gray-800">
@@ -1042,30 +1343,42 @@ export function BookingFlow({
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <span className="text-xs font-bold text-gray-900 uppercase tracking-wide">
-                  Total (Pay on Arrival)
-                </span>
+                <div>
+                  <span className="text-xs font-bold text-gray-900 uppercase tracking-wide block">
+                    Estimated Total
+                  </span>
+                  <span className="text-[10px] text-gray-500">Zero card fee • Pay on arrival</span>
+                </div>
                 <span className="font-serif text-xl font-bold text-gray-950">
                   PKR {confirmedBooking.total.toLocaleString()}
                 </span>
               </div>
             </div>
 
-            {/* Direct WhatsApp Confirmation Button (Luxury CTA) */}
+            {/* Direct Action Buttons */}
             <div className="max-w-md mx-auto space-y-3 pt-2">
               <a
                 href={getWhatsAppLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold text-sm shadow-lg shadow-green-500/20 hover:shadow-xl transition-all hover:scale-102"
+                className="shine-sweep w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-semibold text-sm shadow-lg shadow-green-500/20 hover:shadow-xl transition-all hover:scale-102"
               >
                 <MessageCircle className="h-5 w-5 fill-white" />
-                <span>Confirm Instantly on WhatsApp</span>
+                <span>Confirm on WhatsApp With Clinic</span>
               </a>
 
-              <p className="text-[11px] text-gray-500">
-                A coordinator will confirm your exact consultation slot on WhatsApp shortly.
-              </p>
+              {/* Live Tracking Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMode('tracking');
+                  handleTrackSearch();
+                }}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white border border-gray-300 hover:border-gray-400 text-gray-800 font-semibold text-xs transition"
+              >
+                <Search className="h-3.5 w-3.5 text-gray-500" />
+                <span>Track Live Approval Status Online</span>
+              </button>
             </div>
 
             {/* Reset / Return button */}
@@ -1089,7 +1402,7 @@ export function BookingFlow({
       {/* ========================================================================= */}
       {/* STICKY BOTTOM SUMMARY BAR                                                 */}
       {/* ========================================================================= */}
-      {currentStep !== 4 && (
+      {activeMode === 'booking' && currentStep !== 4 && (
         <div className="p-4 sm:p-5 px-6 sm:px-8 border-t border-gray-100 bg-white/95 backdrop-blur-md flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
           {/* Left Side: Treatment count & PKR total */}
           <div>

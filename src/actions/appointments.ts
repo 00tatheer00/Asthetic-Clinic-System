@@ -289,3 +289,58 @@ export async function deleteAppointment(appointmentId: string) {
   revalidatePath('/dashboard/appointments');
   return { success: true };
 }
+
+// ============================================================
+// Public: Track appointment status by name, phone, or ID
+// ============================================================
+
+export async function trackPublicAppointment(searchQuery: string) {
+  const query = (searchQuery || '').trim();
+  if (!query || query.length < 2) {
+    return { success: false, error: 'Please enter at least 2 characters to search.' };
+  }
+
+  const supabase = createAdminClient();
+
+  // Normalize phone if entered
+  const normalizedPhone = query.replace(/[\s\-\(\)\.]/g, '').replace(/^(\+92|0092|92)/, '0');
+
+  // Query appointments
+  let dbQuery = supabase
+    .from('appointments')
+    .select(`
+      id,
+      customer_name,
+      customer_phone,
+      customer_email,
+      scheduled_at,
+      status,
+      message,
+      cancellation_reason,
+      confirmed_at,
+      created_at,
+      treatments(id, name, price)
+    `)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (/^03[0-9]{9}$/.test(normalizedPhone)) {
+    dbQuery = dbQuery.or(`customer_phone.eq.${normalizedPhone},customer_phone.eq.${query}`);
+  } else if (/^[0-9a-fA-F-]{6,36}$/.test(query)) {
+    // If UUID prefix or hex reference ID
+    dbQuery = dbQuery.or(`id.ilike.%${query}%,customer_name.ilike.%${query}%`);
+  } else {
+    dbQuery = dbQuery.ilike('customer_name', `%${query}%`);
+  }
+
+  const { data, error } = await dbQuery;
+
+  if (error) {
+    console.error('[Appointment] Track search failed:', error);
+    return { success: false, error: 'Failed to search appointments. Please try again.' };
+  }
+
+  return { success: true, appointments: data || [] };
+}
+
