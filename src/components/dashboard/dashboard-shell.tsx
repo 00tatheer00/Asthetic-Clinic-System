@@ -111,30 +111,35 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="fixed inset-0 flex h-full w-full overflow-hidden bg-slate-50">
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col border-r border-gray-200 bg-white transition-all duration-300',
+          'hidden lg:flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-300 shrink-0 select-none z-20',
           collapsed ? 'w-[68px]' : 'w-64'
         )}
       >
         {/* Logo */}
-        <div className={cn('flex items-center h-16 px-4 border-b border-gray-100', collapsed && 'justify-center px-2')}>
+        <div className={cn('flex items-center h-16 shrink-0 px-4 border-b border-gray-100 bg-white', collapsed && 'justify-center px-2')}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="relative h-8 w-8 rounded-lg overflow-hidden border border-rose-100 shadow-sm shrink-0 bg-white">
+            <div className="relative h-9 w-9 rounded-xl overflow-hidden border border-rose-100 shadow-sm shrink-0 bg-white">
               <NextImage
                 src="/images/logo.png"
                 alt="Brimish Skin Care Logo"
-                width={32}
-                height={32}
+                width={36}
+                height={36}
                 className="h-full w-full object-cover"
               />
             </div>
             {!collapsed && (
-              <span className="text-sm font-bold text-gray-900 tracking-tight font-serif">
-                Brimish
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-gray-900 tracking-tight font-serif leading-tight">
+                  Brimish
+                </span>
+                <span className="text-[10px] text-rose-600 font-medium tracking-wide">
+                  Clinic Intelligence
+                </span>
+              </div>
             )}
           </Link>
         </div>
@@ -143,7 +148,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         {navContent}
 
         {/* Collapse Toggle */}
-        <div className="border-t border-gray-100 p-2">
+        <div className="border-t border-gray-100 p-2 shrink-0 bg-white">
           <Button
             variant="ghost"
             size="sm"
@@ -156,9 +161,9 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col h-full overflow-hidden min-w-0">
         {/* Top Bar */}
-        <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-8 z-10 shadow-xs">
           <div className="flex items-center gap-3">
             {/* Mobile Menu Button */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -255,8 +260,8 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
+        <main className="flex-1 overflow-y-auto min-h-0 bg-slate-50/60">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20">
             {children}
           </div>
         </main>
