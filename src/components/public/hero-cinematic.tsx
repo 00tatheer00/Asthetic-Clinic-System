@@ -20,13 +20,8 @@ import {
 import { Button } from '@/components/ui/button';
 
 export function HeroCinematic() {
-  // Theme mood: 'twilight' (hero-cinema-dark.jpg) or 'daylight' (hero-luxury-bg.jpg)
-  const [mood, setMood] = useState<'twilight' | 'daylight'>('twilight');
-
-  const bgImage =
-    mood === 'twilight'
-      ? '/images/hero-cinema-dark.jpg'
-      : '/images/hero-luxury-bg.jpg';
+  // Theme mood: 'daylight' (bright day) or 'twilight' (ambient night)
+  const [mood, setMood] = useState<'twilight' | 'daylight'>('daylight');
 
   const quickTreatments = [
     { name: 'HydraFacial MD', price: 'Rs. 5,000', id: 'hydrafacial' },
@@ -38,22 +33,54 @@ export function HeroCinematic() {
 
   return (
     <section className="relative min-h-[92vh] lg:min-h-screen w-full flex items-center justify-center overflow-hidden bg-black text-white">
-      {/* 1. Full-Bleed Background Image with Cinematic Slow Zoom */}
+      {/* 1. Full-Bleed Twin AI Background Images (Exact Same Scene: Day & Night) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <Image
-          src={bgImage}
-          alt="Brimish Aesthetic Dermatology Clinic Sanctuary"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center animate-slow-zoom transition-opacity duration-1000 brightness-95"
-        />
+        
+        {/* Night / Twilight Layer (Exact same room with evening garden & warm architectural cove lighting) */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            mood === 'twilight' ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <Image
+            src="/images/hero-clinic-night.jpg"
+            alt="Brimish Aesthetic Dermatology Clinic Sanctuary - Twilight Suite"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center animate-slow-zoom brightness-95"
+          />
+        </div>
+
+        {/* Daylight Layer (Exact same room with natural daylight streaming in & sunny garden) */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            mood === 'daylight' ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <Image
+            src="/images/hero-clinic-day.jpg"
+            alt="Brimish Aesthetic Dermatology Clinic Sanctuary - Daylight Sanctuary"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center animate-slow-zoom brightness-95"
+          />
+        </div>
 
         {/* 2. Cinematic Multi-Layered Overlays */}
-        {/* Dark Obsidian & Plum Vignette for ultra-crisp typography */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-[#1c081a]/80 to-black/65" />
+        {/* Dynamic Dark Vignette for ultra-crisp typography & contrast */}
+        <div
+          className={`absolute inset-0 transition-colors duration-1000 ${
+            mood === 'twilight'
+              ? 'bg-gradient-to-r from-black/90 via-[#1c081a]/80 to-black/60'
+              : 'bg-gradient-to-r from-black/85 via-black/65 to-black/35'
+          }`}
+        />
+
         {/* Top subtle fade from navbar */}
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/80 via-black/35 to-transparent" />
+        
         {/* Bottom fade blending smoothly into next section */}
         <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#140612] via-[#140612]/70 to-transparent" />
 
@@ -62,32 +89,32 @@ export function HeroCinematic() {
         <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-purple-500/15 blur-[120px]" />
       </div>
 
-      {/* 3. Subtle Ambient Mood Switcher (Daylight / Twilight) */}
-      <div className="absolute top-6 right-6 z-20 hidden sm:flex items-center gap-1.5 p-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs">
+      {/* 3. Ambient Mood Switcher (Daylight / Twilight) */}
+      <div className="absolute top-6 right-6 z-20 flex items-center gap-1.5 p-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs shadow-lg shadow-black/20">
         <button
           type="button"
           onClick={() => setMood('twilight')}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition ${
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-300 ${
             mood === 'twilight'
-              ? 'bg-rose-950/80 text-rose-200 border border-rose-500/30 shadow-xs'
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-[#2D1226] text-rose-200 border border-rose-400/40 shadow-sm font-semibold'
+              : 'text-gray-300 hover:text-white font-medium'
           }`}
-          title="Twilight Luxury Suite"
+          title="Switch to Twilight / Night Lighting"
         >
-          <Moon className="h-3 w-3" />
+          <Moon className="h-3.5 w-3.5 text-rose-300" />
           <span>Twilight</span>
         </button>
         <button
           type="button"
           onClick={() => setMood('daylight')}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition ${
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-300 ${
             mood === 'daylight'
-              ? 'bg-white/25 text-white border border-white/30 shadow-xs'
-              : 'text-gray-400 hover:text-white'
+              ? 'bg-amber-500/90 text-white border border-amber-300/40 shadow-sm font-semibold'
+              : 'text-gray-300 hover:text-white font-medium'
           }`}
-          title="Daylight Sanctuary"
+          title="Switch to Daylight Natural Sunshine"
         >
-          <Sun className="h-3 w-3" />
+          <Sun className="h-3.5 w-3.5 text-amber-200" />
           <span>Daylight</span>
         </button>
       </div>
