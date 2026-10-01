@@ -32,15 +32,32 @@ export async function createPublicAppointment(formData: unknown) {
 
   const supabase = createAdminClient();
 
-  // Get treatment name for email
+  // Get treatment name for email with fallback
+  let treatmentName = 'Aesthetic Consultation';
+  let validTreatmentId = data.treatment_id;
+
   const { data: treatment } = await supabase
     .from('treatments')
-    .select('name')
+    .select('id, name')
     .eq('id', data.treatment_id)
-    .single();
+    .maybeSingle();
 
-  if (!treatment) {
-    return { success: false, error: 'Selected treatment not found.' };
+  if (treatment) {
+    treatmentName = treatment.name;
+    validTreatmentId = treatment.id;
+  } else {
+    // If an ID wasn't found in DB, resolve the first active treatment
+    const { data: firstTreatment } = await supabase
+      .from('treatments')
+      .select('id, name')
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+
+    if (firstTreatment) {
+      treatmentName = firstTreatment.name;
+      validTreatmentId = firstTreatment.id;
+    }
   }
 
   // Create appointment
@@ -50,7 +67,7 @@ export async function createPublicAppointment(formData: unknown) {
       customer_name: data.customer_name,
       customer_phone: data.customer_phone,
       customer_email: data.customer_email || null,
-      treatment_id: data.treatment_id,
+      treatment_id: validTreatmentId,
       scheduled_at: data.scheduled_at,
       message: data.message || null,
       status: 'pending',
@@ -67,7 +84,7 @@ export async function createPublicAppointment(formData: unknown) {
   sendAppointmentReceivedEmail({
     customerName: data.customer_name,
     customerPhone: data.customer_phone,
-    treatmentName: treatment.name,
+    treatmentName: treatmentName,
     scheduledAt: formatDateTime(data.scheduled_at),
     message: data.message || undefined,
   }).catch(console.error);

@@ -51,10 +51,12 @@ export function BookingForm({ treatments }: BookingFormProps) {
   const selectedTreatmentId = watch('treatment_id');
   const selectedTreatment = treatments.find((t) => t.id === selectedTreatmentId);
 
-  // Group treatments by category
+  // Group treatments by category safely
   const grouped = treatments.reduce(
     (acc, t) => {
-      const cat = t.treatment_categories?.[0]?.name || 'Other';
+      const cat = Array.isArray(t.treatment_categories)
+        ? t.treatment_categories[0]?.name || 'Clinical Treatments'
+        : (t.treatment_categories as any)?.name || 'Clinical Treatments';
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(t);
       return acc;

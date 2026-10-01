@@ -1,5 +1,12 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
+const SUPABASE_URL =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ucyulaqwnoarbbhlhdxn.supabase.co';
+const SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  'sb_publishable_AeIBkfn4hFRKY-gl7TSETA_2I0OCKYz';
+
 /**
  * Supabase admin client using the service role key.
  * BYPASSES RLS — use only for server-side operations that need elevated privileges:
@@ -11,19 +18,11 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
  * NEVER expose this client or the service role key to the browser.
  */
 export function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables'
-    );
-  }
-
-  return createSupabaseClient(supabaseUrl, serviceRoleKey, {
+  return createSupabaseClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
 }
+

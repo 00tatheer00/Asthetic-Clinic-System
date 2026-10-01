@@ -132,11 +132,16 @@ export function ProductGrid({ products, categories }: ProductGridProps) {
               </div>
 
               {/* Category Badge */}
-              {product.product_categories?.[0] && (
-                <Badge className="absolute top-3 left-3 bg-white/90 text-gray-600 text-[10px] backdrop-blur-sm border-0 shadow-sm">
-                  {product.product_categories[0].name}
-                </Badge>
-              )}
+              {(() => {
+                const catName = Array.isArray(product.product_categories)
+                  ? product.product_categories[0]?.name
+                  : (product.product_categories as any)?.name;
+                return catName ? (
+                  <Badge className="absolute top-3 left-3 bg-white/95 text-gray-700 text-[10px] font-semibold backdrop-blur-sm border border-gray-200/60 shadow-xs">
+                    {catName}
+                  </Badge>
+                ) : null;
+              })()}
 
               {/* Out of Stock Badge */}
               {outOfStock && (
