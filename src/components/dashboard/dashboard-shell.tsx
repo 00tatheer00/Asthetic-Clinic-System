@@ -19,6 +19,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { createClient } from '@/lib/supabase/client';
 import { DASHBOARD_NAV_SECTIONS } from '@/lib/constants';
 import { getInitials } from '@/lib/utils/helpers';
