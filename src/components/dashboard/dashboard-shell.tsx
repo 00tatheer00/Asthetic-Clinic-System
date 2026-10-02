@@ -133,7 +133,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 alt="Brimish Skin Care Logo"
                 width={36}
                 height={36}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain p-0.5"
               />
             </div>
             {!collapsed && (
@@ -188,7 +188,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                         alt="Brimish Skin Care Logo"
                         width={32}
                         height={32}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain p-0.5"
                       />
                     </div>
                     <span className="text-sm font-bold text-gray-900 font-serif">Brimish</span>

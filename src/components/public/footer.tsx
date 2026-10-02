@@ -21,7 +21,7 @@ export function PublicFooter() {
                   alt="Brimish Skin Care Clinic Logo"
                   width={44}
                   height={44}
-                  className="h-full w-full object-cover rounded-[14px]"
+                  className="h-full w-full object-contain p-0.5 rounded-[14px]"
                 />
               </div>
               <div>

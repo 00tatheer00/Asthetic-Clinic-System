@@ -84,7 +84,7 @@ export function PublicHeader() {
                   alt="Brimish Skin Care Clinic Logo"
                   width={44}
                   height={44}
-                  className="h-full w-full object-cover rounded-[14px]"
+                  className="h-full w-full object-contain p-0.5 rounded-[14px]"
                   priority
                 />
               </div>
@@ -182,7 +182,7 @@ export function PublicHeader() {
                             alt="Brimish Skin Care Logo"
                             width={40}
                             height={40}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-contain p-0.5"
                           />
                         </div>
                         <div>
