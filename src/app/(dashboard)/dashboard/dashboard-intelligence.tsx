@@ -270,7 +270,7 @@ export function DashboardIntelligence({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Today's Appointments */}
         <Link href="/dashboard/appointments" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-blue-50/30">
+          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-blue-500 hover:shadow-xs transition-all duration-300 bg-gradient-to-br from-white via-white to-blue-50/20">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -285,7 +285,7 @@ export function DashboardIntelligence({
                     <span>{stats.todayCompletedVisits} completed</span>
                   </p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
+                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-105">
                   <Calendar className="h-5 w-5" />
                 </div>
               </div>
@@ -296,7 +296,7 @@ export function DashboardIntelligence({
         {/* Revenue KPI (Admin Only) */}
         {isAdmin ? (
           <Link href="/dashboard/invoices" className="group block focus:outline-none">
-            <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-emerald-50/30">
+            <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-emerald-500 hover:shadow-xs transition-all duration-300 bg-gradient-to-br from-white via-white to-emerald-50/20">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -311,7 +311,7 @@ export function DashboardIntelligence({
                       <span>Month: {formatCurrency(stats.monthRevenue)}</span>
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
+                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-105">
                     <DollarSign className="h-5 w-5" />
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export function DashboardIntelligence({
           </Link>
         ) : (
           <Link href="/dashboard/patients" className="group block focus:outline-none">
-            <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-indigo-50/30">
+            <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-indigo-500 hover:shadow-xs transition-all duration-300 bg-gradient-to-br from-white via-white to-indigo-50/20">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -334,7 +334,7 @@ export function DashboardIntelligence({
                       Registered Clinic Directory
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
+                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-105">
                     <Users className="h-5 w-5" />
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export function DashboardIntelligence({
 
         {/* Pending Web Orders */}
         <Link href="/dashboard/orders" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-amber-50/30">
+          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-amber-500 hover:shadow-xs transition-all duration-300 bg-gradient-to-br from-white via-white to-amber-50/20">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -359,7 +359,7 @@ export function DashboardIntelligence({
                     Web Checkout Dispatch
                   </p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
+                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-105">
                   <Package className="h-5 w-5" />
                 </div>
               </div>
@@ -369,7 +369,7 @@ export function DashboardIntelligence({
 
         {/* Low Stock Items */}
         <Link href="/dashboard/inventory" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-rose-500/10 hover:border-rose-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-rose-50/30">
+          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 bg-gradient-to-br from-white via-white to-rose-50/20">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -414,7 +414,7 @@ export function DashboardIntelligence({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Today's Live Schedule */}
         <div className="lg:col-span-8 space-y-6">
-          <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
             <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
@@ -551,7 +551,7 @@ export function DashboardIntelligence({
 
         {/* Right Column (4 cols): Front-Desk Quick Actions & Room Readiness */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white space-y-4">
+          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-pink-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white space-y-4">
             <div>
               <CardTitle className="text-base font-bold text-gray-950 font-serif">
                 Front-Desk Quick Actions
@@ -637,7 +637,7 @@ export function DashboardIntelligence({
 
           {/* End-of-Day Closing Reconcile Card */}
           {isAdmin && (
-            <Card className="border-0 shadow-md bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white rounded-2xl sm:rounded-3xl p-5">
+            <Card className="border border-gray-800 border-l-[3.5px] border-l-gray-800 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 shadow-md bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white rounded-2xl sm:rounded-3xl p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export function DashboardIntelligence({
       {/* 5. SECTION 2: RECENT FINANCIAL TRANSACTIONS (50%) + POST-PROCEDURE CARE QUEUE (50%) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left: Recent POS Invoices & Sales Stream */}
-        <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-emerald-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -738,7 +738,7 @@ export function DashboardIntelligence({
         </Card>
 
         {/* Right: Post-Procedure Patient Follow-Up Queue */}
-        <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -816,7 +816,7 @@ export function DashboardIntelligence({
       {/* 6. SECTION 3: INVENTORY WATCHLIST & CLINIC HIGHLIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start pb-8">
         {/* Low Stock Watchlist */}
-        <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-amber-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -882,7 +882,7 @@ export function DashboardIntelligence({
         </Card>
 
         {/* Featured Clinic Treatments */}
-        <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">

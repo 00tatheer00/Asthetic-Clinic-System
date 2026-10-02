@@ -350,7 +350,7 @@ export function DashboardCharts({
 
       {/* 4 Quick Analytics Mini-KPI Badges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
             <DollarSign className="h-5 w-5" />
           </div>
@@ -362,7 +362,7 @@ export function DashboardCharts({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-blue-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
             <Calendar className="h-5 w-5" />
           </div>
@@ -374,7 +374,7 @@ export function DashboardCharts({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-emerald-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCircle2 className="h-5 w-5" />
           </div>
@@ -386,7 +386,7 @@ export function DashboardCharts({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-xs flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-purple-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
             <CreditCard className="h-5 w-5" />
           </div>
@@ -402,7 +402,7 @@ export function DashboardCharts({
       {/* Row 1: Line Chart (Revenue Velocity) + Bar Chart (Patient Inflow) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: 7-Day Revenue Velocity (7 cols) */}
-        <Card className="lg:col-span-7 border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+        <Card className="lg:col-span-7 border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -427,7 +427,7 @@ export function DashboardCharts({
         </Card>
 
         {/* Right: Daily Patient Appointment Volume (5 cols) */}
-        <Card className="lg:col-span-5 border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+        <Card className="lg:col-span-5 border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-blue-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -455,7 +455,7 @@ export function DashboardCharts({
       {/* Row 2: Doughnut Charts (Appointment Status Outcomes + Payment Channels) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Appointment Status Breakdown */}
-        <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+        <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-amber-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40">
             <div className="flex items-center gap-2">
               <PieChart className="h-4 w-4 text-emerald-600" />
@@ -520,7 +520,7 @@ export function DashboardCharts({
 
         {/* Payment Channels & Revenue Share */}
         {isAdmin && (
-          <Card className="border border-gray-200/80 shadow-xs rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-emerald-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
             <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-purple-600" />
