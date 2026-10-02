@@ -47,6 +47,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { useReceiptSettings } from '@/lib/receipt-settings';
+import { printReceipt } from '@/lib/print-receipt';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -197,7 +198,13 @@ export function InvoicesList({
   };
 
   const handlePrint = () => {
-    window.print();
+    if (!selectedInvoice) {
+      window.print();
+      return;
+    }
+    printReceipt('printable-invoice', {
+      title: `Invoice-${selectedInvoice.invoice_number}`,
+    });
   };
 
   const handleSendEmail = async (inv: Invoice) => {
@@ -539,10 +546,11 @@ export function InvoicesList({
                   <Button
                     size="sm"
                     onClick={handlePrint}
-                    className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-xs px-3"
+                    className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-xs px-3 flex items-center gap-1.5"
+                    title="Print receipt or export / save as PDF"
                   >
-                    <Printer className="h-3.5 w-3.5 mr-1.5" />
-                    Print Receipt
+                    <Printer className="h-3.5 w-3.5" />
+                    <span>Print / PDF</span>
                   </Button>
                 </div>
               </div>

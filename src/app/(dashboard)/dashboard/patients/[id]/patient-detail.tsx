@@ -28,6 +28,7 @@ import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppL
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { printReceipt } from '@/lib/print-receipt';
 import Link from 'next/link';
 
 interface PatientDetailProps {
@@ -792,11 +793,12 @@ export function PatientDetail({
               </Button>
               <Button
                 size="sm"
-                onClick={() => window.print()}
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg h-9 text-xs font-semibold px-4"
+                onClick={() => printReceipt('printable-rx-slip', `Rx-${patient.name.replace(/\s+/g, '_')}`)}
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg h-9 text-xs font-semibold px-4 flex items-center gap-1.5"
+                title="Print prescription slip or save as PDF"
               >
-                <Printer className="h-3.5 w-3.5 mr-1.5" />
-                Print Rx Slip
+                <Printer className="h-3.5 w-3.5" />
+                <span>Print / PDF</span>
               </Button>
             </div>
           </div>

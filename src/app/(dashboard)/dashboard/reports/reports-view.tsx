@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils/helpers';
 import { exportToCSV } from '@/lib/utils/csv-export';
+import { printReceipt } from '@/lib/print-receipt';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -695,7 +696,7 @@ export function ReportsView({
             </div>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-2">
+          <div id="printable-reconciliation-slip" className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-2">
             {/* Left: Pakistani Rupee Physical Denomination Input (7 cols) */}
             <div className="md:col-span-7 space-y-3">
               <div className="flex items-center justify-between">
@@ -842,12 +843,13 @@ export function ReportsView({
                   Export Shift Closing CSV
                 </Button>
                 <Button
-                  onClick={() => window.print()}
+                  onClick={() => printReceipt('printable-reconciliation-slip', 'Shift-Cash-Reconciliation')}
                   variant="outline"
                   className="w-full h-8 text-xs border-gray-300 hover:bg-gray-100 flex items-center justify-center gap-1.5"
+                  title="Print slip or save as PDF"
                 >
                   <Printer className="h-3.5 w-3.5 text-gray-600" />
-                  Print Reconciliation Slip
+                  Print / Save PDF
                 </Button>
               </div>
             </div>

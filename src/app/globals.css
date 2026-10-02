@@ -270,63 +270,110 @@
 }
 
 /* ============================================================ */
-/* 80MM THERMAL RECEIPT PRINT OPTIMIZATIONS                     */
+/* CLINICAL & 80MM THERMAL RECEIPT PRINT OPTIMIZATIONS          */
+/* Fixes blank white page issue on PDF export & physical print  */
 /* ============================================================ */
 @media print {
   @page {
-    size: 80mm auto;
-    margin: 0mm;
+    size: auto;
+    margin: 2mm 3mm;
   }
   
   html, body {
-    width: 80mm !important;
-    min-width: 80mm !important;
-    max-width: 80mm !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100% !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  body * {
-    visibility: hidden !important;
+  /* Unconstrain Radix UI modal dialogs and portals during print */
+  [data-radix-portal] {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
   }
 
-  #printable-invoice,
-  #printable-invoice * {
-    visibility: visible !important;
+  /* Hide modal backdrop overlay */
+  [data-radix-portal] > div[class*="fixed"][class*="inset-0"]:not([role="dialog"]),
+  [data-radix-portal] > div[data-state]:not([role="dialog"]) {
+    display: none !important;
+    background: transparent !important;
   }
 
-  #printable-invoice {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 76mm !important;
-    max-width: 76mm !important;
+  /* Dialog content: unfix, remove 94vh clipping and transform */
+  [role="dialog"],
+  [data-state="open"][role="dialog"],
+  div[data-state="open"][class*="fixed"] {
+    position: static !important;
+    transform: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    padding: 0 !important;
     margin: 0 auto !important;
-    padding: 3mm 2mm !important;
+  }
+
+  /* Elements to explicitly hide during print */
+  .print\:hidden,
+  button,
+  header,
+  nav,
+  aside,
+  [data-radix-collection-item],
+  button[class*="absolute"],
+  [aria-label="Close"] {
+    display: none !important;
+  }
+
+  /* Printable containers styling */
+  #printable-invoice,
+  #printable-rx-slip,
+  #printable-receipt,
+  #printable-reconciliation-slip {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 340px !important;
+    padding: 4px !important;
     background: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
     border: none !important;
-  }
-
-  #printable-invoice,
-  #printable-invoice > div {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
-  #printable-invoice * {
+  #printable-invoice *,
+  #printable-rx-slip *,
+  #printable-receipt *,
+  #printable-reconciliation-slip * {
+    visibility: visible !important;
     color: #000000 !important;
     border-color: #000000 !important;
     text-shadow: none !important;
   }
 
-  #printable-invoice img {
-    filter: grayscale(100%) contrast(200%) !important;
+  #printable-invoice img,
+  #printable-rx-slip img,
+  #printable-receipt img,
+  #printable-reconciliation-slip img {
+    filter: grayscale(100%) contrast(150%) !important;
     image-rendering: -webkit-optimize-contrast !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

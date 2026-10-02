@@ -49,6 +49,7 @@ import {
   normalizePakistaniPhone,
 } from '@/lib/utils/helpers';
 import { useReceiptSettings } from '@/lib/receipt-settings';
+import { printReceipt } from '@/lib/print-receipt';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -160,7 +161,7 @@ export function POSTerminal({
       // F10 or Ctrl+P: Print Thermal Receipt if modal is open
       if ((e.key === 'F10' || (e.ctrlKey && e.key === 'p')) && showReceiptModal) {
         e.preventDefault();
-        window.print();
+        printReceipt('printable-invoice', `Receipt-${lastSaleInfo?.invoiceNumber || 'POS'}`);
         return;
       }
 
@@ -965,11 +966,12 @@ export function POSTerminal({
                 <div className="flex items-center gap-1.5">
                   <Button
                     size="sm"
-                    onClick={() => window.print()}
-                    className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-xs px-3"
+                    onClick={() => printReceipt('printable-invoice', `Receipt-${lastSaleInfo?.invoiceNumber || 'POS'}`)}
+                    className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-xs px-3 flex items-center gap-1.5"
+                    title="Print receipt or export / save as PDF"
                   >
-                    <Printer className="h-3.5 w-3.5 mr-1.5" />
-                    Print Receipt
+                    <Printer className="h-3.5 w-3.5" />
+                    <span>Print / PDF</span>
                   </Button>
                   <Button
                     size="sm"
