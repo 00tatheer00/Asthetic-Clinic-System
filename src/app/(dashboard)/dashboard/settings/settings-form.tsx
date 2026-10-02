@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateClinicSettings, updateOperatingHours } from '@/actions/clinic';
 import { updateStaffEmailAction, updateStaffPasswordAction } from '@/actions/auth';
@@ -25,7 +25,15 @@ import {
   EyeOff,
   ShieldCheck,
   MailCheck,
+  Printer,
+  QrCode,
 } from 'lucide-react';
+import {
+  getReceiptSettings,
+  saveReceiptSettings,
+  DEFAULT_RECEIPT_SETTINGS,
+  type InvoiceReceiptSettings,
+} from '@/lib/receipt-settings';
 import { toast } from 'sonner';
 import { clearBrowserCacheAndReload } from '@/lib/cache-utils';
 import { cn } from '@/lib/utils';
@@ -196,6 +204,25 @@ export function SettingsForm({
 
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingHours, setSavingHours] = useState(false);
+
+  // 80mm Receipt & QR settings state
+  const [receiptForm, setReceiptForm] = useState<InvoiceReceiptSettings>(DEFAULT_RECEIPT_SETTINGS);
+  const [savingReceiptSettings, setSavingReceiptSettings] = useState(false);
+
+  useEffect(() => {
+    setReceiptForm(getReceiptSettings());
+  }, []);
+
+  const handleSaveReceiptSettings = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAdmin) return;
+    setSavingReceiptSettings(true);
+    saveReceiptSettings(receiptForm);
+    setTimeout(() => {
+      setSavingReceiptSettings(false);
+      toast.success('80mm Receipt & QR Verification settings saved successfully!');
+    }, 250);
+  };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -411,6 +438,141 @@ export function SettingsForm({
             </CardContent>
           </Card>
         </div>
+      </form>
+
+      {/* 80mm Thermal Receipt & QR Verification Settings */}
+      <form onSubmit={handleSaveReceiptSettings}>
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Printer className="h-5 w-5 text-rose-600" />
+                <CardTitle className="text-base">80mm Thermal Receipt &amp; QR Verification</CardTitle>
+                <Badge className="bg-stone-900 text-white text-[10px] uppercase font-bold tracking-wider">
+                  80mm Roll
+                </Badge>
+              </div>
+              <CardDescription>
+                Configure the clinic header, attending doctor credentials, custom footer note, and online verification QR code for 80mm POS receipts.
+              </CardDescription>
+            </div>
+            {isAdmin && (
+              <Button
+                type="submit"
+                size="sm"
+                disabled={savingReceiptSettings}
+                className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium"
+              >
+                {savingReceiptSettings ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-1.5 h-3.5 w-3.5" />
+                    Save Receipt Settings
+                  </>
+                )}
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4 pt-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Receipt Header Title</Label>
+                <Input
+                  value={receiptForm.receiptTitle}
+                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptTitle: e.target.value })}
+                  disabled={!isAdmin}
+                  placeholder="BRIMISH SKIN CARE & LASER CLINIC"
+                  className="h-8 text-xs font-mono uppercase"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Clinical Director / Attending Doctor</Label>
+                <Input
+                  value={receiptForm.receiptDoctor}
+                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptDoctor: e.target.value })}
+                  disabled={!isAdmin}
+                  placeholder="DR. BILAL AHMAD (MD Aesthetic Medicine)"
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Specialty Subtitle / Tagline</Label>
+                <Input
+                  value={receiptForm.receiptSpecialty}
+                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptSpecialty: e.target.value })}
+                  disabled={!isAdmin}
+                  placeholder="Medical Aesthetics, Dermatology & Laser Center"
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Receipt Phone / WhatsApp</Label>
+                <Input
+                  value={receiptForm.receiptPhone}
+                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptPhone: e.target.value })}
+                  disabled={!isAdmin}
+                  placeholder="Tel: +92 91 5842100 | WhatsApp: 0312-9000100"
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Clinic Physical Address on Slip</Label>
+              <Input
+                value={receiptForm.receiptAddress}
+                onChange={(e) => setReceiptForm({ ...receiptForm, receiptAddress: e.target.value })}
+                disabled={!isAdmin}
+                placeholder="Cantonment Plaza, University Rd, Peshawar, KP"
+                className="h-8 text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Custom Receipt Footer Note</Label>
+              <Textarea
+                value={receiptForm.receiptFooterMessage}
+                onChange={(e) => setReceiptForm({ ...receiptForm, receiptFooterMessage: e.target.value })}
+                disabled={!isAdmin}
+                rows={2}
+                placeholder="Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days."
+                className="text-xs resize-none"
+              />
+            </div>
+
+            {/* QR Code Online Verification Toggle */}
+            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-emerald-100/70 text-emerald-800 shrink-0 mt-0.5">
+                  <QrCode className="h-5 w-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <Label htmlFor="qr-verify-toggle" className="text-xs font-bold text-gray-900 cursor-pointer">
+                    Autogenerated QR Code Public Verification
+                  </Label>
+                  <p className="text-[11px] text-gray-500 max-w-xl leading-relaxed">
+                    When enabled, a scannable QR code is printed at the bottom of every 80mm thermal receipt. Scanning with any smartphone camera automatically opens the verified authenticity certificate on the website at <code>/verify-invoice</code>.
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="qr-verify-toggle"
+                checked={receiptForm.enableQrVerification}
+                onCheckedChange={(checked) =>
+                  setReceiptForm({ ...receiptForm, enableQrVerification: checked })
+                }
+                disabled={!isAdmin}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </form>
 
       {/* Operating Hours */}
