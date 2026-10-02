@@ -232,20 +232,24 @@ export function BookingFlow({
   const [trackError, setTrackError] = useState<string | null>(null);
   const [hasSearchedTrack, setHasSearchedTrack] = useState(false);
 
-  // AUTOMATIC SMOOTH SCROLL TO TOP ON STEP OR MODE CHANGE
+  // AUTOMATIC SMOOTH SCROLL TO TOP OF BOOKING CARD ON STEP OR MODE CHANGE
   useEffect(() => {
     // 1. Scroll the inner body container to top
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // 2. Scroll the outer modal card into view smoothly
+    // 2. Scroll the booking card into view — use 'nearest' to avoid jumping to the very top of the page
+    //    Only scroll if the card header is not already visible in the viewport
     if (headerTopRef.current) {
-      headerTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const rect = headerTopRef.current.getBoundingClientRect();
+      const isAboveViewport = rect.top < 0;
+      const isBelowViewport = rect.top > window.innerHeight * 0.5;
+      if (isAboveViewport || isBelowViewport) {
+        headerTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
-    // 3. Ensure window page scrolls to top if in full page mode
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // NOTE: We intentionally do NOT call window.scrollTo({ top: 0 }) here,
+    // because the user wants to stay within the booking card context, not jump to page top.
   }, [currentStep, activeMode]);
 
   // Calculate totals
