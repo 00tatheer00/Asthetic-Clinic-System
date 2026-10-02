@@ -208,6 +208,8 @@ export async function adjustStock(formData: unknown) {
   });
 
   revalidatePath('/dashboard/inventory');
+  revalidatePath('/dashboard/pos');
+  revalidatePath('/dashboard/content/products');
   return { success: true };
 }
 
@@ -265,6 +267,7 @@ export async function saveTreatment(treatmentId: string | null, formData: unknow
   }
 
   revalidatePath('/dashboard/content/treatments');
+  revalidatePath('/dashboard/pos');
   revalidatePath('/treatments');
   return { success: true };
 }
@@ -311,6 +314,7 @@ export async function deleteTreatment(treatmentId: string) {
   });
 
   revalidatePath('/dashboard/content/treatments');
+  revalidatePath('/dashboard/pos');
   revalidatePath('/treatments');
   return { success: true };
 }
@@ -385,6 +389,7 @@ export async function saveProduct(productId: string | null, formData: unknown) {
 
   revalidatePath('/dashboard/content/products');
   revalidatePath('/dashboard/inventory');
+  revalidatePath('/dashboard/pos');
   revalidatePath('/products');
   return { success: true };
 }
@@ -433,6 +438,7 @@ export async function deleteProduct(productId: string) {
 
   revalidatePath('/dashboard/content/products');
   revalidatePath('/dashboard/inventory');
+  revalidatePath('/dashboard/pos');
   revalidatePath('/products');
   return { success: true };
 }

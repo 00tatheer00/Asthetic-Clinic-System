@@ -9,37 +9,43 @@ export default async function POSPage() {
   await getAuthenticatedStaff();
   const supabase = await createClient();
 
-  const [{ data: products }, { data: treatments }, { data: settings }] = await Promise.all([
+  const [
+    { data: products },
+    { data: treatments },
+    { data: categories },
+    { data: settings },
+  ] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, sale_price, stock_quantity, reserved_quantity')
+      .select('id, name, sale_price, stock_quantity, reserved_quantity, sku, category_id, product_categories(id, name)')
       .eq('is_active', true)
       .is('deleted_at', null)
-      .gt('stock_quantity', 0)
       .order('name'),
     supabase
       .from('treatments')
-      .select('id, name, price')
+      .select('id, name, price, treatment_categories(id, name)')
       .eq('is_active', true)
       .is('deleted_at', null)
       .order('name'),
     supabase
+      .from('product_categories')
+      .select('id, name')
+      .order('name'),
+    supabase
       .from('clinic_settings')
-      .select('default_tax_rate')
+      .select('*')
       .limit(1)
       .single(),
   ]);
 
   return (
-    <div>
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Point of Sale</h1>
-        <p className="text-sm text-gray-500 mt-1">Create walk-in sales and generate invoices.</p>
-      </div>
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
       <POSTerminal
         products={products || []}
         treatments={treatments || []}
+        categories={categories || []}
         taxRate={settings?.default_tax_rate || 0}
+        clinicSettings={settings || undefined}
       />
     </div>
   );

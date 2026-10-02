@@ -279,8 +279,19 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto min-h-0 bg-slate-50/60">
-          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20 animate-page-enter">
+        <main
+          className={cn(
+            'flex-1 min-h-0 bg-slate-50/60',
+            pathname === '/dashboard/pos' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'
+          )}
+        >
+          <div
+            className={cn(
+              pathname === '/dashboard/pos'
+                ? 'h-full flex flex-col p-2.5 sm:p-4 overflow-hidden'
+                : 'mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20 animate-page-enter'
+            )}
+          >
             {children}
           </div>
         </main>
