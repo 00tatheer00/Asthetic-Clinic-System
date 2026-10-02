@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createVisit } from '@/actions/clinic';
 import { createClinicalNote, updatePatient, deletePatient } from '@/actions/patients';
@@ -21,9 +22,9 @@ import {
 import {
   ArrowLeft, Phone, Mail, Calendar, Clock, User, CreditCard,
   FileText, Stethoscope, Plus, Loader2, Eye, EyeOff, Image as ImageIcon,
-  Edit, Trash2,
+  Edit, Trash2, Printer, MessageCircle, ShieldCheck, Share2,
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -74,6 +75,12 @@ export function PatientDetail({
   const [visitForm, setVisitForm] = useState({ treatment_id: '', visit_date: new Date().toISOString().split('T')[0], notes: '' });
   const [noteForm, setNoteForm] = useState({ note_text: '', diagnosis: '', prescription: '' });
   const [saving, setSaving] = useState(false);
+  const [activeRxPrint, setActiveRxPrint] = useState<{
+    diagnosis?: string;
+    prescription?: string;
+    note_text?: string;
+    date: string;
+  } | null>(null);
 
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -199,7 +206,19 @@ export function PatientDetail({
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">{patient.name}</h1>
           <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-gray-500">
-            <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{formatPhone(patient.phone)}</span>
+            <span className="flex items-center gap-1 font-mono text-gray-700 font-medium">
+              <Phone className="h-3.5 w-3.5 text-gray-400" />
+              {formatPhone(patient.phone)}
+            </span>
+            <a
+              href={buildWhatsAppLink(patient.phone, `Assalam-o-Alaikum ${patient.name}, this is Brimish Skin Care Clinic, Peshawar regarding your consultation.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold border border-emerald-200 transition-colors"
+            >
+              <MessageCircle className="h-3 w-3 text-emerald-600" />
+              WhatsApp
+            </a>
             {patient.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{patient.email}</span>}
             {patient.gender && <span className="capitalize">{patient.gender}</span>}
             {patient.date_of_birth && <span>DOB: {formatDate(patient.date_of_birth)}</span>}
@@ -421,7 +440,25 @@ export function PatientDetail({
                             <p className="text-xs text-green-600">{note.prescription}</p>
                           </div>
                         )}
-                        <p className="text-[10px] text-gray-400 mt-2">{formatDateTime(note.created_at)}</p>
+                        <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                          <p className="text-[10px] text-gray-400">{formatDateTime(note.created_at)}</p>
+                          {(note.prescription || note.diagnosis) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setActiveRxPrint({
+                                diagnosis: note.diagnosis || undefined,
+                                prescription: note.prescription || undefined,
+                                note_text: note.note_text,
+                                date: note.created_at,
+                              })}
+                              className="h-7 text-xs rounded-lg border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                            >
+                              <Printer className="h-3 w-3 mr-1 text-emerald-600" />
+                              Print Official Rx Slip
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -644,6 +681,127 @@ export function PatientDetail({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Official Doctor Prescription (Rx) Slip Print Modal */}
+      <Dialog open={!!activeRxPrint} onOpenChange={(open) => !open && setActiveRxPrint(null)}>
+        <DialogContent className="sm:max-w-2xl max-h-[92vh] overflow-y-auto p-0 border-rose-200">
+          <div className="p-6 bg-white space-y-6" id="printable-rx-slip">
+            {/* Header Letterhead */}
+            <div className="border-b-2 border-rose-600 pb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-black font-serif text-gray-950 uppercase tracking-tight">
+                  Brimish Skin Care & Laser Clinic
+                </h2>
+                <p className="text-xs font-bold text-rose-600">
+                  DR. BILAL AHMAD (MBBS, R.M.P, Aesthetic Physician)
+                </p>
+                <p className="text-[11px] text-gray-500 font-medium">
+                  PMDC Reg # 98214-P • Certified Aesthetic Dermatologist
+                </p>
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Cantonment Plaza, University Road, Peshawar | Tel: +92 312 9000100
+                </p>
+              </div>
+              <div className="h-14 w-14 rounded-2xl border border-rose-100 p-1 bg-white shadow-xs shrink-0 flex items-center justify-center">
+                <Image src="/images/logo.png" alt="Brimish Clinic" width={48} height={48} className="object-contain" />
+              </div>
+            </div>
+
+            {/* Patient Meta Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-rose-50/50 rounded-xl text-xs border border-rose-100">
+              <div>
+                <span className="text-[10px] text-gray-400 block uppercase font-bold">Patient Name</span>
+                <span className="font-bold text-gray-900">{patient.name}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block uppercase font-bold">Phone / MR</span>
+                <span className="font-mono text-gray-800">{formatPhone(patient.phone)}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block uppercase font-bold">Gender / Age</span>
+                <span className="capitalize text-gray-800">{patient.gender || 'Not specified'}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block uppercase font-bold">Date</span>
+                <span className="font-bold text-gray-900">{activeRxPrint?.date ? formatDate(activeRxPrint.date) : formatDate(new Date().toISOString())}</span>
+              </div>
+            </div>
+
+            {/* Clinical Diagnosis (if present) */}
+            {activeRxPrint?.diagnosis && (
+              <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-blue-800">Clinical Diagnosis</p>
+                <p className="text-sm font-semibold text-blue-950 mt-0.5">{activeRxPrint.diagnosis}</p>
+              </div>
+            )}
+
+            {/* Rx Symbol & Medication Regimen */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-2xl font-serif font-black text-rose-700">
+                <span>℞</span>
+                <span className="text-xs uppercase font-bold tracking-widest text-gray-400 font-sans">
+                  Medical Skincare & Medication Regimen
+                </span>
+              </div>
+              <div className="p-4 rounded-2xl bg-gray-50/80 border border-gray-200 min-h-36">
+                <p className="text-sm text-gray-900 whitespace-pre-wrap font-mono sm:font-sans leading-relaxed">
+                  {activeRxPrint?.prescription || activeRxPrint?.note_text || 'No prescription specified.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Doctor Advice & Instructions */}
+            <div className="text-[11px] text-gray-600 bg-amber-50/50 p-3 rounded-xl border border-amber-100 space-y-1">
+              <p className="font-bold text-amber-900 uppercase text-[10px]">Patient Care Instructions:</p>
+              <ul className="list-disc pl-4 space-y-0.5 text-gray-700">
+                <li>Apply broad-spectrum SPF 50 sunscreen every morning 15 minutes before sun exposure.</li>
+                <li>Do not pick or squeeze acne lesions or peeling skin.</li>
+                <li>In case of sudden rash or redness, discontinue actives and message clinic WhatsApp.</li>
+                <li>Follow-up consultation is valid within 30 days of this date.</li>
+              </ul>
+            </div>
+
+            {/* Footer Sign-off */}
+            <div className="pt-6 border-t border-gray-200 flex items-end justify-between">
+              <div className="text-[10px] text-gray-400 space-y-0.5">
+                <p>Official Digital Prescription Record • Brimish Clinic Peshawar</p>
+                <p>Verify records online at brimishclinic.com</p>
+              </div>
+              <div className="text-right">
+                <div className="h-10 w-36 border-b border-gray-400 ml-auto" />
+                <p className="text-xs font-bold text-gray-900 mt-1">Dr. Bilal Ahmad</p>
+                <p className="text-[10px] text-gray-500">Authorized Physician Signature & Stamp</p>
+              </div>
+            </div>
+
+            {/* Print & Share Actions Bar */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-gray-100 print:hidden">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (activeRxPrint) {
+                    const text = `*Assalam-o-Alaikum ${patient.name}*\nHere is your official prescription from *Dr. Bilal Ahmad (Brimish Skin Care Clinic)*:\n\n*Diagnosis:* ${activeRxPrint.diagnosis || 'Clinical Consultation'}\n\n*Regimen:*\n${activeRxPrint.prescription || activeRxPrint.note_text}\n\n*Follow-up:* Valid for 30 days.\nClinic: University Road, Peshawar (0312-9000100)`;
+                    window.open(buildWhatsAppLink(patient.phone, text), '_blank');
+                  }
+                }}
+                className="rounded-lg h-9 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+              >
+                <MessageCircle className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                Send via WhatsApp
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => window.print()}
+                className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg h-9 text-xs font-semibold px-4"
+              >
+                <Printer className="h-3.5 w-3.5 mr-1.5" />
+                Print Rx Slip
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

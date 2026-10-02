@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useMemo, useEffect } from 'react';
+import { useState, useTransition, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
@@ -46,6 +46,7 @@ import {
   calculateLineTotal,
   calculateDiscount,
   calculateTax,
+  normalizePakistaniPhone,
 } from '@/lib/utils/helpers';
 import { useReceiptSettings } from '@/lib/receipt-settings';
 import { cn } from '@/lib/utils';
@@ -139,9 +140,59 @@ export function POSTerminal({
     stock_quantity: '20',
   });
 
-  // Receipt Modal State
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard Shortcuts for High-Speed Reception POS Billing
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName);
+
+      // F2: Focus Search Input
+      if (e.key === 'F2') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      // F10 or Ctrl+P: Print Thermal Receipt if modal is open
+      if ((e.key === 'F10' || (e.ctrlKey && e.key === 'p')) && showReceiptModal) {
+        e.preventDefault();
+        window.print();
+        return;
+      }
+
+      // Escape: Clear search or close modals
+      if (e.key === 'Escape') {
+        if (showReceiptModal) {
+          setShowReceiptModal(false);
+        } else if (showAddProductModal) {
+          setShowAddProductModal(false);
+        } else if (searchQuery) {
+          setSearchQuery('');
+        }
+        return;
+      }
+
+      // F8 & F9: Toggle payment method when not inside a text field
+      if (!isInput) {
+        if (e.key === 'F8') {
+          e.preventDefault();
+          setPaymentMethod('cash');
+          toast.info('Switched to Cash Payment Mode');
+        } else if (e.key === 'F9') {
+          e.preventDefault();
+          setPaymentMethod('card');
+          toast.info('Switched to Card / POS Mode');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showReceiptModal, showAddProductModal, searchQuery]);
   const [lastSaleInfo, setLastSaleInfo] = useState<{
     saleId: string;
     invoiceId?: string | null;
@@ -510,11 +561,22 @@ export function POSTerminal({
             </button>
           </div>
 
+          {/* Keyboard Shortcuts Guide Ribbon */}
+          <div className="hidden xl:flex items-center gap-1.5 text-[10px] text-gray-500 bg-gray-100/90 px-2.5 py-1 rounded-full border border-gray-200">
+            <span className="font-semibold text-gray-700">Keys:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F2</kbd> Search
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F8</kbd> Cash
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F9</kbd> Card
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F10</kbd> Print
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">Esc</kbd> Close
+          </div>
+
           {/* Search Box */}
           <div className="relative w-44 sm:w-56">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
             <Input
-              placeholder="Search items..."
+              ref={searchInputRef}
+              placeholder="Search items [F2]..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-8 text-xs bg-white rounded-lg border-gray-200"
@@ -717,10 +779,10 @@ export function POSTerminal({
             <div className="relative">
               <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
               <Input
-                placeholder="Phone (optional)"
+                placeholder="Phone (0300-1234567)"
                 value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                className="h-8 text-xs pl-8 bg-gray-50/70 border-gray-200 rounded-lg"
+                onChange={(e) => setCustomerPhone(normalizePakistaniPhone(e.target.value))}
+                className="h-8 text-xs pl-8 bg-gray-50/70 border-gray-200 rounded-lg font-mono sm:font-sans"
               />
             </div>
           </div>

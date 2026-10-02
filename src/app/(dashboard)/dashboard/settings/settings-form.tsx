@@ -27,13 +27,24 @@ import {
   MailCheck,
   Printer,
   QrCode,
+  CalendarOff,
+  Calendar,
+  Trash2,
+  Plus,
 } from 'lucide-react';
+import QRCode from 'qrcode';
 import {
   getReceiptSettings,
   saveReceiptSettings,
   DEFAULT_RECEIPT_SETTINGS,
   type InvoiceReceiptSettings,
 } from '@/lib/receipt-settings';
+import {
+  useBlockedDates,
+  addBlockedDate,
+  removeBlockedDate,
+  type BlockedDateEntry,
+} from '@/lib/blocked-dates';
 import { toast } from 'sonner';
 import { clearBrowserCacheAndReload } from '@/lib/cache-utils';
 import { cn } from '@/lib/utils';
@@ -208,10 +219,50 @@ export function SettingsForm({
   // 80mm Receipt & QR settings state
   const [receiptForm, setReceiptForm] = useState<InvoiceReceiptSettings>(DEFAULT_RECEIPT_SETTINGS);
   const [savingReceiptSettings, setSavingReceiptSettings] = useState(false);
+  const [previewQrUrl, setPreviewQrUrl] = useState<string>('');
+
+  // Doctor Blocked Dates state
+  const blockedDates = useBlockedDates();
+  const [newBlockedDate, setNewBlockedDate] = useState('');
+  const [newBlockedReason, setNewBlockedReason] = useState('');
 
   useEffect(() => {
     setReceiptForm(getReceiptSettings());
   }, []);
+
+  useEffect(() => {
+    if (receiptForm.enableQrVerification) {
+      const demoUrl = 'https://brimishskincare.com/verify-invoice?id=sample&num=INV-2026-0842';
+      QRCode.toDataURL(demoUrl, {
+        width: 160,
+        margin: 1,
+        color: { dark: '#000000', light: '#ffffff' },
+      })
+        .then(setPreviewQrUrl)
+        .catch(() => {});
+    } else {
+      setPreviewQrUrl('');
+    }
+  }, [receiptForm.enableQrVerification]);
+
+  const handleAddBlockedDate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAdmin) return;
+    if (!newBlockedDate) {
+      toast.error('Please pick a date to block.');
+      return;
+    }
+    addBlockedDate(newBlockedDate, newBlockedReason || 'Doctor on Leave / Clinic Closed');
+    toast.success(`Date ${newBlockedDate} blocked successfully`);
+    setNewBlockedDate('');
+    setNewBlockedReason('');
+  };
+
+  const handleRemoveBlockedDate = (id: string, isoDate: string) => {
+    if (!isAdmin) return;
+    removeBlockedDate(id);
+    toast.info(`Date ${isoDate} unblocked`);
+  };
 
   const handleSaveReceiptSettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -440,7 +491,7 @@ export function SettingsForm({
         </div>
       </form>
 
-      {/* 80mm Thermal Receipt & QR Verification Settings */}
+      {/* 80mm Thermal Receipt & QR Verification Settings with Live Preview */}
       <form onSubmit={handleSaveReceiptSettings}>
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -453,7 +504,7 @@ export function SettingsForm({
                 </Badge>
               </div>
               <CardDescription>
-                Configure the clinic header, attending doctor credentials, custom footer note, and online verification QR code for 80mm POS receipts.
+                Configure the clinic header, attending doctor credentials, custom footer note, and scannable online verification QR code with real-time live preview.
               </CardDescription>
             </div>
             {isAdmin && (
@@ -477,99 +528,218 @@ export function SettingsForm({
               </Button>
             )}
           </CardHeader>
-          <CardContent className="space-y-4 pt-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Receipt Header Title</Label>
-                <Input
-                  value={receiptForm.receiptTitle}
-                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptTitle: e.target.value })}
-                  disabled={!isAdmin}
-                  placeholder="BRIMISH SKIN CARE & LASER CLINIC"
-                  className="h-8 text-xs font-mono uppercase"
-                />
-              </div>
+          <CardContent className="pt-1">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Left Column: Form Inputs (7 cols) */}
+              <div className="lg:col-span-7 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Receipt Header Title</Label>
+                    <Input
+                      value={receiptForm.receiptTitle}
+                      onChange={(e) => setReceiptForm({ ...receiptForm, receiptTitle: e.target.value })}
+                      disabled={!isAdmin}
+                      placeholder="BRIMISH SKIN CARE & LASER CLINIC"
+                      className="h-8 text-xs font-mono uppercase"
+                    />
+                  </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Clinical Director / Attending Doctor</Label>
-                <Input
-                  value={receiptForm.receiptDoctor}
-                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptDoctor: e.target.value })}
-                  disabled={!isAdmin}
-                  placeholder="DR. BILAL AHMAD (MD Aesthetic Medicine)"
-                  className="h-8 text-xs"
-                />
-              </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Clinical Director / Attending Doctor</Label>
+                    <Input
+                      value={receiptForm.receiptDoctor}
+                      onChange={(e) => setReceiptForm({ ...receiptForm, receiptDoctor: e.target.value })}
+                      disabled={!isAdmin}
+                      placeholder="DR. BILAL AHMAD (MD Aesthetic Medicine)"
+                      className="h-8 text-xs"
+                    />
+                  </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Specialty Subtitle / Tagline</Label>
-                <Input
-                  value={receiptForm.receiptSpecialty}
-                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptSpecialty: e.target.value })}
-                  disabled={!isAdmin}
-                  placeholder="Medical Aesthetics, Dermatology & Laser Center"
-                  className="h-8 text-xs"
-                />
-              </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Specialty Subtitle / Tagline</Label>
+                    <Input
+                      value={receiptForm.receiptSpecialty}
+                      onChange={(e) => setReceiptForm({ ...receiptForm, receiptSpecialty: e.target.value })}
+                      disabled={!isAdmin}
+                      placeholder="Medical Aesthetics, Dermatology & Laser Center"
+                      className="h-8 text-xs"
+                    />
+                  </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Receipt Phone / WhatsApp</Label>
-                <Input
-                  value={receiptForm.receiptPhone}
-                  onChange={(e) => setReceiptForm({ ...receiptForm, receiptPhone: e.target.value })}
-                  disabled={!isAdmin}
-                  placeholder="Tel: +92 91 5842100 | WhatsApp: 0312-9000100"
-                  className="h-8 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Clinic Physical Address on Slip</Label>
-              <Input
-                value={receiptForm.receiptAddress}
-                onChange={(e) => setReceiptForm({ ...receiptForm, receiptAddress: e.target.value })}
-                disabled={!isAdmin}
-                placeholder="Cantonment Plaza, University Rd, Peshawar, KP"
-                className="h-8 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Custom Receipt Footer Note</Label>
-              <Textarea
-                value={receiptForm.receiptFooterMessage}
-                onChange={(e) => setReceiptForm({ ...receiptForm, receiptFooterMessage: e.target.value })}
-                disabled={!isAdmin}
-                rows={2}
-                placeholder="Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days."
-                className="text-xs resize-none"
-              />
-            </div>
-
-            {/* QR Code Online Verification Toggle */}
-            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-emerald-100/70 text-emerald-800 shrink-0 mt-0.5">
-                  <QrCode className="h-5 w-5" />
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Receipt Phone / WhatsApp</Label>
+                    <Input
+                      value={receiptForm.receiptPhone}
+                      onChange={(e) => setReceiptForm({ ...receiptForm, receiptPhone: e.target.value })}
+                      disabled={!isAdmin}
+                      placeholder="Tel: +92 91 5842100 | WhatsApp: 0312-9000100"
+                      className="h-8 text-xs"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  <Label htmlFor="qr-verify-toggle" className="text-xs font-bold text-gray-900 cursor-pointer">
-                    Autogenerated QR Code Public Verification
-                  </Label>
-                  <p className="text-[11px] text-gray-500 max-w-xl leading-relaxed">
-                    When enabled, a scannable QR code is printed at the bottom of every 80mm thermal receipt. Scanning with any smartphone camera automatically opens the verified authenticity certificate on the website at <code>/verify-invoice</code>.
-                  </p>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Clinic Physical Address on Slip</Label>
+                  <Input
+                    value={receiptForm.receiptAddress}
+                    onChange={(e) => setReceiptForm({ ...receiptForm, receiptAddress: e.target.value })}
+                    disabled={!isAdmin}
+                    placeholder="Cantonment Plaza, University Rd, Peshawar, KP"
+                    className="h-8 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Custom Receipt Footer Note</Label>
+                  <Textarea
+                    value={receiptForm.receiptFooterMessage}
+                    onChange={(e) => setReceiptForm({ ...receiptForm, receiptFooterMessage: e.target.value })}
+                    disabled={!isAdmin}
+                    rows={2}
+                    placeholder="Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days."
+                    className="text-xs resize-none"
+                  />
+                </div>
+
+                {/* QR Code Online Verification Toggle */}
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-100/70 text-emerald-800 shrink-0 mt-0.5">
+                      <QrCode className="h-5 w-5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <Label htmlFor="qr-verify-toggle" className="text-xs font-bold text-gray-900 cursor-pointer">
+                        Autogenerated QR Code Public Verification
+                      </Label>
+                      <p className="text-[11px] text-gray-500 max-w-xl leading-relaxed">
+                        When enabled, a scannable QR code is printed at the bottom of every 80mm thermal receipt. Scanning with any smartphone camera automatically opens the verified authenticity certificate on the website at <code>/verify-invoice</code>.
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="qr-verify-toggle"
+                    checked={receiptForm.enableQrVerification}
+                    onCheckedChange={(checked) =>
+                      setReceiptForm({ ...receiptForm, enableQrVerification: checked })
+                    }
+                    disabled={!isAdmin}
+                  />
                 </div>
               </div>
-              <Switch
-                id="qr-verify-toggle"
-                checked={receiptForm.enableQrVerification}
-                onCheckedChange={(checked) =>
-                  setReceiptForm({ ...receiptForm, enableQrVerification: checked })
-                }
-                disabled={!isAdmin}
-              />
+
+              {/* Right Column: Live 80mm Thermal Receipt Simulation (5 cols) */}
+              <div className="lg:col-span-5 bg-stone-100/80 p-4 rounded-2xl border border-stone-200 flex flex-col items-center">
+                <div className="w-full flex items-center justify-between pb-2 mb-2 border-b border-stone-200 text-xs">
+                  <span className="font-semibold text-stone-700 flex items-center gap-1.5">
+                    <Printer className="h-3.5 w-3.5 text-stone-500" />
+                    Live 80mm Thermal Slip Preview
+                  </span>
+                  <Badge variant="outline" className="text-[10px] bg-white border-stone-300 text-stone-600 font-mono">
+                    80mm / 576 dots
+                  </Badge>
+                </div>
+
+                {/* Physical 80mm Thermal Paper Simulation */}
+                <div className="w-full max-w-[320px] bg-white text-stone-900 font-mono text-[11px] leading-tight p-4 shadow-md rounded-sm border-t-4 border-dashed border-stone-400 border-x border-b border-stone-300">
+                  {/* Clinic Header */}
+                  <div className="text-center space-y-1 pb-2 border-b border-dashed border-stone-300">
+                    <p className="font-extrabold text-[13px] tracking-wide uppercase text-black">
+                      {receiptForm.receiptTitle || 'BRIMISH SKIN CARE & LASER CLINIC'}
+                    </p>
+                    <p className="font-bold text-[10px] text-stone-800">
+                      {receiptForm.receiptDoctor || 'DR. BILAL AHMAD (MD Aesthetic Medicine)'}
+                    </p>
+                    <p className="text-[9px] text-stone-600">
+                      {receiptForm.receiptSpecialty || 'Medical Aesthetics, Dermatology & Laser Center'}
+                    </p>
+                    <p className="text-[9px] text-stone-600">
+                      {receiptForm.receiptAddress || 'Cantonment Plaza, University Rd, Peshawar, KP'}
+                    </p>
+                    <p className="text-[9px] text-stone-600 font-bold">
+                      {receiptForm.receiptPhone || 'Tel: +92 91 5842100 | WhatsApp: 0312-9000100'}
+                    </p>
+                  </div>
+
+                  {/* Dummy Transaction Details */}
+                  <div className="py-2 border-b border-dashed border-stone-300 text-[10px] space-y-0.5">
+                    <div className="flex justify-between">
+                      <span>Receipt #: INV-2026-0842</span>
+                      <span>POS-01</span>
+                    </div>
+                    <div className="flex justify-between text-stone-600">
+                      <span>Date: 02 Oct 2026, 04:30 PM</span>
+                      <span>Method: Cash</span>
+                    </div>
+                    <div className="text-stone-600">
+                      Patient: Walk-in Client
+                    </div>
+                  </div>
+
+                  {/* Sample Items Table */}
+                  <div className="py-2 border-b border-dashed border-stone-300 space-y-1.5 text-[10px]">
+                    <div className="flex justify-between font-bold border-b border-stone-200 pb-0.5">
+                      <span>Item Description</span>
+                      <span>PKR</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>1x HydraFacial Glow Therapy</span>
+                      <span>6,500</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>1x Sunscreen SPF 60 (50ml)</span>
+                      <span>2,800</span>
+                    </div>
+                  </div>
+
+                  {/* Totals */}
+                  <div className="py-2 border-b border-dashed border-stone-300 space-y-1 text-[10px]">
+                    <div className="flex justify-between">
+                      <span>Subtotal:</span>
+                      <span>PKR 9,300</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Discount (Promo):</span>
+                      <span>-PKR 0</span>
+                    </div>
+                    <div className="flex justify-between text-[12px] font-extrabold pt-1 border-t border-stone-200">
+                      <span>NET TOTAL:</span>
+                      <span>PKR 9,300</span>
+                    </div>
+                  </div>
+
+                  {/* Scannable Verification QR Code Simulation */}
+                  {receiptForm.enableQrVerification && (
+                    <div className="py-2.5 flex flex-col items-center justify-center text-center border-b border-dashed border-stone-300">
+                      {previewQrUrl ? (
+                        <img
+                          src={previewQrUrl}
+                          alt="Live Receipt QR Code"
+                          className="w-20 h-20 border border-stone-300 p-0.5 bg-white mb-1"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-stone-200 flex items-center justify-center text-[9px] mb-1">
+                          [QR Code]
+                        </div>
+                      )}
+                      <p className="text-[8px] font-bold text-stone-700 uppercase tracking-tight">
+                        Scan to verify official tax invoice
+                      </p>
+                      <p className="text-[7.5px] text-stone-500">
+                        brimishskincare.com/verify-invoice
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Custom Footer */}
+                  <div className="pt-2 text-center text-[9px] text-stone-600 leading-normal">
+                    <p className="italic">
+                      {receiptForm.receiptFooterMessage ||
+                        'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days.'}
+                    </p>
+                    <p className="text-[8px] text-stone-400 mt-1">*** Software by Brimish POS ***</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -669,6 +839,98 @@ export function SettingsForm({
                 )}
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Doctor Schedule & Blocked Dates Management */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <CalendarOff className="h-5 w-5 text-rose-600" />
+              <CardTitle className="text-base">Doctor Blocked Dates &amp; Leave Calendar</CardTitle>
+            </div>
+            <CardDescription>
+              Block holidays, surgery days, or doctor leave dates. Patients will not be able to book appointments on these dates.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-1">
+          {isAdmin && (
+            <form onSubmit={handleAddBlockedDate} className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 bg-stone-50 p-3.5 rounded-xl border border-stone-200">
+              <div className="space-y-1.5 flex-1">
+                <Label className="text-xs font-semibold text-gray-700">Select Date to Block *</Label>
+                <Input
+                  type="date"
+                  min={new Date().toISOString().split('T')[0]}
+                  value={newBlockedDate}
+                  onChange={(e) => setNewBlockedDate(e.target.value)}
+                  className="h-8 text-xs bg-white"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5 flex-2">
+                <Label className="text-xs font-semibold text-gray-700">Reason / Notice for Patients</Label>
+                <Input
+                  placeholder="e.g. Doctor Bilal on Leave / Clinic Closed for Eid"
+                  value={newBlockedReason}
+                  onChange={(e) => setNewBlockedReason(e.target.value)}
+                  className="h-8 text-xs bg-white"
+                />
+              </div>
+              <Button
+                type="submit"
+                size="sm"
+                className="h-8 text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium shrink-0 flex items-center gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Block Date
+              </Button>
+            </form>
+          )}
+
+          {/* List of currently blocked dates */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+              Active Blocked Dates ({blockedDates.length})
+            </h4>
+
+            {blockedDates.length === 0 ? (
+              <p className="text-xs text-gray-400 py-3 text-center border border-dashed rounded-xl border-gray-200">
+                No dates are currently blocked. The clinic is open on all regular operating days.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                {blockedDates.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 rounded-xl border border-rose-200 bg-rose-50/60 flex items-start justify-between gap-2"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <Badge className="bg-rose-600 text-white text-[10px] font-mono px-1.5 py-0">
+                          {item.isoDate}
+                        </Badge>
+                      </div>
+                      <p className="text-xs font-medium text-rose-950 mt-1">{item.reason}</p>
+                    </div>
+                    {isAdmin && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveBlockedDate(item.id, item.isoDate)}
+                        className="h-7 w-7 p-0 text-rose-700 hover:bg-rose-100 hover:text-rose-900 rounded-lg shrink-0"
+                        title="Unblock this date"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

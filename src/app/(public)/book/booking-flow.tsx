@@ -35,8 +35,9 @@ import {
   XCircle,
   RefreshCw,
 } from 'lucide-react';
-import { formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { formatDateTime, formatPhone, CLINIC_WHATSAPP_NUMBER, normalizePakistaniPhone } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_COLORS, APPOINTMENT_STATUS_LABELS } from '@/lib/constants';
+import { useBlockedDates } from '@/lib/blocked-dates';
 
 interface SelectedTreatmentItem {
   serviceId: string;
@@ -123,6 +124,8 @@ export function BookingFlow({
     return [];
   });
 
+  const blockedDates = useBlockedDates();
+
   // Date and Time selection
   const upcomingDays = useMemo(() => {
     const days: {
@@ -133,6 +136,8 @@ export function BookingFlow({
       monthName: string;
       isToday: boolean;
       isSunday: boolean;
+      isBlocked: boolean;
+      blockedReason?: string;
     }[] = [];
 
     const now = new Date();
@@ -155,6 +160,9 @@ export function BookingFlow({
       const day = String(d.getDate()).padStart(2, '0');
       const localIso = `${year}-${month}-${day}`;
 
+      const matchedBlocked = blockedDates.find((b) => b.isoDate === localIso);
+      const isBlocked = !!matchedBlocked;
+
       days.push({
         date: d,
         isoDate: localIso,
@@ -163,15 +171,28 @@ export function BookingFlow({
         monthName: monthNames[d.getMonth()],
         isToday,
         isSunday,
+        isBlocked,
+        blockedReason: matchedBlocked?.reason,
       });
     }
     return days;
-  }, []);
+  }, [blockedDates]);
 
   const [selectedDayIso, setSelectedDayIso] = useState<string>(() => {
-    const firstAvailable = upcomingDays.find((d) => !d.isSunday) || upcomingDays[0];
-    return firstAvailable.isoDate;
+    const firstAvailable = upcomingDays.find((d) => !d.isSunday && !d.isBlocked) || upcomingDays[0];
+    return firstAvailable ? firstAvailable.isoDate : '';
   });
+
+  // Auto-switch to next available date if currently selected date is blocked
+  useEffect(() => {
+    const current = upcomingDays.find((d) => d.isoDate === selectedDayIso);
+    if (current && (current.isSunday || current.isBlocked)) {
+      const nextAvailable = upcomingDays.find((d) => !d.isSunday && !d.isBlocked);
+      if (nextAvailable) {
+        setSelectedDayIso(nextAvailable.isoDate);
+      }
+    }
+  }, [upcomingDays, selectedDayIso]);
 
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('3:30 pm');
 
@@ -426,7 +447,7 @@ export function BookingFlow({
   // WhatsApp Link generator
   const getWhatsAppLink = (booking = confirmedBooking) => {
     if (!booking) return '#';
-    const clinicNumber = '923000000000';
+    const clinicNumber = CLINIC_WHATSAPP_NUMBER;
     const treatmentNames = booking.items
       .map((it) => `${it.serviceName} (${it.optionName})`)
       .join(', ');
@@ -1073,17 +1094,18 @@ export function BookingFlow({
               <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
                 {upcomingDays.map((day) => {
                   const isSelected = selectedDayIso === day.isoDate;
-                  const isDisabled = day.isSunday;
+                  const isDisabled = day.isSunday || day.isBlocked;
 
                   return (
                     <button
                       key={day.isoDate}
                       type="button"
                       disabled={isDisabled}
+                      title={day.isBlocked ? (day.blockedReason || 'Doctor on Leave / Surgery Day') : day.isSunday ? 'Closed on Sundays' : undefined}
                       onClick={() => setSelectedDayIso(day.isoDate)}
                       className={`min-w-[70px] sm:min-w-[76px] py-3.5 px-2 rounded-2xl flex flex-col items-center justify-center transition select-none ${
                         isDisabled
-                          ? 'opacity-40 bg-gray-50 border border-gray-200 cursor-not-allowed text-gray-400'
+                          ? 'opacity-45 bg-gray-50 border border-gray-200 cursor-not-allowed text-gray-400'
                           : isSelected
                           ? 'bg-[#2D1226] text-white shadow-md scale-102 font-medium'
                           : 'bg-white border border-gray-200 text-gray-800 hover:border-gray-300 hover:bg-gray-50'
@@ -1098,11 +1120,15 @@ export function BookingFlow({
                       <span className="text-[11px] font-medium leading-none opacity-80">
                         {day.monthName}
                       </span>
-                      {isDisabled && (
+                      {day.isBlocked ? (
+                        <span className="text-[8px] mt-1 font-bold text-amber-700 uppercase tracking-tighter text-center leading-tight">
+                          Doctor Away
+                        </span>
+                      ) : day.isSunday ? (
                         <span className="text-[9px] mt-1 font-bold text-red-500 uppercase tracking-tighter">
                           Closed
                         </span>
-                      )}
+                      ) : null}
                     </button>
                   );
                 })}
@@ -1239,9 +1265,9 @@ export function BookingFlow({
                   type="tel"
                   required
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="0300 1234567 or +923143176526"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
+                  onChange={(e) => setCustomerPhone(normalizePakistaniPhone(e.target.value))}
+                  placeholder="0300-1234567"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition font-mono sm:font-sans"
                 />
               </div>
             </div>
@@ -1254,9 +1280,9 @@ export function BookingFlow({
               <input
                 type="tel"
                 value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                placeholder="Leave empty if same as mobile"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition"
+                onChange={(e) => setWhatsappNumber(normalizePakistaniPhone(e.target.value))}
+                placeholder="0312-XXXXXXX (Leave empty if same as mobile)"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#2D1226]/20 focus:border-[#2D1226] transition font-mono sm:font-sans"
               />
             </div>
 

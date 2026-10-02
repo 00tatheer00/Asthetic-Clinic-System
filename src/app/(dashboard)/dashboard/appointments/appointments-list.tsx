@@ -29,7 +29,7 @@ import {
   ChevronLeft, ChevronRight, Loader2, Phone, Calendar, Plus, Edit3, Trash2,
   Eye, Sparkles, MessageCircle, AlertCircle,
 } from 'lucide-react';
-import { formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -201,6 +201,27 @@ export function AppointmentsList({
     } else {
       toast.error(result.error || 'Failed to update appointment');
     }
+  };
+
+  const handleWhatsAppAppointment = (apt: Appointment) => {
+    if (!apt.customer_phone) {
+      toast.error('No patient phone number available.');
+      return;
+    }
+    const treatmentName = apt.treatments?.name || 'Aesthetic Consultation / Treatment';
+    const appointmentDateFormatted = formatDateTime(apt.scheduled_at);
+
+    let statusNote = 'Your appointment is confirmed. Please arrive 10 minutes prior to your time.';
+    if (apt.status === 'pending') {
+      statusNote = 'We have received your appointment request and our clinical coordinator is ready to confirm your schedule.';
+    } else if (apt.status === 'checked_in') {
+      statusNote = 'You have checked in at reception. The aesthetic doctor will see you shortly.';
+    }
+
+    const text = `Assalam-o-Alaikum ${apt.customer_name},\n\nBrimish Skin Care & Laser Clinic:\n• Treatment: ${treatmentName}\n• Scheduled Time: ${appointmentDateFormatted}\n• Status: ${(APPOINTMENT_STATUS_LABELS[apt.status] || apt.status).toUpperCase()}\n\n${statusNote}\n\nClinic Address: Cantonment Plaza, University Road (Opp. Islamia College), Peshawar\nHelpline: +92 91 5842100 | WhatsApp: 0312-9000100`;
+
+    const link = buildWhatsAppLink(apt.customer_phone, text);
+    window.open(link, '_blank');
   };
 
   // Active fast client filtering state (0ms instant response)
@@ -634,9 +655,19 @@ export function AppointmentsList({
                     <TableCell>
                       <div>
                         <p className="text-sm font-medium text-gray-900">{apt.customer_name}</p>
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <Phone className="h-3 w-3" />
-                          {formatPhone(apt.customer_phone)}
+                        <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5">
+                          <Phone className="h-3 w-3 text-gray-400" />
+                          <span>{formatPhone(apt.customer_phone)}</span>
+                          {apt.customer_phone && (
+                            <button
+                              type="button"
+                              onClick={() => handleWhatsAppAppointment(apt)}
+                              className="inline-flex items-center text-emerald-600 hover:text-emerald-700 ml-1 p-0.5 rounded hover:bg-emerald-50 transition-colors"
+                              title="Chat / Notify on WhatsApp"
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                            </button>
+                          )}
                         </p>
                         {apt.patients && (
                           <span className="inline-flex mt-1 text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full">
@@ -691,6 +722,20 @@ export function AppointmentsList({
                               <span className="hidden sm:inline">Decline</span>
                             </Button>
                           </>
+                        )}
+
+                        {/* Direct WhatsApp Patient Button */}
+                        {apt.customer_phone && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleWhatsAppAppointment(apt)}
+                            className="h-7 px-2 text-xs border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 text-emerald-700 rounded-lg flex items-center gap-1 shadow-2xs font-medium"
+                            title="WhatsApp Patient"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
+                            <span className="hidden lg:inline">WhatsApp</span>
+                          </Button>
                         )}
 
                         {/* Always Visible Edit Button */}

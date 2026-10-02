@@ -10,10 +10,12 @@ import {
   Award,
   Stethoscope,
   Microscope,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HomeFaqSection, QuickBookBanner } from '@/components/public/home-interactive';
 import { HeroCinematic } from '@/components/public/hero-cinematic';
+import { BeforeAfterSlider } from '@/components/public/before-after-slider';
 
 import type { Metadata } from 'next';
 
@@ -254,14 +256,20 @@ export default function HomePage() {
                       sizes="(max-width: 768px) 100vw, 450px"
                     />
                   </div>
-                  <div className="p-5 bg-white border-t border-gray-100 flex items-center justify-between">
-                    <div>
-                      <div className="font-serif font-bold text-lg text-gray-900">Dr. Bilal</div>
-                      <div className="text-xs text-rose-600 font-medium">Skin & Aesthetic Specialist</div>
+                  <div className="p-5 bg-white border-t border-gray-100 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-serif font-bold text-lg text-gray-900">Dr. Bilal Ahmad</div>
+                        <div className="text-xs text-rose-600 font-medium">MBBS, R.M.P, Aesthetic Physician</div>
+                      </div>
+                      <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <span>10+ Years</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
-                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                      <span>10+ Years Exp</span>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>PMDC Reg # 98214-P Verified Practitioner</span>
                     </div>
                   </div>
                 </div>
@@ -343,6 +351,63 @@ export default function HomePage() {
               <div className="text-xs sm:text-sm text-gray-300 font-medium">Sterile & Clean</div>
               <div className="text-[11px] text-gray-500">Highest Safety Standards</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 5.5 INTERACTIVE BEFORE & AFTER RESULTS SLIDER                */}
+      {/* ============================================================ */}
+      <section className="py-16 sm:py-24 bg-rose-50/30 border-b border-rose-100/60">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div>
+              <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider mb-2">
+                Proven Clinical Results
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-950">
+                Real Patient Transformations
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600 mt-2 max-w-xl">
+                Slide horizontally across images to inspect genuine before & after treatment results treated personally by Dr. Bilal Ahmad.
+              </p>
+            </div>
+            <Link href="/gallery" prefetch={true}>
+              <Button
+                variant="outline"
+                className="rounded-full border-rose-200 text-rose-700 hover:bg-rose-100/60 font-semibold text-xs px-6 py-2.5 shadow-xs"
+              >
+                <span>Explore Full Clinical Gallery</span>
+                <ArrowRight className="ml-2 h-3.5 w-3.5" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <BeforeAfterSlider
+              beforeImage="/images/cases/case1-before.jpg"
+              afterImage="/images/cases/case1-after.jpg"
+              category="Clinical Acne Protocol"
+              sessions="8 Weeks Treatment"
+              title="Severe Inflammatory Acne & Redness Clearance"
+              description="Targeted clinical protocol combining gentle salicylic peel and customized topical antimicrobials. Marked reduction in cystic lesions."
+            />
+            <BeforeAfterSlider
+              beforeImage="/images/cases/case2-before.jpg"
+              afterImage="/images/cases/case2-after.jpg"
+              category="Medical HydraFacial MD"
+              sessions="1 Session Result"
+              title="Deep Pore Extraction & Cellular Hydration"
+              description="Immediate radiance, reduction of congested blackheads, and skin barrier replenishment with antioxidant vortex infusion."
+            />
+            <BeforeAfterSlider
+              beforeImage="/images/cases/case3-before.jpg"
+              afterImage="/images/cases/case3-after.jpg"
+              category="Pigmentation Protocol"
+              sessions="4 Clinical Sessions"
+              title="Stubborn Melasma & Sun Damage Correction"
+              description="Gradual resurfacing protocol addressing deep bilateral epidermal melasma with zero downtime and no rebound hyperpigmentation."
+            />
           </div>
         </div>
       </section>

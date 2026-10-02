@@ -43,8 +43,9 @@ import {
   Building2,
   CheckCircle2,
   ExternalLink,
+  MessageCircle,
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { useReceiptSettings } from '@/lib/receipt-settings';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -219,6 +220,23 @@ export function InvoicesList({
     }
   };
 
+  const handleSendWhatsApp = (inv: Invoice) => {
+    if (!inv.customer_phone) {
+      toast.error('No customer phone number available for this invoice.');
+      return;
+    }
+    const origin =
+      typeof window !== 'undefined' && window.location.origin
+        ? window.location.origin
+        : 'https://brimishskincare.com';
+    const verifyUrl = `${origin}/verify-invoice?id=${inv.id}&num=${encodeURIComponent(inv.invoice_number)}`;
+
+    const text = `Assalam-o-Alaikum ${inv.customer_name},\n\nHere is your official digital invoice receipt from Brimish Skin Care & Laser Clinic:\n• Invoice #: ${inv.invoice_number}\n• Amount: PKR ${Number(inv.total).toLocaleString()}\n• Payment Method: ${(inv.payment_method || 'Cash').toUpperCase()}\n• Status: ${inv.status.toUpperCase()}\n\nYou can view and verify your digital receipt record anytime at:\n${verifyUrl}\n\nClinic: Cantonment Plaza, University Road, Peshawar\nTel: +92 91 5842100 | WhatsApp: 0312-9000100`;
+
+    const link = buildWhatsAppLink(inv.customer_phone, text);
+    window.open(link, '_blank');
+  };
+
   const handleConfirmVoid = async () => {
     if (!voidTarget) return;
     if (!voidReason.trim()) {
@@ -384,6 +402,17 @@ export function InvoicesList({
                           <Printer className="h-3.5 w-3.5 mr-1" />
                           View
                         </Button>
+                        {inv.customer_phone && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleSendWhatsApp(inv)}
+                            className="h-7 px-2 text-xs text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                            title="Send Receipt via WhatsApp"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                         {inv.customer_email && (
                           <Button
                             size="sm"
@@ -492,6 +521,18 @@ export function InvoicesList({
                         <Mail className="h-3.5 w-3.5 mr-1" />
                       )}
                       Email
+                    </Button>
+                  )}
+
+                  {selectedInvoice.customer_phone && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleSendWhatsApp(selectedInvoice)}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-2.5 flex items-center gap-1 shadow-xs"
+                      title="Send Receipt via WhatsApp"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      WhatsApp
                     </Button>
                   )}
 

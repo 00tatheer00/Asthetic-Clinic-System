@@ -3,14 +3,15 @@
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import {
   LayoutDashboard, Calendar, ShoppingCart, Package, Users,
   FileText, Warehouse, Stethoscope, Box, Image, Star,
   BarChart3, Settings, LogOut, Menu, ChevronDown, Bell,
-  PanelLeftClose, PanelLeft,
+  PanelLeftClose, PanelLeft, AlertTriangle, CheckCircle2, ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -48,6 +49,28 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isAdmin = staff.role === 'super_admin';
+  const [lowStockItems, setLowStockItems] = useState<Array<{ id: string; name: string; stock_quantity: number; sku?: string | null }>>([]);
+
+  useEffect(() => {
+    const fetchLowStock = async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('products')
+          .select('id, name, stock_quantity, sku')
+          .eq('is_active', true)
+          .lte('stock_quantity', 5)
+          .order('stock_quantity', { ascending: true })
+          .limit(10);
+        if (data) {
+          setLowStockItems(data);
+        }
+      } catch {
+        // silent fallback
+      }
+    };
+    fetchLowStock();
+  }, [pathname]);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -219,14 +242,60 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             {/* Clear Browser Cache & Reload Button */}
             <ClearCacheButton variant="icon" />
 
-            {/* Notifications */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl"
-            >
-              <Bell className="h-[18px] w-[18px]" />
-            </Button>
+            {/* Notifications / Low Stock Alerts */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="relative h-9 w-9 flex items-center justify-center text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl cursor-pointer border border-transparent hover:border-rose-100"
+                aria-label="Inventory Alerts"
+              >
+                <Bell className="h-[18px] w-[18px]" />
+                {lowStockItems.length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white shadow-xs animate-pulse">
+                    {lowStockItems.length}
+                  </span>
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 p-0 shadow-lg rounded-2xl border-rose-100 bg-white">
+                <div className="p-3 bg-gradient-to-r from-rose-50/80 to-pink-50/80 border-b border-rose-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-rose-600" />
+                    <span className="text-xs font-bold text-gray-900">Stock Alerts</span>
+                  </div>
+                  <Badge className={cn('text-[10px] border-0', lowStockItems.length > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700')}>
+                    {lowStockItems.length} items low
+                  </Badge>
+                </div>
+                <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 p-1">
+                  {lowStockItems.length === 0 ? (
+                    <div className="p-4 text-center text-xs text-gray-500 flex flex-col items-center gap-1.5">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      <span>All products adequately stocked</span>
+                    </div>
+                  ) : (
+                    lowStockItems.map((item) => (
+                      <div key={item.id} className="p-2.5 hover:bg-rose-50/40 flex items-center justify-between gap-2 text-xs transition-colors rounded-lg">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 truncate leading-snug">{item.name}</p>
+                          {item.sku && <p className="text-[10px] text-gray-400 font-mono">SKU: {item.sku}</p>}
+                        </div>
+                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', item.stock_quantity <= 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')}>
+                          {item.stock_quantity <= 0 ? 'Out of Stock' : `${item.stock_quantity} left`}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="p-2.5 bg-gray-50/70 border-t border-gray-100 text-center">
+                  <Link
+                    href="/dashboard/inventory?filter=low"
+                    className="text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1"
+                  >
+                    <span>Open Inventory Restock</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* User Menu */}
             <DropdownMenu>

@@ -94,24 +94,30 @@ export function PublicFooter() {
               <li className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 mt-0.5 text-rose-400 shrink-0" />
                 <span className="text-sm text-gray-400">
-                  Peshawar, Khyber Pakhtunkhwa,<br />Pakistan
+                  Cantonment Plaza, University Road,<br />
+                  Opp. Islamia College, Peshawar, KP
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-rose-400 shrink-0" />
-                <a href="tel:+92" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
-                  Contact for number
+                <a href="tel:+923129000100" className="text-sm text-gray-400 hover:text-rose-400 transition-colors font-medium">
+                  +92 312 9000100
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
-                <Mail className="h-4 w-4 text-rose-400 shrink-0" />
-                <a href="mailto:info@brimishskincare.com" className="text-sm text-gray-400 hover:text-rose-400 transition-colors">
-                  info@brimishskincare.com
+                <MessageCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                <a
+                  href="https://wa.me/923129000100"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-400 hover:text-emerald-400 transition-colors font-medium"
+                >
+                  WhatsApp: 0312-9000100
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Clock className="h-4 w-4 text-rose-400 shrink-0" />
-                <span className="text-sm text-gray-400">Mon–Sat: 10am – 7pm</span>
+                <span className="text-sm text-gray-400">Mon–Sat: 10:00 AM – 7:00 PM</span>
               </li>
             </ul>
 

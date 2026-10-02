@@ -4,6 +4,17 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 import {
   BarChart3,
   TrendingUp,
@@ -17,6 +28,11 @@ import {
   AlertCircle,
   FileSpreadsheet,
   Package,
+  Banknote,
+  Calculator,
+  Printer,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils/helpers';
 import { exportToCSV } from '@/lib/utils/csv-export';
@@ -157,6 +173,73 @@ export function ReportsView({
     return counts;
   }, [paidInvoices]);
 
+  // Cash Drawer & Front-Desk Shift Closing Reconciliation
+  const [isReconcileOpen, setIsReconcileOpen] = useState(false);
+  const [cashierName, setCashierName] = useState('');
+  const [closingNotes, setClosingNotes] = useState('');
+  const [denominations, setDenominations] = useState<{ [denom: number]: number }>({
+    5000: 0,
+    1000: 0,
+    500: 0,
+    100: 0,
+    50: 0,
+    20: 0,
+    10: 0,
+  });
+  const [coinsOther, setCoinsOther] = useState<number>(0);
+
+  const systemCashExpected = paymentBreakdown['cash']?.total || 0;
+  const systemCashTransactions = paymentBreakdown['cash']?.count || 0;
+
+  const physicalCashCounted = useMemo(() => {
+    const notesTotal = Object.entries(denominations).reduce(
+      (acc, [denom, count]) => acc + Number(denom) * (Number(count) || 0),
+      0
+    );
+    return notesTotal + (Number(coinsOther) || 0);
+  }, [denominations, coinsOther]);
+
+  const cashVariance = physicalCashCounted - systemCashExpected;
+
+  const handleDenominationChange = (denom: number, valueStr: string) => {
+    const parsed = parseInt(valueStr, 10);
+    setDenominations((prev) => ({
+      ...prev,
+      [denom]: isNaN(parsed) || parsed < 0 ? 0 : parsed,
+    }));
+  };
+
+  const handleExportReconciliationCSV = () => {
+    const nowIso = new Date().toISOString().split('T')[0];
+    const headers = ['Metric / Field', 'Value', 'Details'];
+    const rows = [
+      ['Clinic Facility', 'Brimish Skin Care & Laser Clinic, Peshawar', 'Cantonment Plaza, University Road'],
+      ['Reconciliation Date', nowIso, ''],
+      ['Cashier / Receptionist', cashierName || 'Front Desk Attendant', ''],
+      ['Period Range Filter', timeRange, ''],
+      ['System Cash Transactions Count', systemCashTransactions, 'Cash invoices issued'],
+      ['System Expected Cash (PKR)', systemCashExpected, 'Recorded in database'],
+      ['Physical Cash Counted (PKR)', physicalCashCounted, 'Actual physical money in drawer'],
+      [
+        'Cash Variance (PKR)',
+        cashVariance,
+        cashVariance === 0 ? 'BALANCED (Exact Match)' : cashVariance > 0 ? 'SURPLUS / EXCESS' : 'DEFICIT / SHORTAGE',
+      ],
+      ['--- Pakistani Rupee Denominations ---', '---', '---'],
+      ['Rs. 5,000 Notes', denominations[5000], `Subtotal: PKR ${denominations[5000] * 5000}`],
+      ['Rs. 1,000 Notes', denominations[1000], `Subtotal: PKR ${denominations[1000] * 1000}`],
+      ['Rs. 500 Notes', denominations[500], `Subtotal: PKR ${denominations[500] * 500}`],
+      ['Rs. 100 Notes', denominations[100], `Subtotal: PKR ${denominations[100] * 100}`],
+      ['Rs. 50 Notes', denominations[50], `Subtotal: PKR ${denominations[50] * 50}`],
+      ['Rs. 20 Notes', denominations[20], `Subtotal: PKR ${denominations[20] * 20}`],
+      ['Rs. 10 Notes', denominations[10], `Subtotal: PKR ${denominations[10] * 10}`],
+      ['Coins & Loose Change', coinsOther, `Subtotal: PKR ${coinsOther}`],
+      ['Reception Shift Notes', closingNotes || 'None', ''],
+    ];
+    exportToCSV(`brimish-cash-reconciliation-${nowIso}`, headers, rows);
+    toast.success('Shift Cash Reconciliation exported to CSV');
+  };
+
   // Inventory Valuation
   const totalStockItems = products.reduce((sum, p) => sum + (p.stock_quantity || 0), 0);
   const totalStockValuation = products.reduce(
@@ -285,6 +368,15 @@ export function ReportsView({
 
         {/* Range Selector & Daily Closing Action */}
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setIsReconcileOpen(true)}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs shadow-xs flex items-center gap-1.5"
+          >
+            <Banknote className="h-3.5 w-3.5" />
+            Cash Reconciliation
+          </Button>
+
           {timeRange === 'today' && (
             <Button
               size="sm"
@@ -577,6 +669,198 @@ export function ReportsView({
           </div>
         </CardContent>
       </Card>
+
+      {/* Front-Desk Cash Drawer Reconciliation Dialog */}
+      <Dialog open={isReconcileOpen} onOpenChange={setIsReconcileOpen}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader className="border-b pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+                  <Banknote className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold text-gray-900">
+                    Front-Desk Cash Counter Reconciliation
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-gray-500">
+                    Verify physical cash drawer notes against system cash transactions ({timeRange === 'today' ? "Today's shift" : `Filter: ${timeRange}`}).
+                  </DialogDescription>
+                </div>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-2">
+            {/* Left: Pakistani Rupee Physical Denomination Input (7 cols) */}
+            <div className="md:col-span-7 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                  <Calculator className="h-3.5 w-3.5 text-emerald-600" />
+                  Physical Note Count (PKR)
+                </h4>
+                <span className="text-[11px] text-gray-500">Enter note quantities</span>
+              </div>
+
+              <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100 text-xs">
+                {[5000, 1000, 500, 100, 50, 20, 10].map((denom) => (
+                  <div key={denom} className="grid grid-cols-12 items-center px-3 py-2 hover:bg-gray-50/70 transition-colors">
+                    <div className="col-span-4 font-semibold text-gray-800">
+                      Rs. {denom.toLocaleString()}
+                    </div>
+                    <div className="col-span-4 px-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={denominations[denom] || ''}
+                        onChange={(e) => handleDenominationChange(denom, e.target.value)}
+                        className="h-7 text-xs text-center font-mono"
+                      />
+                    </div>
+                    <div className="col-span-4 text-right font-mono font-medium text-gray-700">
+                      {formatCurrency(denom * (denominations[denom] || 0))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-12 items-center px-3 py-2 bg-stone-50/50">
+                  <div className="col-span-4 font-medium text-gray-600">
+                    Coins / Other
+                  </div>
+                  <div className="col-span-4 px-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      value={coinsOther || ''}
+                      onChange={(e) => setCoinsOther(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                      className="h-7 text-xs text-center font-mono"
+                    />
+                  </div>
+                  <div className="col-span-4 text-right font-mono font-medium text-gray-700">
+                    {formatCurrency(coinsOther)}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 items-center px-3 py-2.5 bg-emerald-50/70 font-bold">
+                  <div className="col-span-6 text-emerald-900">
+                    Total Physical Cash Counted
+                  </div>
+                  <div className="col-span-6 text-right font-mono text-emerald-800 text-sm">
+                    {formatCurrency(physicalCashCounted)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Reconciliation Comparison, Shift Info & Actions (5 cols) */}
+            <div className="md:col-span-5 space-y-4 flex flex-col justify-between">
+              <div className="space-y-4">
+                {/* System vs Physical Summary */}
+                <div className="p-3.5 rounded-xl border border-gray-200 bg-gray-50/70 space-y-2.5 text-xs">
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>System Cash Recorded:</span>
+                    <span className="font-mono font-bold text-gray-900">{formatCurrency(systemCashExpected)}</span>
+                  </div>
+                  <div className="text-[11px] text-gray-500">
+                    Based on {systemCashTransactions} paid cash invoices in this period.
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-200 text-gray-600">
+                    <span>Physical Cash Counted:</span>
+                    <span className="font-mono font-bold text-emerald-700">{formatCurrency(physicalCashCounted)}</span>
+                  </div>
+                </div>
+
+                {/* Variance Banner */}
+                <div
+                  className={cn(
+                    'p-3.5 rounded-xl border flex items-start gap-2.5 text-xs',
+                    cashVariance === 0
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                      : cashVariance > 0
+                      ? 'bg-blue-50 border-blue-200 text-blue-900'
+                      : 'bg-rose-50 border-rose-200 text-rose-900'
+                  )}
+                >
+                  {cashVariance === 0 ? (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <p className="font-bold">
+                      {cashVariance === 0
+                        ? 'Drawer Balanced (0 PKR Variance)'
+                        : cashVariance > 0
+                        ? `Cash Surplus: +${formatCurrency(cashVariance)}`
+                        : `Cash Deficit: ${formatCurrency(cashVariance)}`}
+                    </p>
+                    <p className="text-[11px] opacity-90 mt-0.5">
+                      {cashVariance === 0
+                        ? 'Physical cash in drawer perfectly matches system sales.'
+                        : cashVariance > 0
+                        ? 'Drawer contains more cash than recorded sales.'
+                        : 'Physical cash is less than registered system invoices.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Receptionist Sign-Off */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-700">Cashier / Receptionist Name</Label>
+                  <Input
+                    placeholder="e.g. Ayesha Khan (Front Desk)"
+                    value={cashierName}
+                    onChange={(e) => setCashierName(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-gray-700">Closing Notes / Handover</Label>
+                  <Input
+                    placeholder="e.g. Handed cash over to Dr. Bilal, drawer locked."
+                    value={closingNotes}
+                    onChange={(e) => setClosingNotes(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-2">
+                <Button
+                  onClick={handleExportReconciliationCSV}
+                  className="w-full h-8 text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-medium flex items-center justify-center gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export Shift Closing CSV
+                </Button>
+                <Button
+                  onClick={() => window.print()}
+                  variant="outline"
+                  className="w-full h-8 text-xs border-gray-300 hover:bg-gray-100 flex items-center justify-center gap-1.5"
+                >
+                  <Printer className="h-3.5 w-3.5 text-gray-600" />
+                  Print Reconciliation Slip
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4 pt-3 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsReconcileOpen(false)}
+              className="text-xs"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -78,18 +78,61 @@ export function formatShortDate(dateString: string): string {
 }
 
 // ============================================================
-// Phone Formatting
+// Phone Formatting & WhatsApp Helpers
 // ============================================================
+
+export const CLINIC_WHATSAPP_NUMBER = '923129000100'; // 0312-9000100
+
+/**
+ * Clean and format Pakistani mobile numbers in real time while typing.
+ * Strips non-digits, prefixes with 03 if needed, and inserts hyphen: 03XX-XXXXXXX.
+ */
+export function normalizePakistaniPhone(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  
+  // Cap at 11 digits
+  const clean = digits.slice(0, 11);
+  if (clean.length <= 4) {
+    return clean;
+  }
+  return `${clean.slice(0, 4)}-${clean.slice(4)}`;
+}
 
 /**
  * Format a Pakistani phone number for display.
  * @example formatPhone('03001234567') → '0300-1234567'
  */
 export function formatPhone(phone: string): string {
-  if (phone.length === 11 && phone.startsWith('03')) {
-    return `${phone.slice(0, 4)}-${phone.slice(4)}`;
+  if (!phone) return '';
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('03')) {
+    return `${digits.slice(0, 4)}-${digits.slice(4)}`;
   }
   return phone;
+}
+
+/**
+ * Converts a Pakistani phone (03XXXXXXXXX or +923XXXXXXXXX) to WhatsApp format (923XXXXXXXXX).
+ */
+export function toWhatsAppFormat(phone: string): string {
+  let cleaned = phone.replace(/\D/g, '');
+  if (cleaned.startsWith('03')) {
+    cleaned = '92' + cleaned.slice(1);
+  } else if (cleaned.startsWith('923')) {
+    // already in format
+  } else if (cleaned.startsWith('3') && cleaned.length === 10) {
+    cleaned = '92' + cleaned;
+  }
+  return cleaned;
+}
+
+/**
+ * Builds a direct wa.me link with encoded text message.
+ */
+export function buildWhatsAppLink(phone: string, text: string): string {
+  const target = toWhatsAppFormat(phone) || CLINIC_WHATSAPP_NUMBER;
+  return `https://wa.me/${target}?text=${encodeURIComponent(text)}`;
 }
 
 // ============================================================
