@@ -203,7 +203,7 @@ export function DashboardIntelligence({
               placeholder="Search patient, phone, invoice, SKU..."
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-gray-50/80 focus:bg-white rounded-xl shadow-xs border-gray-200 transition-colors"
+              className="pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-gray-50/80 hover:bg-white focus:bg-white rounded-xl shadow-2xs hover:shadow-xs focus:ring-2 focus:ring-rose-500/20 border-gray-200 hover:border-rose-200 transition-all duration-200"
             />
             {isSearching && (
               <Loader2 className="absolute right-3.5 top-3 h-4 w-4 animate-spin text-rose-500" />
@@ -270,7 +270,7 @@ export function DashboardIntelligence({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Today's Appointments */}
         <Link href="/dashboard/appointments" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 group-hover:-translate-y-0.5 bg-gradient-to-br from-white via-white to-blue-50/30">
+          <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-blue-50/30">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -285,7 +285,7 @@ export function DashboardIntelligence({
                     <span>{stats.todayCompletedVisits} completed</span>
                   </p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 flex items-center justify-center shadow-xs">
+                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
                   <Calendar className="h-5 w-5" />
                 </div>
               </div>
@@ -296,7 +296,7 @@ export function DashboardIntelligence({
         {/* Revenue KPI (Admin Only) */}
         {isAdmin ? (
           <Link href="/dashboard/invoices" className="group block focus:outline-none">
-            <Card className="border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 group-hover:-translate-y-0.5 bg-gradient-to-br from-white via-white to-emerald-50/30">
+            <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-emerald-50/30">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -311,7 +311,7 @@ export function DashboardIntelligence({
                       <span>Month: {formatCurrency(stats.monthRevenue)}</span>
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center shadow-xs">
+                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
                     <DollarSign className="h-5 w-5" />
                   </div>
                 </div>
@@ -320,7 +320,7 @@ export function DashboardIntelligence({
           </Link>
         ) : (
           <Link href="/dashboard/patients" className="group block focus:outline-none">
-            <Card className="border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 group-hover:-translate-y-0.5 bg-gradient-to-br from-white via-white to-indigo-50/30">
+            <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-indigo-500/10 hover:border-indigo-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-indigo-50/30">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -334,7 +334,7 @@ export function DashboardIntelligence({
                       Registered Clinic Directory
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 flex items-center justify-center shadow-xs">
+                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
                     <Users className="h-5 w-5" />
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export function DashboardIntelligence({
 
         {/* Pending Web Orders */}
         <Link href="/dashboard/orders" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 group-hover:-translate-y-0.5 bg-gradient-to-br from-white via-white to-amber-50/30">
+          <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-amber-50/30">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -359,7 +359,7 @@ export function DashboardIntelligence({
                     Web Checkout Dispatch
                   </p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 flex items-center justify-center shadow-xs">
+                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2">
                   <Package className="h-5 w-5" />
                 </div>
               </div>
@@ -369,7 +369,7 @@ export function DashboardIntelligence({
 
         {/* Low Stock Items */}
         <Link href="/dashboard/inventory" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 shadow-xs hover:shadow-md transition-all duration-200 group-hover:-translate-y-0.5 bg-gradient-to-br from-white via-white to-rose-50/30">
+          <Card className="border border-gray-200/80 shadow-xs hover:shadow-lg hover:shadow-rose-500/10 hover:border-rose-300 hover:-translate-y-1 transition-all duration-300 bg-gradient-to-br from-white via-white to-rose-50/30">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -388,7 +388,7 @@ export function DashboardIntelligence({
                   </p>
                 </div>
                 <div
-                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs ${
+                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-2 ${
                     stats.lowStockCount > 0
                       ? 'bg-rose-100/80 text-rose-600'
                       : 'bg-emerald-100/80 text-emerald-600'
@@ -468,7 +468,7 @@ export function DashboardIntelligence({
                     return (
                       <div
                         key={app.id}
-                        className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors"
+                        className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-rose-50/40 hover:shadow-2xs transition-all duration-150"
                       >
                         {/* Time & Patient Info */}
                         <div className="flex items-start gap-3.5">
@@ -522,7 +522,7 @@ export function DashboardIntelligence({
                               href={`https://wa.me/${app.customer_phone.replace(/[^0-9]/g, '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/60 text-emerald-700 text-xs font-semibold transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 hover:border-emerald-300 hover:scale-105 hover:shadow-xs text-emerald-800 text-xs font-semibold transition-all duration-200 active:scale-95"
                               title="WhatsApp Patient"
                             >
                               <MessageCircle className="h-3.5 w-3.5 text-emerald-600" />
@@ -534,7 +534,7 @@ export function DashboardIntelligence({
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-xs rounded-xl hover:bg-gray-100 text-gray-700 font-medium"
+                              className="text-xs rounded-xl hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 hover:shadow-xs transition-all duration-200 font-medium"
                             >
                               Manage
                             </Button>
@@ -563,7 +563,7 @@ export function DashboardIntelligence({
 
             <div className="grid grid-cols-2 gap-3">
               <Link href="/dashboard/pos">
-                <Button className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-2xl shadow-md shadow-rose-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                <Button className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-2xl shadow-md shadow-rose-500/25 hover:shadow-xl hover:shadow-rose-500/35 hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer">
                   <ShoppingCart className="h-5 w-5" />
                   <span className="text-xs font-bold">New POS Sale</span>
                 </Button>
@@ -571,7 +571,7 @@ export function DashboardIntelligence({
               <Link href="/dashboard/appointments?new=true">
                 <Button
                   variant="outline"
-                  className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 rounded-2xl border-gray-200 hover:bg-blue-50/60 hover:text-blue-700 hover:border-blue-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 rounded-2xl border-gray-200 hover:bg-blue-50/80 hover:text-blue-700 hover:border-blue-300 hover:shadow-md hover:shadow-blue-500/15 hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <Calendar className="h-5 w-5 text-blue-600" />
                   <span className="text-xs font-semibold">Book Visit</span>
@@ -580,7 +580,7 @@ export function DashboardIntelligence({
               <Link href="/dashboard/patients?new=true">
                 <Button
                   variant="outline"
-                  className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 rounded-2xl border-gray-200 hover:bg-indigo-50/60 hover:text-indigo-700 hover:border-indigo-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 rounded-2xl border-gray-200 hover:bg-indigo-50/80 hover:text-indigo-700 hover:border-indigo-300 hover:shadow-md hover:shadow-indigo-500/15 hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <Users className="h-5 w-5 text-indigo-600" />
                   <span className="text-xs font-semibold">Add Patient</span>
@@ -589,7 +589,7 @@ export function DashboardIntelligence({
               <Link href="/dashboard/inventory?new=true">
                 <Button
                   variant="outline"
-                  className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 rounded-2xl border-gray-200 hover:bg-amber-50/60 hover:text-amber-700 hover:border-amber-200 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-auto py-3.5 flex flex-col items-center justify-center gap-1.5 rounded-2xl border-gray-200 hover:bg-amber-50/80 hover:text-amber-700 hover:border-amber-300 hover:shadow-md hover:shadow-amber-500/15 hover:-translate-y-1 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <Package className="h-5 w-5 text-amber-600" />
                   <span className="text-xs font-semibold">Add Stock</span>
@@ -695,7 +695,7 @@ export function DashboardIntelligence({
                 {recentInvoices.map((inv) => (
                   <div
                     key={inv.id}
-                    className="p-4 sm:p-4.5 flex items-center justify-between gap-3 hover:bg-gray-50/70 transition-colors text-xs"
+                    className="p-4 sm:p-4.5 flex items-center justify-between gap-3 hover:bg-rose-50/40 hover:shadow-2xs transition-all duration-150 text-xs"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -768,7 +768,7 @@ export function DashboardIntelligence({
                 {followUps.map((fu) => (
                   <div
                     key={fu.id}
-                    className="p-4 sm:p-4.5 flex items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors"
+                    className="p-4 sm:p-4.5 flex items-center justify-between gap-4 hover:bg-rose-50/40 hover:shadow-2xs transition-all duration-150"
                   >
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-gray-950 truncate">
@@ -800,7 +800,7 @@ export function DashboardIntelligence({
                       variant="outline"
                       disabled={isCompleting}
                       onClick={() => handleCompleteFollowUp(fu.id, fu.patient?.name || 'Patient')}
-                      className="text-xs shrink-0 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 font-semibold"
+                      className="text-xs shrink-0 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 hover:shadow-xs hover:scale-105 active:scale-95 transition-all duration-200 font-semibold"
                     >
                       <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" />
                       Mark Done
@@ -848,7 +848,7 @@ export function DashboardIntelligence({
                 {lowStockProducts.map((p) => (
                   <div
                     key={p.id}
-                    className="p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs"
+                    className="p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs hover:bg-rose-50/40 hover:shadow-2xs transition-all duration-150"
                   >
                     <div className="min-w-0">
                       <p className="font-bold text-gray-950 truncate">{p.name}</p>
@@ -869,7 +869,7 @@ export function DashboardIntelligence({
                         {p.stock_quantity} left
                       </Badge>
                       <Link href={`/dashboard/inventory`}>
-                        <Button size="sm" variant="ghost" className="h-8 px-2.5 text-xs text-rose-600 font-semibold hover:bg-rose-50">
+                        <Button size="sm" variant="ghost" className="h-8 px-2.5 text-xs text-rose-600 font-semibold hover:bg-rose-100/70 hover:scale-105 transition-all duration-200">
                           Restock
                         </Button>
                       </Link>
@@ -908,7 +908,7 @@ export function DashboardIntelligence({
               {popularTreatments.map((t) => (
                 <div
                   key={t.id}
-                  className="p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs"
+                  className="p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs hover:bg-rose-50/40 hover:shadow-2xs transition-all duration-150"
                 >
                   <div className="min-w-0">
                     <p className="font-bold text-gray-950 truncate">{t.name}</p>

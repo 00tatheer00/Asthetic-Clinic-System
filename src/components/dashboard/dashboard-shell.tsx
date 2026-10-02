@@ -85,15 +85,23 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                   prefetch={true}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all mx-2',
+                    'group/nav relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 mx-2 cursor-pointer',
                     isActive
-                      ? 'bg-rose-50 text-rose-700 font-semibold shadow-xs'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-                    collapsed && 'justify-center px-2'
+                      ? 'bg-rose-50/90 text-rose-700 font-semibold shadow-xs border border-rose-200/70'
+                      : 'text-gray-600 hover:bg-rose-50/50 hover:text-rose-700 hover:translate-x-1',
+                    collapsed && 'justify-center px-2 hover:translate-x-0'
                   )}
                 >
-                  <Icon className={cn('h-[18px] w-[18px] shrink-0', isActive && 'text-rose-600')} />
-                  {!collapsed && <span>{item.label}</span>}
+                  <Icon
+                    className={cn(
+                      'h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover/nav:scale-110',
+                      isActive ? 'text-rose-600' : 'text-gray-400 group-hover/nav:text-rose-600'
+                    )}
+                  />
+                  {!collapsed && <span className="transition-colors duration-200">{item.label}</span>}
+                  {isActive && !collapsed && (
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse" />
+                  )}
                 </Link>
               );
 
@@ -160,7 +168,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full justify-center text-gray-400 hover:text-gray-600"
+            className="w-full justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50/80 transition-all duration-200"
           >
             {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </Button>
@@ -212,13 +220,17 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             <ClearCacheButton variant="icon" />
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative text-gray-500">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl"
+            >
               <Bell className="h-[18px] w-[18px]" />
             </Button>
 
             {/* User Menu */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 pl-2 pr-3 h-9 rounded-md hover:bg-gray-100 transition-colors">
+              <DropdownMenuTrigger className="flex items-center gap-2 pl-2 pr-3 h-9 rounded-xl hover:bg-rose-50/70 border border-transparent hover:border-rose-200/60 transition-all duration-200 cursor-pointer">
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="bg-rose-100 text-rose-700 text-xs font-semibold">
                     {getInitials(staff.name)}
