@@ -11,6 +11,8 @@ import {
 } from '@/lib/validations';
 import { slugify } from '@/lib/utils/helpers';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/constants';
 
 // ============================================================
 // Public: Submit Review (Guest)
@@ -18,6 +20,13 @@ import { revalidatePath } from 'next/cache';
 
 export async function submitReview(formData: unknown) {
   try {
+    // Rate limit: 1 review per day per IP
+    const ip = await getClientIp();
+    const { limited } = checkRateLimit(`review:${ip}`, RATE_LIMITS.review.requests, RATE_LIMITS.review.windowMs);
+    if (limited) {
+      return { success: false, error: 'You have already submitted a review recently. Please try again later.' };
+    }
+
     const parsed = reviewSubmissionSchema.safeParse(formData);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];

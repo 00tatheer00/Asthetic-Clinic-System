@@ -4,9 +4,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { orderCheckoutSchema, orderStatusUpdateSchema } from '@/lib/validations';
 import { sendOrderConfirmationEmail, sendOrderStatusEmail } from '@/lib/email';
-import { ORDER_STATUS_LABELS } from '@/lib/constants';
+import { ORDER_STATUS_LABELS, RATE_LIMITS } from '@/lib/constants';
 import { VALID_ORDER_TRANSITIONS } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import type { OrderStatus } from '@/lib/types';
 
 // ============================================================
@@ -14,6 +15,13 @@ import type { OrderStatus } from '@/lib/types';
 // ============================================================
 
 export async function placeOrder(formData: unknown) {
+  // Rate limit: prevent bot/spam abuse
+  const ip = await getClientIp();
+  const { limited } = checkRateLimit(`order:${ip}`, RATE_LIMITS.order.requests, RATE_LIMITS.order.windowMs);
+  if (limited) {
+    return { success: false, error: 'Too many order attempts. Please wait a moment and try again.' };
+  }
+
   const parsed = orderCheckoutSchema.safeParse(formData);
   if (!parsed.success) {
     return { success: false, error: 'Validation failed', fieldErrors: parsed.error.flatten().fieldErrors };

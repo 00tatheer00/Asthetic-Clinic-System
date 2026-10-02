@@ -6,6 +6,8 @@ import { appointmentBookingSchema, appointmentUpdateSchema } from '@/lib/validat
 import { sendAppointmentReceivedEmail, sendAppointmentConfirmedEmail } from '@/lib/email';
 import { formatDateTime } from '@/lib/utils/helpers';
 import { revalidatePath } from 'next/cache';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/constants';
 import type { AppointmentStatus } from '@/lib/types';
 
 // ============================================================
@@ -14,6 +16,13 @@ import type { AppointmentStatus } from '@/lib/types';
 
 export async function createPublicAppointment(formData: unknown) {
   try {
+    // Rate limit: prevent bot/spam abuse
+    const ip = await getClientIp();
+    const { limited } = checkRateLimit(`booking:${ip}`, RATE_LIMITS.booking.requests, RATE_LIMITS.booking.windowMs);
+    if (limited) {
+      return { success: false, error: 'Too many booking requests. Please wait a moment and try again.' };
+    }
+
     const parsed = appointmentBookingSchema.safeParse(formData);
 
     if (!parsed.success) {
