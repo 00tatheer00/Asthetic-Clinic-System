@@ -328,7 +328,7 @@ export function SettingsForm({
       <form onSubmit={handleSaveSettings}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Clinic Information */}
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-rose-600" />
@@ -406,7 +406,7 @@ export function SettingsForm({
           </Card>
 
           {/* Tax & Compliance */}
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Receipt className="h-5 w-5 text-indigo-600" />
@@ -493,7 +493,7 @@ export function SettingsForm({
 
       {/* 80mm Thermal Receipt & QR Verification Settings with Live Preview */}
       <form onSubmit={handleSaveReceiptSettings}>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -746,7 +746,7 @@ export function SettingsForm({
       </form>
 
       {/* Operating Hours */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border border-gray-200 shadow-xs">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -844,7 +844,7 @@ export function SettingsForm({
       </Card>
 
       {/* Doctor Schedule & Blocked Dates Management */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border border-gray-200 shadow-xs">
         <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -937,7 +937,7 @@ export function SettingsForm({
 
       {/* Super Admin Login Credentials & Security Card (Reset Email & Password) */}
       {isAdmin && (
-        <Card className="border-0 shadow-sm overflow-hidden border-t-2 border-rose-600">
+        <Card className="border border-gray-200 shadow-xs overflow-hidden">
           <CardHeader className="pb-4 bg-gradient-to-r from-rose-50/60 to-purple-50/40 border-b border-gray-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center gap-2.5">
@@ -1136,7 +1136,7 @@ export function SettingsForm({
       )}
 
       {/* Account Info */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border border-gray-200 shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <UserCheck className="h-5 w-5 text-gray-600" />
@@ -1168,7 +1168,7 @@ export function SettingsForm({
       </Card>
 
       {/* Browser Cache & Deployment Sync Card */}
-      <Card className="border-0 shadow-sm">
+      <Card className="border border-gray-200 shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="flex items-center gap-2">

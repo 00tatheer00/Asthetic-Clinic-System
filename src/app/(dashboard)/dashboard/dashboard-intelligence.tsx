@@ -270,7 +270,7 @@ export function DashboardIntelligence({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Today's Appointments */}
         <Link href="/dashboard/appointments" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 border-l-[4px] border-l-blue-400 hover:border-l-blue-600 hover:border-gray-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1.5 hover:scale-[1.01] transition-all duration-300 ease-out bg-gradient-to-br from-white via-white to-blue-50/30 cursor-pointer">
+          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -296,7 +296,7 @@ export function DashboardIntelligence({
         {/* Revenue KPI (Admin Only) */}
         {isAdmin ? (
           <Link href="/dashboard/invoices" className="group block focus:outline-none">
-            <Card className="border border-gray-200/80 border-l-[4px] border-l-emerald-400 hover:border-l-emerald-600 hover:border-gray-300 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1.5 hover:scale-[1.01] transition-all duration-300 ease-out bg-gradient-to-br from-white via-white to-emerald-50/30 cursor-pointer">
+            <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -320,7 +320,7 @@ export function DashboardIntelligence({
           </Link>
         ) : (
           <Link href="/dashboard/patients" className="group block focus:outline-none">
-            <Card className="border border-gray-200/80 border-l-[4px] border-l-indigo-400 hover:border-l-indigo-600 hover:border-gray-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1.5 hover:scale-[1.01] transition-all duration-300 ease-out bg-gradient-to-br from-white via-white to-indigo-50/30 cursor-pointer">
+            <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -345,7 +345,7 @@ export function DashboardIntelligence({
 
         {/* Pending Web Orders */}
         <Link href="/dashboard/orders" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 border-l-[4px] border-l-amber-400 hover:border-l-amber-600 hover:border-gray-300 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1.5 hover:scale-[1.01] transition-all duration-300 ease-out bg-gradient-to-br from-white via-white to-amber-50/30 cursor-pointer">
+          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -369,7 +369,7 @@ export function DashboardIntelligence({
 
         {/* Low Stock Items */}
         <Link href="/dashboard/inventory" className="group block focus:outline-none">
-          <Card className="border border-gray-200/80 border-l-[4px] border-l-rose-400 hover:border-l-rose-600 hover:border-gray-300 hover:shadow-xl hover:shadow-rose-500/10 hover:-translate-y-1.5 hover:scale-[1.01] transition-all duration-300 ease-out bg-gradient-to-br from-white via-white to-rose-50/30 cursor-pointer">
+          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
@@ -413,7 +413,7 @@ export function DashboardIntelligence({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Today's Live Schedule */}
         <div className="lg:col-span-8 space-y-6">
-          <Card className="border border-gray-200/80 border-l-[4px] border-l-rose-400 hover:border-l-rose-600 hover:border-gray-300 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
             <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
@@ -460,14 +460,14 @@ export function DashboardIntelligence({
                   </Link>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-100">
+                <div className="p-4 sm:p-5 space-y-3">
                   {todayAppointments.map((app) => {
                     const statusColor =
                       APPOINTMENT_STATUS_COLORS[app.status] || 'bg-gray-100 text-gray-800';
                     return (
                       <div
                         key={app.id}
-                        className="group/entry p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-[3.5px] border-l-transparent hover:border-l-rose-500 hover:bg-gradient-to-r hover:from-rose-50/70 hover:via-rose-50/20 hover:to-white hover:translate-x-1.5 hover:shadow-xs transition-all duration-200 ease-out cursor-pointer"
+                        className="group/entry p-4 sm:p-4.5 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/60 hover:shadow-xs transition-all duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer"
                       >
                         {/* Time & Patient Info */}
                         <div className="flex items-start gap-3.5">
@@ -550,7 +550,7 @@ export function DashboardIntelligence({
 
         {/* Right Column (4 cols): Front-Desk Quick Actions & Room Readiness */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border border-gray-200/80 border-l-[4px] border-l-pink-400 hover:border-l-pink-600 hover:border-gray-300 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white space-y-4">
+          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white space-y-4">
             <div>
               <CardTitle className="text-base font-bold text-gray-950 font-serif">
                 Front-Desk Quick Actions
@@ -602,7 +602,7 @@ export function DashboardIntelligence({
                 Clinic Suites & Doctor Readiness
               </p>
               
-              <div className="p-3 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-rose-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 text-xs cursor-pointer group/suite">
+              <div className="p-3 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 text-xs cursor-pointer group/suite">
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold group-hover/suite:scale-105 transition-transform">
                     1
@@ -617,7 +617,7 @@ export function DashboardIntelligence({
                 </Badge>
               </div>
 
-              <div className="p-3 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-pink-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 text-xs cursor-pointer group/suite">
+              <div className="p-3 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 text-xs cursor-pointer group/suite">
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center font-bold group-hover/suite:scale-105 transition-transform">
                     2
@@ -636,7 +636,7 @@ export function DashboardIntelligence({
 
           {/* End-of-Day Closing Reconcile Card */}
           {isAdmin && (
-            <Card className="border border-gray-800 border-l-[4px] border-l-gray-700 hover:border-l-rose-500 hover:border-gray-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 shadow-md bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white rounded-2xl sm:rounded-3xl p-5 cursor-pointer">
+            <Card className="border border-gray-800 hover:border-gray-700 hover:shadow-md transition-all duration-200 shadow-xs bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white rounded-2xl sm:rounded-3xl p-5 cursor-pointer">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export function DashboardIntelligence({
       {/* 5. SECTION 2: RECENT FINANCIAL TRANSACTIONS (50%) + POST-PROCEDURE CARE QUEUE (50%) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left: Recent POS Invoices & Sales Stream */}
-        <Card className="border border-gray-200/80 border-l-[4px] border-l-emerald-400 hover:border-l-emerald-600 hover:border-gray-300 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -691,11 +691,11 @@ export function DashboardIntelligence({
                 <p className="text-xs text-gray-400">New POS sales will appear here in real-time.</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="p-4 space-y-2.5">
                 {recentInvoices.map((inv) => (
                   <div
                     key={inv.id}
-                    className="group/entry p-4 sm:p-4.5 flex items-center justify-between gap-3 border-l-[3.5px] border-l-transparent hover:border-l-emerald-500 hover:bg-gradient-to-r hover:from-emerald-50/60 hover:via-emerald-50/20 hover:to-white hover:translate-x-1.5 hover:shadow-xs transition-all duration-200 ease-out text-xs cursor-pointer"
+                    className="group/entry p-3.5 sm:p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/60 hover:shadow-xs transition-all duration-150 flex items-center justify-between gap-3 text-xs cursor-pointer"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -738,7 +738,7 @@ export function DashboardIntelligence({
         </Card>
 
         {/* Right: Post-Procedure Patient Follow-Up Queue */}
-        <Card className="border border-gray-200/80 border-l-[4px] border-l-rose-400 hover:border-l-rose-600 hover:border-gray-300 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -764,11 +764,11 @@ export function DashboardIntelligence({
                 <p className="text-xs text-gray-400">No overdue patient calls pending today.</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="p-4 space-y-2.5">
                 {followUps.map((fu) => (
                   <div
                     key={fu.id}
-                    className="group/entry p-4 sm:p-4.5 flex items-center justify-between gap-4 border-l-[3.5px] border-l-transparent hover:border-l-rose-500 hover:bg-gradient-to-r hover:from-rose-50/70 hover:via-rose-50/20 hover:to-white hover:translate-x-1.5 hover:shadow-xs transition-all duration-200 ease-out cursor-pointer"
+                    className="group/entry p-3.5 sm:p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/60 hover:shadow-xs transition-all duration-150 flex items-center justify-between gap-4 cursor-pointer"
                   >
                     <div className="min-w-0">
                       <p className="text-xs sm:text-sm font-bold text-gray-950 truncate group-hover/entry:text-rose-950 transition-colors">
@@ -816,7 +816,7 @@ export function DashboardIntelligence({
       {/* 6. SECTION 3: INVENTORY WATCHLIST & CLINIC HIGHLIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start pb-8">
         {/* Low Stock Watchlist */}
-        <Card className="border border-gray-200/80 border-l-[4px] border-l-amber-400 hover:border-l-amber-600 hover:border-gray-300 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -844,11 +844,11 @@ export function DashboardIntelligence({
                 <p className="text-xs font-semibold text-gray-600">All products have healthy stock levels</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="p-4 space-y-2.5">
                 {lowStockProducts.map((p) => (
                   <div
                     key={p.id}
-                    className="group/entry p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs border-l-[3.5px] border-l-transparent hover:border-l-amber-500 hover:bg-gradient-to-r hover:from-amber-50/60 hover:via-amber-50/20 hover:to-white hover:translate-x-1.5 hover:shadow-xs transition-all duration-200 ease-out cursor-pointer"
+                    className="group/entry p-3.5 sm:p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/60 hover:shadow-xs transition-all duration-150 flex items-center justify-between gap-3 text-xs cursor-pointer"
                   >
                     <div className="min-w-0">
                       <p className="font-bold text-gray-950 truncate group-hover/entry:text-amber-950 transition-colors">{p.name}</p>
@@ -882,7 +882,7 @@ export function DashboardIntelligence({
         </Card>
 
         {/* Featured Clinic Treatments */}
-        <Card className="border border-gray-200/80 border-l-[4px] border-l-rose-400 hover:border-l-rose-600 hover:border-gray-300 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center justify-between p-5 pb-4 border-b border-gray-100 bg-gray-50/50">
             <div>
               <div className="flex items-center gap-2">
@@ -904,11 +904,11 @@ export function DashboardIntelligence({
           </CardHeader>
 
           <CardContent className="p-0">
-            <div className="divide-y divide-gray-100">
+            <div className="p-4 space-y-2.5">
               {popularTreatments.map((t) => (
                 <div
                   key={t.id}
-                  className="group/entry p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs border-l-[3.5px] border-l-transparent hover:border-l-rose-500 hover:bg-gradient-to-r hover:from-rose-50/60 hover:via-rose-50/20 hover:to-white hover:translate-x-1.5 hover:shadow-xs transition-all duration-200 ease-out cursor-pointer"
+                  className="group/entry p-3.5 sm:p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50/60 hover:shadow-xs transition-all duration-150 flex items-center justify-between gap-3 text-xs cursor-pointer"
                 >
                   <div className="min-w-0">
                     <p className="font-bold text-gray-950 truncate group-hover/entry:text-rose-950 transition-colors">{t.name}</p>

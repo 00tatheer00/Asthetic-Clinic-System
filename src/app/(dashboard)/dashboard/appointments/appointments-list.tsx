@@ -431,7 +431,7 @@ export function AppointmentsList({
     <div className="space-y-4">
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="border border-gray-100 hover:border-purple-200 border-l-[3.5px] border-l-purple-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3 flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 font-medium">Total Appointments</p>
@@ -444,7 +444,7 @@ export function AppointmentsList({
             </div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-100 hover:border-blue-200 border-l-[3.5px] border-l-blue-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3 flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 font-medium">Today</p>
@@ -455,7 +455,7 @@ export function AppointmentsList({
             </div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-100 hover:border-amber-200 border-l-[3.5px] border-l-amber-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3 flex items-center justify-between">
             <div>
               <p className="text-xs text-gray-500 font-medium">Pending Review</p>
@@ -466,7 +466,7 @@ export function AppointmentsList({
             </div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-100 hover:border-emerald-200 border-l-[3.5px] border-l-emerald-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+        <Card className="border border-gray-200 hover:border-gray-300 shadow-xs hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-1.5">
@@ -627,7 +627,7 @@ export function AppointmentsList({
       )}
 
       {!isPending && filteredAppointments.length === 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardContent className="py-12 text-center">
             <Calendar className="h-10 w-10 text-gray-300 mx-auto mb-3" />
             <p className="text-sm text-gray-500">No appointments found.</p>
@@ -637,7 +637,7 @@ export function AppointmentsList({
       )}
 
       {!isPending && filteredAppointments.length > 0 && (
-        <Card className="border-0 shadow-sm overflow-hidden">
+        <Card className="border border-gray-200 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>

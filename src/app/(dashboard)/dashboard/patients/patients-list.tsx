@@ -180,7 +180,7 @@ export function PatientsList({
 
       {/* Table */}
       {patients.length === 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardContent className="py-12 text-center">
             <Users className="h-10 w-10 text-gray-300 mx-auto mb-3" />
             <p className="text-sm text-gray-500">No patients found.</p>
@@ -189,7 +189,7 @@ export function PatientsList({
       )}
 
       {patients.length > 0 && (
-        <Card className="border-0 shadow-sm overflow-hidden">
+        <Card className="border border-gray-200 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>

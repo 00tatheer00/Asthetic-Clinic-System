@@ -632,10 +632,10 @@ export function POSTerminal({
                         type="button"
                         onClick={() => addProduct(p)}
                         className={cn(
-                          'text-left p-3 rounded-xl border border-l-[3.5px] transition-all flex flex-col justify-between cursor-pointer group shadow-2xs',
+                          'text-left p-3 rounded-xl border transition-all flex flex-col justify-between cursor-pointer group shadow-2xs',
                           isOutOfStock
-                            ? 'border-gray-200 border-l-gray-400 bg-gray-50/70 opacity-60 hover:border-gray-300'
-                            : 'border-rose-100 border-l-rose-500 bg-white hover:border-rose-300 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]'
+                            ? 'border-gray-200 bg-gray-50/70 opacity-60 hover:border-gray-300'
+                            : 'border-gray-200 bg-white hover:border-rose-300 hover:shadow-sm hover:-translate-y-0.5 active:scale-[0.98]'
                         )}
                       >
                         <div>
@@ -692,7 +692,7 @@ export function POSTerminal({
                       key={t.id}
                       type="button"
                       onClick={() => addTreatment(t)}
-                      className="text-left p-3 rounded-xl border border-indigo-100 border-l-[3.5px] border-l-indigo-600 bg-white hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-[0.98] flex flex-col justify-between shadow-2xs cursor-pointer group"
+                      className="text-left p-3 rounded-xl border border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm hover:-translate-y-0.5 transition-all active:scale-[0.98] flex flex-col justify-between shadow-2xs cursor-pointer group"
                     >
                       <div>
                         <p className="text-xs font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-snug">

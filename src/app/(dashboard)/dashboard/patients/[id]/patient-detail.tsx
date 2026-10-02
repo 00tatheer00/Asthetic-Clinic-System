@@ -251,25 +251,25 @@ export function PatientDetail({
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardContent className="pt-4 pb-3">
             <p className="text-xs text-gray-500">Total Visits</p>
             <p className="text-2xl font-bold text-gray-900">{stats.totalVisits}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardContent className="pt-4 pb-3">
             <p className="text-xs text-gray-500">Total Spending</p>
             <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalSpending)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardContent className="pt-4 pb-3">
             <p className="text-xs text-gray-500">Last Visit</p>
             <p className="text-sm font-bold text-gray-900">{stats.lastVisit ? formatDate(stats.lastVisit) : 'Never'}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-200 shadow-xs">
           <CardContent className="pt-4 pb-3">
             <p className="text-xs text-gray-500">Registered</p>
             <p className="text-sm font-bold text-gray-900">{formatDate(patient.created_at)}</p>
@@ -290,7 +290,7 @@ export function PatientDetail({
 
         {/* Timeline Tab */}
         <TabsContent value="timeline">
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardContent className="pt-6">
               {timeline.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-8">No history yet.</p>
@@ -328,14 +328,14 @@ export function PatientDetail({
 
         {/* Appointments Tab */}
         <TabsContent value="appointments">
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardContent className="pt-6">
               {appointments.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-8">No appointments.</p>
               ) : (
                 <div className="space-y-3">
                   {appointments.map(a => (
-                    <div key={a.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                    <div key={a.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-gray-100/50 transition-colors">
                       <div>
                         <p className="text-sm font-medium text-gray-900">{a.treatments?.[0]?.name || 'Treatment'}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{formatDateTime(a.scheduled_at)}</p>
@@ -353,7 +353,7 @@ export function PatientDetail({
 
         {/* Visits Tab */}
         <TabsContent value="visits">
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardContent className="pt-6">
               {visits.length === 0 ? (
                 <div className="text-center py-8">
@@ -366,7 +366,7 @@ export function PatientDetail({
               ) : (
                 <div className="space-y-3">
                   {visits.map(v => (
-                    <div key={v.id} className="p-3 rounded-lg bg-gray-50">
+                    <div key={v.id} className="p-3 rounded-lg border border-gray-200 bg-gray-50/50">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-gray-900">{v.treatments?.[0]?.name || 'General Visit'}</p>
                         <p className="text-xs text-gray-400">{formatDate(v.visit_date)}</p>
@@ -382,7 +382,7 @@ export function PatientDetail({
 
         {/* Invoices Tab */}
         <TabsContent value="invoices">
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardContent className="pt-6">
               {invoices.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-8">No invoices.</p>
@@ -390,7 +390,7 @@ export function PatientDetail({
                 <div className="space-y-3">
                   {invoices.map(inv => (
                     <Link key={inv.id} href={`/dashboard/invoices/${inv.id}`} className="block">
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-gray-100/70 transition-colors">
                         <div>
                           <p className="text-sm font-mono font-medium text-gray-900">{inv.invoice_number}</p>
                           <p className="text-xs text-gray-500 mt-0.5">{formatDate(inv.created_at)}</p>
@@ -413,7 +413,7 @@ export function PatientDetail({
         {/* Clinical Notes Tab (Admin Only) */}
         {isAdmin && (
           <TabsContent value="notes">
-            <Card className="border-0 shadow-sm">
+            <Card className="border border-gray-200 shadow-xs">
               <CardContent className="pt-6">
                 {clinicalNotes.length === 0 ? (
                   <div className="text-center py-8">
@@ -426,7 +426,7 @@ export function PatientDetail({
                 ) : (
                   <div className="space-y-4">
                     {clinicalNotes.map(note => (
-                      <div key={note.id} className="p-4 rounded-lg border border-gray-100">
+                      <div key={note.id} className="p-4 rounded-lg border border-gray-200 bg-white">
                         <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.note_text}</p>
                         {note.diagnosis && (
                           <div className="mt-2 p-2 rounded bg-blue-50">
@@ -470,7 +470,7 @@ export function PatientDetail({
 
         {/* Before & After Tab */}
         <TabsContent value="gallery">
-          <Card className="border-0 shadow-sm">
+          <Card className="border border-gray-200 shadow-xs">
             <CardContent className="pt-6">
               {beforeAfterCases.length === 0 ? (
                 <div className="text-center py-8">

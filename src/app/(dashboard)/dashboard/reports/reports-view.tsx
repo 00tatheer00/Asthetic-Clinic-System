@@ -415,7 +415,7 @@ export function ReportsView({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-md bg-gradient-to-br from-rose-50 to-pink-50/50">
+        <Card className="border border-rose-200/80 shadow-xs bg-gradient-to-br from-rose-50 to-pink-50/50">
           <CardHeader className="pb-2">
             <CardDescription className="text-rose-700 font-medium text-xs">
               Total Revenue Collected
