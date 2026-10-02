@@ -20,13 +20,11 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
   const staff = await getAuthenticatedStaff();
   const isAdmin = staff?.role === 'super_admin';
 
-  const { search = '', status = 'all', page = '1' } = await searchParams;
-  const currentPage = Math.max(1, parseInt(page, 10) || 1);
-  const pageSize = 20;
+  const { search = '', status = 'all' } = await searchParams;
 
   const supabase = await createClient();
 
-  let query = supabase
+  const { data: invoices, count, error } = await supabase
     .from('invoices')
     .select(
       `
@@ -35,23 +33,8 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
     `,
       { count: 'exact' }
     )
-    .order('created_at', { ascending: false });
-
-  if (status && status !== 'all') {
-    query = query.eq('status', status);
-  }
-
-  if (search) {
-    query = query.or(
-      `invoice_number.ilike.%${search}%,customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%`
-    );
-  }
-
-  const from = (currentPage - 1) * pageSize;
-  const to = from + pageSize - 1;
-  query = query.range(from, to);
-
-  const { data: invoices, count, error } = await query;
+    .order('created_at', { ascending: false })
+    .limit(300);
 
   if (error) {
     console.error('[InvoicesPage] Error fetching invoices:', error);
@@ -61,8 +44,8 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
     <InvoicesList
       invoices={invoices || []}
       totalCount={count || 0}
-      currentPage={currentPage}
-      pageSize={pageSize}
+      currentPage={1}
+      pageSize={20}
       search={search}
       statusFilter={status}
       isAdmin={isAdmin}

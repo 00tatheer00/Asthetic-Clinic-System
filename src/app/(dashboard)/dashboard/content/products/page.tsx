@@ -26,7 +26,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const supabase = await createClient();
 
-  let query = supabase
+  const query = supabase
     .from('products')
     .select(
       `
@@ -36,19 +36,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       { count: 'exact' }
     )
     .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (category && category !== 'all') {
-    query = query.eq('category_id', category);
-  }
-
-  if (search) {
-    query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%`);
-  }
-
-  const from = (currentPage - 1) * pageSize;
-  const to = from + pageSize - 1;
-  query = query.range(from, to);
+    .order('created_at', { ascending: false })
+    .limit(300);
 
   const [{ data: categories }, { data: products, count, error }] = await Promise.all([
     supabase

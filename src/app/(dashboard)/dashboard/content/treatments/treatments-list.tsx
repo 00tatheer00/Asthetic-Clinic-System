@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveTreatment, deleteTreatment } from '@/actions/content';
 import { Card } from '@/components/ui/card';
@@ -89,7 +89,7 @@ export function TreatmentsList({
   treatments,
   categories,
   totalCount,
-  currentPage,
+  currentPage: initialPage = 1,
   pageSize,
   search,
   categoryFilter,
@@ -97,11 +97,37 @@ export function TreatmentsList({
 }: TreatmentsListProps) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState(search);
+  const [activeSearch, setActiveSearch] = useState(search);
+  const [activeCategory, setActiveCategory] = useState<string>(categoryFilter || 'all');
+  const [currentPageState, setCurrentPageState] = useState<number>(initialPage || 1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTreatment, setEditingTreatment] = useState<Treatment | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Treatment | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Instant in-memory filtering (0ms latency!)
+  const filteredTreatments = useMemo(() => {
+    return treatments.filter((t) => {
+      if (activeCategory !== 'all' && t.category_id !== activeCategory) {
+        return false;
+      }
+      if (activeSearch.trim()) {
+        const q = activeSearch.toLowerCase().trim();
+        const matchName = t.name?.toLowerCase().includes(q);
+        const matchSlug = t.slug?.toLowerCase().includes(q);
+        if (!matchName && !matchSlug) return false;
+      }
+      return true;
+    });
+  }, [treatments, activeCategory, activeSearch]);
+
+  const totalFilteredCount = filteredTreatments.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const displayedTreatments = useMemo(() => {
+    const start = (currentPageState - 1) * pageSize;
+    return filteredTreatments.slice(start, start + pageSize);
+  }, [filteredTreatments, currentPageState, pageSize]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -131,22 +157,31 @@ export function TreatmentsList({
   const [isFeatured, setIsFeatured] = useState(false);
   const [sortOrder, setSortOrder] = useState('0');
 
-  const totalPages = Math.ceil(totalCount / pageSize);
-
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchValue) params.set('search', searchValue);
-    if (categoryFilter !== 'all') params.set('category', categoryFilter);
-    params.set('page', '1');
-    router.push(`/dashboard/content/treatments?${params.toString()}`);
+    setActiveSearch(searchValue);
+    setCurrentPageState(1);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (searchValue) params.set('search', searchValue);
+      else params.delete('search');
+      if (activeCategory !== 'all') params.set('category', activeCategory);
+      params.set('page', '1');
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    } catch {}
   };
 
   const handleCategoryFilter = (catId: string) => {
-    const params = new URLSearchParams();
-    if (searchValue) params.set('search', searchValue);
-    if (catId !== 'all') params.set('category', catId);
-    params.set('page', '1');
-    router.push(`/dashboard/content/treatments?${params.toString()}`);
+    setActiveCategory(catId);
+    setCurrentPageState(1);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (activeSearch) params.set('search', activeSearch);
+      else params.delete('search');
+      if (catId !== 'all') params.set('category', catId);
+      else params.delete('category');
+      params.set('page', '1');
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    } catch {}
   };
 
   const openCreateDialog = () => {
@@ -257,10 +292,10 @@ export function TreatmentsList({
           <button
             onClick={() => handleCategoryFilter('all')}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all',
-              categoryFilter === 'all'
-                ? 'bg-rose-500 text-white shadow-sm'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              'px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer',
+              activeCategory === 'all'
+                ? 'bg-rose-500 text-white shadow-xs'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200/90'
             )}
           >
             All Categories
@@ -270,10 +305,10 @@ export function TreatmentsList({
               key={cat.id}
               onClick={() => handleCategoryFilter(cat.id)}
               className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all',
-                categoryFilter === cat.id
-                  ? 'bg-rose-500 text-white shadow-sm'
-                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                'px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer',
+                activeCategory === cat.id
+                  ? 'bg-rose-500 text-white shadow-xs'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200/90'
               )}
             >
               {cat.name}
@@ -314,14 +349,14 @@ export function TreatmentsList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {treatments.length === 0 ? (
+              {filteredTreatments.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-gray-400 text-sm">
                     No treatments found.
                   </TableCell>
                 </TableRow>
               ) : (
-                treatments.map((t) => (
+                displayedTreatments.map((t) => (
                   <TableRow key={t.id} className="hover:bg-gray-50/50">
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -426,20 +461,14 @@ export function TreatmentsList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-gray-500">
-            Page {currentPage} of {totalPages} ({totalCount} total)
+            Showing {(currentPageState - 1) * pageSize + 1}–{Math.min(currentPageState * pageSize, totalFilteredCount)} of {totalFilteredCount}
           </p>
           <div className="flex gap-1">
             <Button
               variant="outline"
               size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => {
-                const p = new URLSearchParams();
-                if (search) p.set('search', search);
-                if (categoryFilter !== 'all') p.set('category', categoryFilter);
-                p.set('page', String(currentPage - 1));
-                router.push(`/dashboard/content/treatments?${p.toString()}`);
-              }}
+              disabled={currentPageState <= 1}
+              onClick={() => setCurrentPageState((p) => Math.max(1, p - 1))}
               className="h-8"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -447,14 +476,8 @@ export function TreatmentsList({
             <Button
               variant="outline"
               size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => {
-                const p = new URLSearchParams();
-                if (search) p.set('search', search);
-                if (categoryFilter !== 'all') p.set('category', categoryFilter);
-                p.set('page', String(currentPage + 1));
-                router.push(`/dashboard/content/treatments?${p.toString()}`);
-              }}
+              disabled={currentPageState >= totalPages}
+              onClick={() => setCurrentPageState((p) => Math.min(totalPages, p + 1))}
               className="h-8"
             >
               <ChevronRight className="h-3.5 w-3.5" />

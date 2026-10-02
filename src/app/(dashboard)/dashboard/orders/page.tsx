@@ -22,7 +22,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const page = parseInt(params.page || '1', 10);
   const pageSize = 20;
 
-  let query = supabase
+  const query = supabase
     .from('orders')
     .select(
       `
@@ -55,17 +55,8 @@ export default async function OrdersPage({ searchParams }: PageProps) {
       { count: 'exact' }
     )
     .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (status !== 'all') query = query.eq('status', status);
-  if (search) {
-    query = query.or(
-      `customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%,order_number.ilike.%${search}%`
-    );
-  }
-
-  const from = (page - 1) * pageSize;
-  query = query.range(from, from + pageSize - 1);
+    .order('created_at', { ascending: false })
+    .limit(300);
 
   const [{ data: orders, count }, { count: activeCount }] = await Promise.all([
     query,

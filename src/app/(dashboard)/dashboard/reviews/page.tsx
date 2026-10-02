@@ -25,7 +25,7 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
 
   const supabase = await createClient();
 
-  let query = supabase
+  const query = supabase
     .from('reviews')
     .select(
       `
@@ -35,15 +35,8 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
       { count: 'exact' }
     )
     .is('deleted_at', null)
-    .order('created_at', { ascending: false });
-
-  if (status && status !== 'all') {
-    query = query.eq('status', status);
-  }
-
-  const from = (currentPage - 1) * pageSize;
-  const to = from + pageSize - 1;
-  query = query.range(from, to);
+    .order('created_at', { ascending: false })
+    .limit(200);
 
   const { data: reviews, count, error } = await query;
 

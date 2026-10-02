@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateOrderStatus } from '@/actions/orders';
 import { Button } from '@/components/ui/button';
@@ -106,7 +106,7 @@ const STATUS_FILTERS = [
 export function OrdersList({
   orders,
   totalCount,
-  currentPage,
+  currentPage: initialPage = 1,
   pageSize,
   filters,
   activeCount,
@@ -115,18 +115,63 @@ export function OrdersList({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState(filters.search);
+  const [activeSearch, setActiveSearch] = useState(filters.search);
+  const [selectedStatus, setSelectedStatus] = useState<string>(filters.status || 'all');
+  const [currentPageState, setCurrentPageState] = useState<number>(initialPage || 1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Instant in-memory filtering (0ms latency!)
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      if (selectedStatus !== 'all' && order.status !== selectedStatus) {
+        return false;
+      }
+      if (activeSearch.trim()) {
+        const q = activeSearch.toLowerCase().trim();
+        const num = (order.order_number || '').toLowerCase();
+        const name = (order.customer_name || '').toLowerCase();
+        const phone = (order.customer_phone || '').toLowerCase();
+        const email = (order.customer_email || '').toLowerCase();
+        if (!num.includes(q) && !name.includes(q) && !phone.includes(q) && !email.includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [orders, selectedStatus, activeSearch]);
+
+  const totalFilteredCount = filteredOrders.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const displayedOrders = useMemo(() => {
+    const start = (currentPageState - 1) * pageSize;
+    return filteredOrders.slice(start, start + pageSize);
+  }, [filteredOrders, currentPageState, pageSize]);
 
   const updateFilter = (key: string, value: string) => {
-    const params = new URLSearchParams();
-    if (key === 'status') params.set('status', value);
-    else params.set('status', filters.status);
-    if (key === 'search') params.set('search', value);
-    else if (filters.search) params.set('search', filters.search);
-    params.set('page', '1');
-    router.push(`/dashboard/orders?${params.toString()}`);
+    let nextStatus = selectedStatus;
+    let nextSearch = activeSearch;
+
+    if (key === 'status') {
+      nextStatus = value;
+      setSelectedStatus(value);
+    } else if (key === 'search') {
+      nextSearch = value;
+      setActiveSearch(value);
+    }
+
+    setCurrentPageState(1);
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (nextStatus !== 'all') params.set('status', nextStatus);
+      else params.delete('status');
+      if (nextSearch) params.set('search', nextSearch);
+      else params.delete('search');
+      params.set('page', '1');
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    } catch {
+      // fallback
+    }
   };
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
@@ -154,15 +199,20 @@ export function OrdersList({
               key={f.value}
               onClick={() => updateFilter('status', f.value)}
               className={cn(
-                'px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors',
-                filters.status === f.value
-                  ? 'bg-rose-50 text-rose-700 font-semibold'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                'px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150 cursor-pointer',
+                selectedStatus === f.value
+                  ? 'bg-rose-500 text-white shadow-xs font-bold'
+                  : 'bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200'
               )}
             >
               {f.label}
               {f.value === 'all' && activeCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-rose-100 text-rose-700 rounded-full text-[10px]">
+                <span
+                  className={cn(
+                    'ml-1 px-1.5 py-0.2 rounded-full text-[10px]',
+                    selectedStatus === f.value ? 'bg-white/25 text-white' : 'bg-rose-100 text-rose-700'
+                  )}
+                >
                   {activeCount}
                 </span>
               )}
@@ -175,7 +225,10 @@ export function OrdersList({
           <Input
             placeholder="Search orders..."
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              if (e.target.value === '') updateFilter('search', '');
+            }}
             onKeyDown={(e) => e.key === 'Enter' && updateFilter('search', searchValue)}
             className="pl-8 h-8 text-xs"
           />
@@ -183,7 +236,7 @@ export function OrdersList({
       </div>
 
       {/* Orders Table */}
-      {orders.length === 0 ? (
+      {filteredOrders.length === 0 ? (
         <Card className="p-8 text-center border-dashed">
           <Package className="h-8 w-8 text-gray-300 mx-auto mb-2" />
           <p className="text-sm text-gray-500">No orders found.</p>
@@ -204,7 +257,7 @@ export function OrdersList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((order) => (
+                {displayedOrders.map((order) => (
                   <TableRow
                     key={order.id}
                     className="hover:bg-gray-50/50 group cursor-pointer"
@@ -308,20 +361,14 @@ export function OrdersList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            Page {currentPage} of {totalPages}
+            Showing {(currentPageState - 1) * pageSize + 1}–{Math.min(currentPageState * pageSize, totalFilteredCount)} of {totalFilteredCount}
           </p>
           <div className="flex gap-1">
             <Button
               variant="outline"
               size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => {
-                const p = new URLSearchParams();
-                p.set('status', filters.status);
-                if (filters.search) p.set('search', filters.search);
-                p.set('page', String(currentPage - 1));
-                router.push(`/dashboard/orders?${p.toString()}`);
-              }}
+              disabled={currentPageState <= 1}
+              onClick={() => setCurrentPageState((p) => Math.max(1, p - 1))}
               className="h-8"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -329,14 +376,8 @@ export function OrdersList({
             <Button
               variant="outline"
               size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => {
-                const p = new URLSearchParams();
-                p.set('status', filters.status);
-                if (filters.search) p.set('search', filters.search);
-                p.set('page', String(currentPage + 1));
-                router.push(`/dashboard/orders?${p.toString()}`);
-              }}
+              disabled={currentPageState >= totalPages}
+              onClick={() => setCurrentPageState((p) => Math.min(totalPages, p + 1))}
               className="h-8"
             >
               <ChevronRight className="h-3.5 w-3.5" />

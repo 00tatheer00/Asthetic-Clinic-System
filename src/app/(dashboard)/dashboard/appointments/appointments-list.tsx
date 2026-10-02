@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { updateAppointmentStatus, deleteAppointment, createStaffAppointment, updateAppointment } from '@/actions/appointments';
@@ -95,7 +95,7 @@ export function AppointmentsList({
   appointments,
   pendingAppointments = [],
   totalCount,
-  currentPage,
+  currentPage: initialPage = 1,
   pageSize,
   filters,
   stats,
@@ -203,7 +203,88 @@ export function AppointmentsList({
     }
   };
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Active fast client filtering state (0ms instant response)
+  const [activeDate, setActiveDate] = useState<string>(filters.date || 'today');
+  const [activeStatus, setActiveStatus] = useState<string>(filters.status || 'all');
+  const [currentPage, setCurrentPage] = useState<number>(initialPage || 1);
+  const [activeSearch, setActiveSearch] = useState<string>(filters.search || '');
+
+  const isMatchingDate = (dateStr: string, dateFilter: string) => {
+    if (dateFilter === 'all') return true;
+    const aptDate = new Date(dateStr);
+    const now = new Date();
+
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    if (dateFilter === 'today') {
+      return aptDate >= todayStart && aptDate <= todayEnd;
+    }
+    if (dateFilter === 'tomorrow') {
+      const tomStart = new Date(todayStart);
+      tomStart.setDate(tomStart.getDate() + 1);
+      const tomEnd = new Date(todayEnd);
+      tomEnd.setDate(tomEnd.getDate() + 1);
+      return aptDate >= tomStart && aptDate <= tomEnd;
+    }
+    if (dateFilter === 'week') {
+      const weekEnd = new Date(todayEnd);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      return aptDate >= todayStart && aptDate <= weekEnd;
+    }
+    if (dateFilter === 'past') {
+      return aptDate < todayStart;
+    }
+    return true;
+  };
+
+  const filteredAppointments = useMemo(() => {
+    return appointments
+      .filter((apt) => {
+        // 1. Status filter
+        if (activeStatus !== 'all' && apt.status !== activeStatus) {
+          return false;
+        }
+        // 2. Date filter
+        if (!isMatchingDate(apt.scheduled_at, activeDate)) {
+          return false;
+        }
+        // 3. Search query
+        if (activeSearch.trim()) {
+          const q = activeSearch.toLowerCase().trim();
+          const name = (apt.customer_name || '').toLowerCase();
+          const phone = (apt.customer_phone || '').toLowerCase();
+          const email = (apt.customer_email || '').toLowerCase();
+          const treatment = (apt.treatments?.name || '').toLowerCase();
+          const patient = (apt.patients?.name || '').toLowerCase();
+          if (
+            !name.includes(q) &&
+            !phone.includes(q) &&
+            !email.includes(q) &&
+            !treatment.includes(q) &&
+            !patient.includes(q)
+          ) {
+            return false;
+          }
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (activeDate === 'past') {
+          return new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime();
+        }
+        return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+      });
+  }, [appointments, activeStatus, activeDate, activeSearch]);
+
+  const totalFilteredCount = filteredAppointments.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const displayedAppointments = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredAppointments.slice(start, start + pageSize);
+  }, [filteredAppointments, currentPage, pageSize]);
 
   const reviewPendingItems = (
     pendingAppointments.length > 0
@@ -211,36 +292,48 @@ export function AppointmentsList({
       : appointments.filter((a) => a.status === 'pending')
   ).filter((a) => !processedPendingIds.includes(a.id) && a.status === 'pending');
 
-  const updateFilter = (key: string, value: string) => {
-    const params = new URLSearchParams();
-    let newStatus = key === 'status' ? value : filters.status;
-    let newDate = key === 'date' ? value : filters.date;
+  const updateFilter = (key: 'status' | 'date' | 'search', value: string) => {
+    let nextDate = activeDate;
+    let nextStatus = activeStatus;
+    let nextSearch = activeSearch;
 
-    // When switching to pending status, reset date to 'all' so pending requests across all dates are visible!
-    if (key === 'status' && value === 'pending') {
-      newDate = 'all';
+    if (key === 'status') {
+      nextStatus = value;
+      setActiveStatus(value);
+      if (value === 'pending') {
+        nextDate = 'all';
+        setActiveDate('all');
+      }
+    } else if (key === 'date') {
+      nextDate = value;
+      setActiveDate(value);
+    } else if (key === 'search') {
+      nextSearch = value;
+      setActiveSearch(value);
     }
 
-    params.set('status', newStatus);
-    params.set('date', newDate);
+    setCurrentPage(1);
 
-    if (key === 'search') params.set('search', value);
-    else if (filters.search) params.set('search', filters.search);
-
-    params.set('page', '1');
-    router.push(`/dashboard/appointments?${params.toString()}`);
+    // Shallow URL sync without triggering slow server network roundtrips
+    try {
+      const params = new URLSearchParams(window.location.search);
+      params.set('status', nextStatus);
+      params.set('date', nextDate);
+      if (nextSearch) {
+        params.set('search', nextSearch);
+      } else {
+        params.delete('search');
+      }
+      params.set('page', '1');
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    } catch {
+      // fallback
+    }
   };
 
   const handleOpenReview = () => {
     setShowReviewModal(true);
-    if (filters.status !== 'pending' || filters.date !== 'all') {
-      const params = new URLSearchParams();
-      params.set('status', 'pending');
-      params.set('date', 'all');
-      if (filters.search) params.set('search', filters.search);
-      params.set('page', '1');
-      router.push(`/dashboard/appointments?${params.toString()}`);
-    }
+    updateFilter('status', 'pending');
   };
 
   const handleSearch = () => {
@@ -361,7 +454,7 @@ export function AppointmentsList({
                   (P. {currentPage}/{totalPages || 1})
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">{totalCount}</p>
+              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">{totalFilteredCount}</p>
             </div>
             <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <CheckCircle2 className="h-4 w-4" />
@@ -373,16 +466,18 @@ export function AppointmentsList({
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Date Filter */}
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-1.5 flex-wrap">
           {DATE_FILTERS.map((f) => (
             <Button
               key={f.value}
-              variant={filters.date === f.value ? 'default' : 'outline'}
+              variant={activeDate === f.value ? 'default' : 'outline'}
               size="sm"
               onClick={() => updateFilter('date', f.value)}
               className={cn(
-                'rounded-full text-xs h-8',
-                filters.date === f.value && 'bg-gray-900 text-white'
+                'rounded-full text-xs h-8 transition-all duration-150',
+                activeDate === f.value
+                  ? 'bg-gray-900 text-white shadow-xs font-semibold hover:bg-gray-800'
+                  : 'border-gray-200 text-gray-700 hover:bg-gray-50'
               )}
             >
               {f.label}
@@ -395,7 +490,12 @@ export function AppointmentsList({
           <Input
             placeholder="Search name or phone..."
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+              if (e.target.value === '') {
+                updateFilter('search', '');
+              }
+            }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="h-8 text-xs"
           />
@@ -414,7 +514,7 @@ export function AppointmentsList({
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1">
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
         {STATUS_FILTERS.map((f) => (
           <Button
             key={f.value}
@@ -422,8 +522,10 @@ export function AppointmentsList({
             size="sm"
             onClick={() => updateFilter('status', f.value)}
             className={cn(
-              'rounded-lg text-xs h-7 px-3 shrink-0',
-              filters.status === f.value && 'bg-gray-100 text-gray-900 font-semibold'
+              'rounded-full text-xs h-7 px-3.5 shrink-0 transition-all duration-150',
+              activeStatus === f.value
+                ? 'bg-rose-50 text-rose-700 font-bold border border-rose-200 shadow-2xs'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
             )}
           >
             {f.label}
@@ -432,7 +534,7 @@ export function AppointmentsList({
       </div>
 
       {/* Pending Online Requests Alert Banner */}
-      {stats.pending > 0 && filters.status !== 'pending' && (
+      {stats.pending > 0 && activeStatus !== 'pending' && (
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs">
           <div className="flex items-center gap-3">
             <span className="relative flex h-3 w-3 shrink-0">
@@ -460,7 +562,7 @@ export function AppointmentsList({
       )}
 
       {/* Active Pending Filter Indicator Banner */}
-      {filters.status === 'pending' && (
+      {activeStatus === 'pending' && (
         <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-xl bg-amber-200/70 text-amber-800 flex items-center justify-center font-bold text-xs shrink-0">
@@ -503,17 +605,17 @@ export function AppointmentsList({
         </div>
       )}
 
-      {!isPending && appointments.length === 0 && (
+      {!isPending && filteredAppointments.length === 0 && (
         <Card className="border-0 shadow-sm">
           <CardContent className="py-12 text-center">
             <Calendar className="h-10 w-10 text-gray-300 mx-auto mb-3" />
             <p className="text-sm text-gray-500">No appointments found.</p>
-            <p className="text-xs text-gray-400 mt-1">Try adjusting your filters.</p>
+            <p className="text-xs text-gray-400 mt-1">Try adjusting your date or status filters.</p>
           </CardContent>
         </Card>
       )}
 
-      {!isPending && appointments.length > 0 && (
+      {!isPending && filteredAppointments.length > 0 && (
         <Card className="border-0 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
@@ -527,7 +629,7 @@ export function AppointmentsList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {appointments.map((apt) => (
+                {displayedAppointments.map((apt) => (
                   <TableRow key={apt.id} className="group">
                     <TableCell>
                       <div>
@@ -669,21 +771,14 @@ export function AppointmentsList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount}
+            Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalFilteredCount)} of {totalFilteredCount}
           </p>
           <div className="flex gap-1">
             <Button
               variant="outline"
               size="sm"
               disabled={currentPage <= 1}
-              onClick={() => {
-                const params = new URLSearchParams();
-                params.set('status', filters.status);
-                params.set('date', filters.date);
-                if (filters.search) params.set('search', filters.search);
-                params.set('page', String(currentPage - 1));
-                router.push(`/dashboard/appointments?${params.toString()}`);
-              }}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               className="h-8"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -692,14 +787,7 @@ export function AppointmentsList({
               variant="outline"
               size="sm"
               disabled={currentPage >= totalPages}
-              onClick={() => {
-                const params = new URLSearchParams();
-                params.set('status', filters.status);
-                params.set('date', filters.date);
-                if (filters.search) params.set('search', filters.search);
-                params.set('page', String(currentPage + 1));
-                router.push(`/dashboard/appointments?${params.toString()}`);
-              }}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               className="h-8"
             >
               <ChevronRight className="h-3.5 w-3.5" />

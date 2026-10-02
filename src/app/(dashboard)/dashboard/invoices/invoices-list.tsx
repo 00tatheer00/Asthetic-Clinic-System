@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
@@ -102,7 +102,7 @@ interface InvoicesListProps {
 export function InvoicesList({
   invoices,
   totalCount,
-  currentPage,
+  currentPage: initialPage = 1,
   pageSize,
   search,
   statusFilter,
@@ -110,6 +110,8 @@ export function InvoicesList({
 }: InvoicesListProps) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState(search);
+  const [selectedStatus, setSelectedStatus] = useState<string>(statusFilter || 'all');
+  const [currentPage, setCurrentPage] = useState<number>(initialPage || 1);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const receiptSettings = useReceiptSettings();
@@ -149,22 +151,43 @@ export function InvoicesList({
   // Email state
   const [sendingEmail, setSendingEmail] = useState(false);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Instant in-memory filtering (0ms latency!)
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter((inv) => {
+      if (selectedStatus !== 'all' && inv.status !== selectedStatus) return false;
+      if (searchValue.trim()) {
+        const q = searchValue.toLowerCase().trim();
+        const matchNum = inv.invoice_number?.toLowerCase().includes(q);
+        const matchName = inv.customer_name?.toLowerCase().includes(q);
+        const matchPhone = inv.customer_phone?.includes(q);
+        if (!matchNum && !matchName && !matchPhone) return false;
+      }
+      return true;
+    });
+  }, [invoices, selectedStatus, searchValue]);
+
+  const itemsPerPage = pageSize || 20;
+  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage) || 1;
+  const displayedInvoices = filteredInvoices.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchValue) params.set('search', searchValue);
-    if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter);
-    params.set('page', '1');
-    router.push(`/dashboard/invoices?${params.toString()}`);
+    setCurrentPage(1);
   };
 
   const handleStatusChange = (status: string) => {
-    const params = new URLSearchParams();
-    if (searchValue) params.set('search', searchValue);
-    if (status !== 'all') params.set('status', status);
-    params.set('page', '1');
-    router.push(`/dashboard/invoices?${params.toString()}`);
+    setSelectedStatus(status);
+    setCurrentPage(1);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (status !== 'all') params.set('status', status);
+      else params.delete('status');
+      params.delete('page');
+      const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+      window.history.replaceState(null, '', newUrl);
+    }
   };
 
   const handleViewInvoice = (inv: Invoice) => {
@@ -238,7 +261,7 @@ export function InvoicesList({
 
       {/* Filters and Search */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        <div className="flex items-center gap-1 overflow-x-auto pb-2 md:pb-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0">
           {[
             { label: 'All Invoices', value: 'all' },
             { label: 'Paid', value: 'paid' },
@@ -249,10 +272,10 @@ export function InvoicesList({
               key={tab.value}
               onClick={() => handleStatusChange(tab.value)}
               className={cn(
-                'px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all',
-                statusFilter === tab.value
-                  ? 'bg-rose-500 text-white shadow-sm'
-                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                'px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer',
+                selectedStatus === tab.value
+                  ? 'bg-rose-500 text-white shadow-xs'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200/90'
               )}
             >
               {tab.label}
@@ -266,14 +289,26 @@ export function InvoicesList({
             <Input
               placeholder="Search by invoice #, customer..."
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+                setCurrentPage(1);
+              }}
               className="pl-9 h-9 text-xs"
             />
           </div>
-          <Button size="sm" variant="secondary" onClick={handleSearch} className="h-9 text-xs">
-            Search
-          </Button>
+          {searchValue && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setSearchValue('');
+                setCurrentPage(1);
+              }}
+              className="h-9 text-xs px-2"
+            >
+              Clear
+            </Button>
+          )}
         </div>
       </div>
 
@@ -293,14 +328,14 @@ export function InvoicesList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.length === 0 ? (
+              {displayedInvoices.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-gray-400 text-sm">
                     No invoices found.
                   </TableCell>
                 </TableRow>
               ) : (
-                invoices.map((inv) => (
+                displayedInvoices.map((inv) => (
                   <TableRow key={inv.id} className="hover:bg-gray-50/50 transition-colors">
                     <TableCell className="font-mono text-xs font-medium text-gray-900">
                       {inv.invoice_number}
@@ -388,20 +423,14 @@ export function InvoicesList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-500">
-            Page {currentPage} of {totalPages} ({totalCount} total)
+            Page {currentPage} of {totalPages} ({filteredInvoices.length} total)
           </p>
           <div className="flex gap-1">
             <Button
               variant="outline"
               size="sm"
               disabled={currentPage <= 1}
-              onClick={() => {
-                const p = new URLSearchParams();
-                if (search) p.set('search', search);
-                if (statusFilter !== 'all') p.set('status', statusFilter);
-                p.set('page', String(currentPage - 1));
-                router.push(`/dashboard/invoices?${p.toString()}`);
-              }}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               className="h-8"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -410,13 +439,7 @@ export function InvoicesList({
               variant="outline"
               size="sm"
               disabled={currentPage >= totalPages}
-              onClick={() => {
-                const p = new URLSearchParams();
-                if (search) p.set('search', search);
-                if (statusFilter !== 'all') p.set('status', statusFilter);
-                p.set('page', String(currentPage + 1));
-                router.push(`/dashboard/invoices?${p.toString()}`);
-              }}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               className="h-8"
             >
               <ChevronRight className="h-3.5 w-3.5" />

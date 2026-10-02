@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { moderateReview, deleteReview } from '@/actions/content';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,7 +59,7 @@ interface ReviewsListProps {
 export function ReviewsList({
   reviews,
   totalCount,
-  currentPage,
+  currentPage: initialPage = 1,
   pageSize,
   statusFilter,
   isAdmin,
@@ -69,14 +69,38 @@ export function ReviewsList({
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>(statusFilter || 'all');
+  const [currentPageState, setCurrentPageState] = useState<number>(initialPage || 1);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Instant in-memory filtering (0ms latency!)
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((r) => {
+      if (selectedStatus !== 'all' && r.status !== selectedStatus) {
+        return false;
+      }
+      return true;
+    });
+  }, [reviews, selectedStatus]);
+
+  const totalFilteredCount = filteredReviews.length;
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const displayedReviews = useMemo(() => {
+    const start = (currentPageState - 1) * pageSize;
+    return filteredReviews.slice(start, start + pageSize);
+  }, [filteredReviews, currentPageState, pageSize]);
 
   const handleStatusChange = (status: string) => {
-    const params = new URLSearchParams();
-    if (status !== 'all') params.set('status', status);
-    params.set('page', '1');
-    router.push(`/dashboard/reviews?${params.toString()}`);
+    setSelectedStatus(status);
+    setCurrentPageState(1);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (status !== 'all') params.set('status', status);
+      else params.delete('status');
+      params.set('page', '1');
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+    } catch {
+      // fallback
+    }
   };
 
   const handleApprove = async (review: Review) => {
@@ -148,7 +172,7 @@ export function ReviewsList({
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-gray-100">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-gray-100">
         {[
           { label: 'All Reviews', value: 'all' },
           { label: 'Pending Review', value: 'pending' },
@@ -159,10 +183,10 @@ export function ReviewsList({
             key={tab.value}
             onClick={() => handleStatusChange(tab.value)}
             className={cn(
-              'px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all',
-              statusFilter === tab.value
-                ? 'bg-rose-500 text-white shadow-sm'
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              'px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer',
+              selectedStatus === tab.value
+                ? 'bg-rose-500 text-white shadow-xs'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200/90'
             )}
           >
             {tab.label}
@@ -171,19 +195,19 @@ export function ReviewsList({
       </div>
 
       {/* Reviews List */}
-      {reviews.length === 0 ? (
+      {filteredReviews.length === 0 ? (
         <Card className="border-dashed border-gray-200 text-center py-12">
           <CardContent>
             <MessageSquare className="h-10 w-10 text-gray-300 mx-auto mb-3" />
             <h3 className="text-sm font-semibold text-gray-800">No reviews found</h3>
             <p className="text-xs text-gray-400 mt-1">
-              There are currently no reviews in the &quot;{statusFilter}&quot; queue.
+              There are currently no reviews in the &quot;{selectedStatus}&quot; queue.
             </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {reviews.map((rev) => {
+          {displayedReviews.map((rev) => {
             const isLoading = loadingId === rev.id;
 
             return (
@@ -310,19 +334,14 @@ export function ReviewsList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-gray-500">
-            Page {currentPage} of {totalPages} ({totalCount} total)
+            Showing {(currentPageState - 1) * pageSize + 1}–{Math.min(currentPageState * pageSize, totalFilteredCount)} of {totalFilteredCount}
           </p>
           <div className="flex gap-1">
             <Button
               variant="outline"
               size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => {
-                const p = new URLSearchParams();
-                if (statusFilter !== 'all') p.set('status', statusFilter);
-                p.set('page', String(currentPage - 1));
-                router.push(`/dashboard/reviews?${p.toString()}`);
-              }}
+              disabled={currentPageState <= 1}
+              onClick={() => setCurrentPageState((p) => Math.max(1, p - 1))}
               className="h-8"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -330,13 +349,8 @@ export function ReviewsList({
             <Button
               variant="outline"
               size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => {
-                const p = new URLSearchParams();
-                if (statusFilter !== 'all') p.set('status', statusFilter);
-                p.set('page', String(currentPage + 1));
-                router.push(`/dashboard/reviews?${p.toString()}`);
-              }}
+              disabled={currentPageState >= totalPages}
+              onClick={() => setCurrentPageState((p) => Math.min(totalPages, p + 1))}
               className="h-8"
             >
               <ChevronRight className="h-3.5 w-3.5" />

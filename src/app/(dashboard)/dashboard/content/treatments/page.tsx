@@ -26,7 +26,7 @@ export default async function TreatmentsPage({ searchParams }: TreatmentsPagePro
 
   const supabase = await createClient();
 
-  let query = supabase
+  const query = supabase
     .from('treatments')
     .select(
       `
@@ -36,19 +36,8 @@ export default async function TreatmentsPage({ searchParams }: TreatmentsPagePro
       { count: 'exact' }
     )
     .is('deleted_at', null)
-    .order('sort_order', { ascending: true });
-
-  if (category && category !== 'all') {
-    query = query.eq('category_id', category);
-  }
-
-  if (search) {
-    query = query.or(`name.ilike.%${search}%,slug.ilike.%${search}%`);
-  }
-
-  const from = (currentPage - 1) * pageSize;
-  const to = from + pageSize - 1;
-  query = query.range(from, to);
+    .order('sort_order', { ascending: true })
+    .limit(300);
 
   const [{ data: categories }, { data: treatments, count, error }] = await Promise.all([
     supabase
