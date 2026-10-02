@@ -253,7 +253,7 @@ export async function sendAppointmentReminderEmail(data: {
         <tr><td style="font-weight: 600;">Scheduled Time:</td><td>${data.scheduledAt}</td></tr>
       </table>
       <p style="font-size: 13px; color: #64748b;">
-        We look forward to seeing you. Please call us at ${data.clinicPhone || '+92 300 0000000'} if you have any questions.
+        We look forward to seeing you. Please call us at ${data.clinicPhone || '0335-6400959'} if you have any questions.
       </p>
     `
   );
@@ -300,7 +300,7 @@ export async function sendAppointmentStatusChangeEmail(data: {
       }
       ${data.reason ? `<p style="font-size: 13px; color: #64748b;">Reason / Note: ${data.reason}</p>` : ''}
       <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
-        To book a new slot or contact reception, please call +92 300 0000000 or visit our website.
+        To book a new slot or contact reception, please call 0335-6400959 or visit our website.
       </p>
     `
   );

@@ -101,13 +101,13 @@ export default async function BookPage({ searchParams }: BookPageProps) {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <a
-              href="https://wa.me/923000000000"
+              href="https://wa.me/923356400959"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md transition-all hover:scale-102"
             >
               <Phone className="h-3.5 w-3.5" />
-              <span>+92 300 0000000</span>
+              <span>0335-6400959</span>
             </a>
           </div>
         </div>

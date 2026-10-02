@@ -36,6 +36,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { VerifyPrintButton } from './verify-print-button';
+
 interface VerifyPageProps {
   searchParams: Promise<{
     id?: string;
@@ -54,32 +56,133 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
     .limit(1)
     .single();
 
+  const rawNum = (num || '').trim();
+  const rawId = (id || '').trim();
+  const cleanNum = rawNum.replace(/^[#\s]+/, '').trim();
+  const hasSearched = Boolean(rawId || cleanNum);
+
   let invoice: any = null;
-  let hasSearched = Boolean(id || num);
 
-  if (id || num) {
-    let query = supabase
+  if (rawId) {
+    const { data: byId } = await supabase
       .from('invoices')
-      .select(`
-        *,
-        invoice_line_items (*)
-      `);
+      .select('*, invoice_line_items (*)')
+      .eq('id', rawId)
+      .maybeSingle();
+    invoice = byId;
 
-    if (id) {
-      query = query.eq('id', id);
-    } else if (num) {
-      query = query.ilike('invoice_number', num.trim());
+    if (!invoice) {
+      // Check if rawId was passed as a sale_id or order_id
+      const { data: altInv } = await supabase
+        .from('invoices')
+        .select('*, invoice_line_items (*)')
+        .or(`sale_id.eq.${rawId},order_id.eq.${rawId}`)
+        .maybeSingle();
+      invoice = altInv;
+    }
+  }
+
+  if (!invoice && cleanNum) {
+    // 1. Exact or case-insensitive search
+    const { data: exactMatch } = await supabase
+      .from('invoices')
+      .select('*, invoice_line_items (*)')
+      .ilike('invoice_number', cleanNum)
+      .maybeSingle();
+    invoice = exactMatch;
+
+    // 2. Format variations (e.g. user typed "00002", "2", "2026-00002", "BSC-2026-0002")
+    if (!invoice) {
+      const digitMatch = cleanNum.match(/(\d+)$/);
+      const yearMatch = cleanNum.match(/(20\d\d)/);
+      const year = yearMatch ? yearMatch[1] : new Date().getFullYear().toString();
+
+      const candidateFormats = [
+        `BSC-${year}-${cleanNum.replace(/^BSC-?/i, '')}`,
+        digitMatch ? `BSC-${year}-${digitMatch[1].padStart(5, '0')}` : null,
+        digitMatch ? `BSC-${digitMatch[1].padStart(5, '0')}` : null,
+        cleanNum.replace(/\s+/g, '-'),
+      ].filter(Boolean) as string[];
+
+      for (const candidate of candidateFormats) {
+        if (!invoice && candidate.toLowerCase() !== cleanNum.toLowerCase()) {
+          const { data: altMatch } = await supabase
+            .from('invoices')
+            .select('*, invoice_line_items (*)')
+            .ilike('invoice_number', candidate)
+            .maybeSingle();
+          if (altMatch) {
+            invoice = altMatch;
+            break;
+          }
+        }
+      }
     }
 
-    const { data } = await query.maybeSingle();
-    invoice = data;
+    // 3. Partial substring search if string is distinctive (>= 4 chars)
+    if (!invoice && cleanNum.length >= 4) {
+      const { data: partialMatch } = await supabase
+        .from('invoices')
+        .select('*, invoice_line_items (*)')
+        .ilike('invoice_number', `%${cleanNum}%`)
+        .limit(1)
+        .maybeSingle();
+      invoice = partialMatch;
+    }
+
+    // 4. UUID check if cleanNum is a UUID
+    if (
+      !invoice &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanNum)
+    ) {
+      const { data: idMatch } = await supabase
+        .from('invoices')
+        .select('*, invoice_line_items (*)')
+        .eq('id', cleanNum)
+        .maybeSingle();
+      invoice = idMatch;
+    }
+  }
+
+  // If invoice found but line items missing, try pulling from sale_items
+  if (
+    invoice &&
+    (!invoice.invoice_line_items || invoice.invoice_line_items.length === 0) &&
+    invoice.sale_id
+  ) {
+    const { data: saleItems } = await supabase
+      .from('sale_items')
+      .select('*')
+      .eq('sale_id', invoice.sale_id);
+    if (saleItems && saleItems.length > 0) {
+      invoice.invoice_line_items = saleItems.map((si: any, idx: number) => ({
+        id: si.id,
+        description: si.item_name || 'Clinical Aesthetic Treatment / Product',
+        quantity: si.quantity || 1,
+        unit_price: si.unit_price || 0,
+        discount_amount: si.discount_amount || 0,
+        line_total: si.total_price || si.unit_price * (si.quantity || 1),
+        sort_order: idx,
+      }));
+    }
+  }
+
+  // Sort line items by sort_order
+  if (invoice?.invoice_line_items) {
+    invoice.invoice_line_items.sort(
+      (a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    );
   }
 
   const clinicName = clinicSettings?.clinic_name || 'Brimish Skin Care & Laser Clinic';
-  const clinicPhone = clinicSettings?.clinic_phone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959';
+  const rawPhone = clinicSettings?.clinic_phone || '';
+  const clinicPhone =
+    rawPhone && !rawPhone.includes('0000000') ? rawPhone : '0335-6400959';
+  const rawAddress = clinicSettings?.clinic_address || '';
   const clinicAddress =
-    clinicSettings?.clinic_address ||
-    'Sami Tower, Ring Road, Peshawar, KP, Pakistan';
+    rawAddress && !rawAddress.toLowerCase().includes('university road')
+      ? rawAddress
+      : 'Sami Tower, Ring Road, Peshawar, KP, Pakistan';
 
   return (
     <div className="min-h-screen bg-linear-to-b from-stone-50 via-white to-amber-50/20 py-10 sm:py-16 px-4 sm:px-6">
@@ -107,7 +210,7 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
                 <div>
                   <h3 className="text-base font-bold text-gray-900">Search Invoice Record</h3>
                   <p className="text-xs text-gray-500">
-                    Enter the invoice number printed at the top of your 80mm thermal receipt.
+                    Enter the invoice number printed at the top of your 80mm thermal receipt slip.
                   </p>
                 </div>
               </div>
@@ -115,14 +218,14 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
               <form method="GET" action="/verify-invoice" className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Input
                   name="num"
-                  placeholder="e.g. INV-2026-00042"
-                  defaultValue={num || ''}
+                  placeholder="e.g. BSC-2026-00002"
+                  defaultValue={cleanNum || rawNum || ''}
                   required
                   className="h-11 font-mono uppercase tracking-wider text-sm"
                 />
                 <Button
                   type="submit"
-                  className="h-11 px-6 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shrink-0"
+                  className="h-11 px-6 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shrink-0 shadow-xs"
                 >
                   Verify Receipt
                   <ArrowRight className="h-4 w-4 ml-1.5" />
@@ -132,12 +235,33 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
               {hasSearched && !invoice && (
                 <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="font-bold">Invoice record could not be found.</p>
-                    <p className="text-amber-800 leading-relaxed">
-                      Please double-check the invoice number printed on your receipt slip, or contact our clinic reception desk at{' '}
-                      <strong>{clinicPhone}</strong> for assistance.
+                  <div className="space-y-2">
+                    <p className="font-bold text-amber-950">
+                      Invoice record &quot;{cleanNum || rawId}&quot; could not be found.
                     </p>
+                    <p className="text-amber-800 leading-relaxed">
+                      Please double-check the invoice number printed on your receipt slip (e.g. <strong className="font-mono">BSC-2026-00002</strong>), or contact Dr. Bilal Ahmad&apos;s clinic desk for assistance.
+                    </p>
+                    <div className="pt-1 flex flex-wrap items-center gap-2">
+                      <a
+                        href="tel:03356400959"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-stone-800 font-semibold hover:bg-amber-100 text-xs"
+                      >
+                        <Phone className="h-3.5 w-3.5 text-rose-600" />
+                        Call Clinic: 0335-6400959
+                      </a>
+                      <a
+                        href={`https://wa.me/923356400959?text=${encodeURIComponent(
+                          `Assalam-o-Alaikum Dr. Bilal Clinic, I am trying to verify my invoice: ${cleanNum || rawId}`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 text-xs"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                        WhatsApp: 0335-6400959
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
@@ -395,14 +519,17 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <Link
-                    href={`/verify-invoice`}
-                    className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white hover:bg-stone-50 text-gray-700 text-xs h-9 px-3.5 font-medium transition-all"
-                  >
-                    <Search className="h-3.5 w-3.5 mr-1.5" />
-                    Verify Another Receipt
-                  </Link>
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 print:hidden">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/verify-invoice`}
+                      className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white hover:bg-stone-50 text-gray-700 text-xs h-9 px-3.5 font-medium transition-all"
+                    >
+                      <Search className="h-3.5 w-3.5 mr-1.5" />
+                      Verify Another Receipt
+                    </Link>
+                    <VerifyPrintButton />
+                  </div>
 
                   <div className="flex items-center gap-2">
                     <a

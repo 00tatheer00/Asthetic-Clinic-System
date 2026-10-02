@@ -5,7 +5,7 @@ const SUPABASE_URL =
 const SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  'sb_publishable_AeIBkfn4hFRKY-gl7TSETA_2I0OCKYz';
+  '';
 
 /**
  * Supabase admin client using the service role key.

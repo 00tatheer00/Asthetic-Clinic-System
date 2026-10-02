@@ -195,9 +195,9 @@ export function SettingsForm({
   // Settings form state
   const [form, setForm] = useState({
     clinic_name: settings?.clinic_name || 'Brimish Skin Clinic & Aesthetic Studio',
-    clinic_phone: settings?.clinic_phone || '+92 300 0000000',
+    clinic_phone: settings?.clinic_phone || '0335-6400959',
     clinic_email: settings?.clinic_email || 'info@brimishclinic.com',
-    clinic_address: settings?.clinic_address || 'Peshawar, Pakistan',
+    clinic_address: settings?.clinic_address || 'Sami Tower, Ring Road, Peshawar, KP, Pakistan',
     default_tax_label: settings?.default_tax_label || 'GST',
     default_tax_rate: settings?.default_tax_rate ?? 0,
     ntn: settings?.ntn || '',

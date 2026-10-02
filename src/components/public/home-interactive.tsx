@@ -80,7 +80,7 @@ export function HomeFaqSection() {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
           <a
-            href="https://wa.me/923000000000"
+            href="https://wa.me/923356400959"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-xs transition-colors cursor-pointer"
@@ -89,11 +89,11 @@ export function HomeFaqSection() {
             <span>WhatsApp</span>
           </a>
           <a
-            href="tel:+923000000000"
+            href="tel:03356400959"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-xs transition-colors cursor-pointer"
           >
             <Phone className="h-3.5 w-3.5 text-rose-600" />
-            <span>Call +92 300 0000000</span>
+            <span>Call 0335-6400959</span>
           </a>
         </div>
       </div>

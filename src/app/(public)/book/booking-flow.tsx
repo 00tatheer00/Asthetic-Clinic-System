@@ -852,7 +852,7 @@ export function BookingFlow({
                         {/* Direct WhatsApp button for this booking */}
                         <div className="mt-3 pt-2 flex items-center justify-end">
                           <a
-                            href={`https://wa.me/923000000000?text=Assalam-o-Alaikum%20Dr.%20Bilal%20Clinic,%20inquiring%20about%20my%20booking%20Ref:%20#BSC-${apt.id.slice(0, 8).toUpperCase()}%20for%20${encodeURIComponent(apt.customer_name)}`}
+                            href={`https://wa.me/923356400959?text=Assalam-o-Alaikum%20Dr.%20Bilal%20Clinic,%20inquiring%20about%20my%20booking%20Ref:%20#BSC-${apt.id.slice(0, 8).toUpperCase()}%20for%20${encodeURIComponent(apt.customer_name)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-900 font-semibold"
