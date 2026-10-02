@@ -436,8 +436,13 @@ export function AppointmentsList({
             <div>
               <p className="text-xs text-gray-500 font-medium">Total Appointments</p>
               <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">
-                {stats.total ?? totalCount}
+                {totalFilteredCount}
               </p>
+              {(activeSearch.trim() || activeStatus !== 'all' || activeDate !== 'all') && totalFilteredCount !== (stats.total ?? totalCount) && (
+                <p className="text-[10px] text-gray-400 font-medium mt-0.5">
+                  of {stats.total ?? totalCount} total
+                </p>
+              )}
             </div>
             <div className="h-9 w-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
               <Calendar className="h-4 w-4" />
@@ -475,7 +480,7 @@ export function AppointmentsList({
                   (P. {currentPage}/{totalPages || 1})
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">{totalFilteredCount}</p>
+              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">{displayedAppointments.length}</p>
             </div>
             <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <CheckCircle2 className="h-4 w-4" />
