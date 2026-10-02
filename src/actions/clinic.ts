@@ -468,16 +468,18 @@ export async function updateOperatingHours(
     return { success: false, error: 'Only admin can update operating hours.' };
   }
 
-  for (const h of hours) {
-    await supabase
-      .from('operating_hours')
-      .update({
-        open_time: h.open_time,
-        close_time: h.close_time,
-        is_closed: h.is_closed,
-      })
-      .eq('id', h.id);
-  }
+  await Promise.all(
+    hours.map((h) =>
+      supabase
+        .from('operating_hours')
+        .update({
+          open_time: h.open_time,
+          close_time: h.close_time,
+          is_closed: h.is_closed,
+        })
+        .eq('id', h.id)
+    )
+  );
 
   revalidatePath('/dashboard/settings');
   return { success: true };

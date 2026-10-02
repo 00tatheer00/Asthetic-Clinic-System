@@ -20,11 +20,11 @@ import { RATE_LIMITS } from '@/lib/constants';
 
 export async function submitReview(formData: unknown) {
   try {
-    // Rate limit: 1 review per day per IP
+    // Rate limit: 10 reviews per day per IP
     const ip = await getClientIp();
     const { limited } = checkRateLimit(`review:${ip}`, RATE_LIMITS.review.requests, RATE_LIMITS.review.windowMs);
     if (limited) {
-      return { success: false, error: 'You have already submitted a review recently. Please try again later.' };
+      return { success: false, error: 'You have reached the review submission limit (10 per day). Please try again tomorrow.' };
     }
 
     const parsed = reviewSubmissionSchema.safeParse(formData);
@@ -89,6 +89,13 @@ export async function submitReview(formData: unknown) {
 // ============================================================
 
 export async function submitContactForm(formData: unknown) {
+  // Rate limit: prevent bot/spam abuse
+  const ip = await getClientIp();
+  const { limited } = checkRateLimit(`contact:${ip}`, RATE_LIMITS.contact.requests, RATE_LIMITS.contact.windowMs);
+  if (limited) {
+    return { success: false, error: 'Too many submissions. Please wait a moment and try again.' };
+  }
+
   const parsed = contactFormSchema.safeParse(formData);
   if (!parsed.success) {
     return { success: false, error: 'Validation failed', fieldErrors: parsed.error.flatten().fieldErrors };

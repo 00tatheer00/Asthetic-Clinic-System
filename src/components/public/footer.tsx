@@ -124,16 +124,20 @@ export function PublicFooter() {
             {/* Social */}
             <div className="flex items-center gap-3 mt-5">
               <a
-                href="#"
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-center h-9 w-9 rounded-full bg-gray-800 text-gray-400 hover:bg-rose-500 hover:text-white transition-all"
                 aria-label="Instagram"
               >
                 <Globe className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href="https://wa.me/923356400959?text=Hello%2C%20I%20would%20like%20to%20inquire%20about%20a%20skin%20care%20consultation"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-center h-9 w-9 rounded-full bg-gray-800 text-gray-400 hover:bg-rose-500 hover:text-white transition-all"
-                aria-label="Facebook"
+                aria-label="WhatsApp"
               >
                 <MessageCircle className="h-4 w-4" />
               </a>

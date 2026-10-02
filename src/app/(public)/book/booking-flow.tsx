@@ -107,20 +107,6 @@ export function BookingFlow({
         ];
       }
     }
-    const hydra = BOOKING_CATALOG.find((s) => s.id === 'hydrafacial');
-    if (hydra && hydra.options[0]) {
-      return [
-        {
-          serviceId: hydra.id,
-          serviceName: hydra.name,
-          dbId: hydra.dbId,
-          optionId: hydra.options[0].id,
-          optionName: hydra.options[0].name,
-          duration: hydra.options[0].duration,
-          price: hydra.options[0].price,
-        },
-      ];
-    }
     return [];
   });
 

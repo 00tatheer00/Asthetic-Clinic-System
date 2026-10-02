@@ -230,6 +230,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             className="w-full justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50/80 transition-all duration-200"
           >
             {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
@@ -245,6 +246,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             {/* Mobile Menu Button */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
+                aria-label="Open navigation menu"
                 className="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:bg-gray-100"
               >
                 <Menu className="h-5 w-5" />

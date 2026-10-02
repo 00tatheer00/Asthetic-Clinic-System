@@ -55,6 +55,7 @@ const nextConfig: NextConfig = {
     );
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -64,6 +65,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
       },
     ],
   },
@@ -123,7 +128,17 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // 4. Global Security Headers for all routes
+      // 4. Static Images: 1 year immutable cache
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // 5. Global Security Headers for all routes
       {
         source: '/:path*',
         headers: securityHeaders,

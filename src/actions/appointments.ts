@@ -484,13 +484,14 @@ export async function updateAppointment(
 }
 
 // ============================================================
-// Public: Track appointment status by name, phone, or ID
+// Public: Track appointment status by phone or appointment ID
+// Only returns safe, non-sensitive fields to protect patient privacy.
 // ============================================================
 
 export async function trackPublicAppointment(searchQuery: string) {
   const query = (searchQuery || '').trim();
   if (!query || query.length < 2) {
-    return { success: false, error: 'Please enter at least 2 characters to search.' };
+    return { success: false, error: 'Please enter your phone number or booking reference to search.' };
   }
 
   const supabase = createAdminClient();
@@ -498,33 +499,30 @@ export async function trackPublicAppointment(searchQuery: string) {
   // Normalize phone if entered
   const normalizedPhone = query.replace(/[\s\-\(\)\.]/g, '').replace(/^(\+92|0092|92)/, '0');
 
-  // Query appointments
+  // Only allow search by exact phone match or appointment ID — NOT by name (privacy)
   let dbQuery = supabase
     .from('appointments')
     .select(`
       id,
-      customer_name,
-      customer_phone,
-      customer_email,
       scheduled_at,
       status,
-      message,
-      cancellation_reason,
       confirmed_at,
       created_at,
-      treatments(id, name, price)
+      treatments(name)
     `)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(10);
 
   if (/^03[0-9]{9}$/.test(normalizedPhone)) {
-    dbQuery = dbQuery.or(`customer_phone.eq.${normalizedPhone},customer_phone.eq.${query}`);
+    // Exact phone match only
+    dbQuery = dbQuery.eq('customer_phone', normalizedPhone);
   } else if (/^[0-9a-fA-F-]{6,36}$/.test(query)) {
-    // If UUID prefix or hex reference ID
-    dbQuery = dbQuery.or(`id.ilike.%${query}%,customer_name.ilike.%${query}%`);
+    // Appointment ID / reference lookup
+    dbQuery = dbQuery.ilike('id', `%${query}%`);
   } else {
-    dbQuery = dbQuery.ilike('customer_name', `%${query}%`);
+    // Reject name-based searches for privacy
+    return { success: false, error: 'Please enter your phone number (e.g. 03001234567) or booking reference ID.' };
   }
 
   const { data, error } = await dbQuery;
@@ -534,6 +532,16 @@ export async function trackPublicAppointment(searchQuery: string) {
     return { success: false, error: 'Failed to search appointments. Please try again.' };
   }
 
-  return { success: true, appointments: data || [] };
+  // Return only safe fields — no phone, email, or messages
+  const safeResults = (data || []).map((apt: any) => ({
+    id: apt.id,
+    scheduled_at: apt.scheduled_at,
+    status: apt.status,
+    confirmed_at: apt.confirmed_at,
+    created_at: apt.created_at,
+    treatments: apt.treatments,
+  }));
+
+  return { success: true, appointments: safeResults };
 }
 

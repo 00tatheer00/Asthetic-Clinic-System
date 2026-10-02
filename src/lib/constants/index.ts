@@ -29,7 +29,7 @@ export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const RATE_LIMITS = {
   booking: { requests: 10, windowMs: 60 * 1000 }, // 10/min
   order: { requests: 5, windowMs: 60 * 1000 }, // 5/min
-  review: { requests: 1, windowMs: 24 * 60 * 60 * 1000 }, // 1/day
+  review: { requests: 10, windowMs: 24 * 60 * 60 * 1000 }, // 10/day
   contact: { requests: 5, windowMs: 60 * 1000 }, // 5/min
   dashboard: { requests: 100, windowMs: 60 * 1000 }, // 100/min
 } as const;

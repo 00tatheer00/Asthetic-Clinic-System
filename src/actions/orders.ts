@@ -256,63 +256,73 @@ export async function updateOrderStatus(
 
   // Handle stock changes on cancellation — release reserved stock
   if (newStatus === 'cancelled') {
-    for (const item of order.order_items || []) {
-      const { data: product } = await supabase
+    const items = order.order_items || [];
+    const productIds = items.map((i: any) => i.product_id).filter(Boolean);
+    if (productIds.length > 0) {
+      const { data: products } = await supabase
         .from('products')
-        .select('stock_quantity, reserved_quantity')
-        .eq('id', item.product_id)
-        .single();
+        .select('id, stock_quantity, reserved_quantity')
+        .in('id', productIds);
+      const productMap = new Map((products || []).map((p: any) => [p.id, p]));
 
-      if (product) {
-        await supabase
-          .from('products')
-          .update({ reserved_quantity: Math.max(0, product.reserved_quantity - item.quantity) })
-          .eq('id', item.product_id);
+      for (const item of items) {
+        const product = productMap.get(item.product_id);
+        if (product) {
+          await supabase
+            .from('products')
+            .update({ reserved_quantity: Math.max(0, product.reserved_quantity - item.quantity) })
+            .eq('id', item.product_id);
 
-        await supabase.from('stock_movements').insert({
-          product_id: item.product_id,
-          movement_type: 'reservation_release',
-          quantity: item.quantity,
-          quantity_before: product.stock_quantity,
-          quantity_after: product.stock_quantity,
-          reference_type: 'order',
-          reference_id: orderId,
-          reason: `Reservation released — order cancelled`,
-          created_by: staff.id,
-        });
+          await supabase.from('stock_movements').insert({
+            product_id: item.product_id,
+            movement_type: 'reservation_release',
+            quantity: item.quantity,
+            quantity_before: product.stock_quantity,
+            quantity_after: product.stock_quantity,
+            reference_type: 'order',
+            reference_id: orderId,
+            reason: `Reservation released — order cancelled`,
+            created_by: staff.id,
+          });
+        }
       }
     }
   }
 
   // Handle stock fulfillment — deduct actual stock on delivery/pickup
   if (['delivered', 'picked_up'].includes(newStatus)) {
-    for (const item of order.order_items || []) {
-      const { data: product } = await supabase
+    const items = order.order_items || [];
+    const productIds = items.map((i: any) => i.product_id).filter(Boolean);
+    if (productIds.length > 0) {
+      const { data: products } = await supabase
         .from('products')
-        .select('stock_quantity, reserved_quantity')
-        .eq('id', item.product_id)
-        .single();
+        .select('id, stock_quantity, reserved_quantity')
+        .in('id', productIds);
+      const productMap = new Map((products || []).map((p: any) => [p.id, p]));
 
-      if (product) {
-        const newStock = product.stock_quantity - item.quantity;
-        const newReserved = Math.max(0, product.reserved_quantity - item.quantity);
+      for (const item of items) {
+        const product = productMap.get(item.product_id);
+        if (product) {
+          const newStock = product.stock_quantity - item.quantity;
+          const newReserved = Math.max(0, product.reserved_quantity - item.quantity);
 
-        await supabase
-          .from('products')
-          .update({ stock_quantity: newStock, reserved_quantity: newReserved })
-          .eq('id', item.product_id);
+          await supabase
+            .from('products')
+            .update({ stock_quantity: newStock, reserved_quantity: newReserved })
+            .eq('id', item.product_id);
 
-        await supabase.from('stock_movements').insert({
-          product_id: item.product_id,
-          movement_type: 'reservation_fulfillment',
-          quantity: -item.quantity,
-          quantity_before: product.stock_quantity,
-          quantity_after: newStock,
-          reference_type: 'order',
-          reference_id: orderId,
-          reason: `Order fulfilled`,
-          created_by: staff.id,
-        });
+          await supabase.from('stock_movements').insert({
+            product_id: item.product_id,
+            movement_type: 'reservation_fulfillment',
+            quantity: -item.quantity,
+            quantity_before: product.stock_quantity,
+            quantity_after: newStock,
+            reference_type: 'order',
+            reference_id: orderId,
+            reason: `Order fulfilled`,
+            created_by: staff.id,
+          });
+        }
       }
     }
   }

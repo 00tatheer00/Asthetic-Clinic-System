@@ -160,15 +160,23 @@ export async function uploadClinicImage(formData: FormData): Promise<{
     return { success: true, url: finalUrl, provider: 'supabase' };
   }
 
-  // 9. If both Cloudinary & Supabase storage bucket fails (e.g. bucket doesn't exist),
-  // fallback to inline data URI for seamless development/testing so doctor is never blocked:
+  // 9. If both Cloudinary & Supabase storage bucket fails:
   console.warn('[Storage] Supabase bucket upload failed:', uploadError.message);
+
+  if (process.env.NODE_ENV === 'production') {
+    return {
+      success: false,
+      error: `Storage upload failed: ${uploadError.message}. Please configure Cloudinary or create the Supabase storage bucket.`,
+    };
+  }
+
+  // In development, fallback to inline data URI for seamless local testing
   const base64 = buffer.toString('base64');
   const dataUri = `data:${file.type};base64,${base64}`;
 
   return {
     success: true,
     url: dataUri,
-    error: 'Uploaded locally (Cloudinary credentials not set in .env.local).',
+    error: 'Uploaded locally as data URI (dev fallback). Configure Cloudinary or Supabase Storage for production.',
   };
 }

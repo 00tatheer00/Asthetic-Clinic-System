@@ -179,8 +179,9 @@ export interface GlobalSearchResult {
 }
 
 export async function searchClinicGlobal(query: string): Promise<GlobalSearchResult[]> {
-  const trimmed = query.trim();
-  if (!trimmed || trimmed.length < 2) return [];
+  // Sanitize: strip PostgREST filter control characters (, . ( ) % \ " ')
+  const sanitized = (query || '').replace(/[%_\\(),."'`]/g, '').trim();
+  if (!sanitized || sanitized.length < 2) return [];
 
   try {
     const staff = await getAuthenticatedStaff();
@@ -192,7 +193,7 @@ export async function searchClinicGlobal(query: string): Promise<GlobalSearchRes
     const { data: patients } = await supabase
       .from('patients')
       .select('id, name, phone, mrn')
-      .or(`name.ilike.%${trimmed}%,phone.ilike.%${trimmed}%,mrn.ilike.%${trimmed}%`)
+      .or(`name.ilike.%${sanitized}%,phone.ilike.%${sanitized}%,mrn.ilike.%${sanitized}%`)
       .limit(5);
 
     if (patients) {
@@ -211,7 +212,7 @@ export async function searchClinicGlobal(query: string): Promise<GlobalSearchRes
     const { data: products } = await supabase
       .from('products')
       .select('id, name, sku, stock_quantity')
-      .or(`name.ilike.%${trimmed}%,sku.ilike.%${trimmed}%`)
+      .or(`name.ilike.%${sanitized}%,sku.ilike.%${sanitized}%`)
       .limit(5);
 
     if (products) {
@@ -230,7 +231,7 @@ export async function searchClinicGlobal(query: string): Promise<GlobalSearchRes
     const { data: invoices } = await supabase
       .from('invoices')
       .select('id, invoice_number, customer_name, total')
-      .or(`invoice_number.ilike.%${trimmed}%,customer_name.ilike.%${trimmed}%`)
+      .or(`invoice_number.ilike.%${sanitized}%,customer_name.ilike.%${sanitized}%`)
       .limit(5);
 
     if (invoices) {
@@ -249,7 +250,7 @@ export async function searchClinicGlobal(query: string): Promise<GlobalSearchRes
     const { data: orders } = await supabase
       .from('orders')
       .select('id, order_number, customer_name, total')
-      .or(`order_number.ilike.%${trimmed}%,customer_name.ilike.%${trimmed}%`)
+      .or(`order_number.ilike.%${sanitized}%,customer_name.ilike.%${sanitized}%`)
       .limit(5);
 
     if (orders) {

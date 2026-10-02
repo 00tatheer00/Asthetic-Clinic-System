@@ -2,14 +2,11 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
-const SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  '';
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!SERVICE_ROLE_KEY && typeof window === 'undefined') {
   console.warn(
-    '[Admin Client] SUPABASE_SERVICE_ROLE_KEY is not set. Public form submissions (bookings, reviews, orders) may fail due to RLS restrictions. Set this env variable in your hosting dashboard.'
+    '[Admin Client] SUPABASE_SERVICE_ROLE_KEY is not set. Public form submissions (bookings, reviews, orders) WILL FAIL due to RLS restrictions. Set this env variable in your hosting dashboard.'
   );
 }
 
