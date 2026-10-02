@@ -49,7 +49,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
       )
       .is('deleted_at', null)
       .order('scheduled_at', { ascending: true })
-      .limit(400),
+      .limit(1000),
     supabase
       .from('appointments')
       .select(
