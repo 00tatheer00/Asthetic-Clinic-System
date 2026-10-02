@@ -67,7 +67,7 @@ interface AppointmentsListProps {
   currentPage: number;
   pageSize: number;
   filters: { status: string; date: string; search: string };
-  stats: { pending: number; today: number };
+  stats: { pending: number; today: number; total?: number };
   isAdmin: boolean;
   treatments?: TreatmentOption[];
   patients?: PatientOption[];
@@ -317,28 +317,55 @@ export function AppointmentsList({
     <div className="space-y-4">
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="border border-gray-100 hover:border-rose-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500 font-medium">Today</p>
-            <p className="text-2xl font-bold text-gray-900 font-serif">{stats.today}</p>
+        <Card className="border border-gray-100 hover:border-purple-200 border-l-[3.5px] border-l-purple-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+          <CardContent className="pt-4 pb-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Total Appointments</p>
+              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">
+                {stats.total ?? totalCount}
+              </p>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4" />
+            </div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-100 hover:border-amber-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500 font-medium">Pending Review</p>
-            <p className="text-2xl font-bold text-amber-600 font-serif">{stats.pending}</p>
+        <Card className="border border-gray-100 hover:border-blue-200 border-l-[3.5px] border-l-blue-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+          <CardContent className="pt-4 pb-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Today</p>
+              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">{stats.today}</p>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4" />
+            </div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-100 hover:border-blue-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500 font-medium">Showing</p>
-            <p className="text-2xl font-bold text-gray-900 font-serif">{totalCount}</p>
+        <Card className="border border-gray-100 hover:border-amber-200 border-l-[3.5px] border-l-amber-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+          <CardContent className="pt-4 pb-3 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Pending Review</p>
+              <p className="text-2xl font-bold text-amber-600 font-serif mt-0.5">{stats.pending}</p>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <AlertCircle className="h-4 w-4" />
+            </div>
           </CardContent>
         </Card>
-        <Card className="border border-gray-100 hover:border-indigo-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500 font-medium">Page</p>
-            <p className="text-2xl font-bold text-gray-900 font-serif">{currentPage}/{totalPages || 1}</p>
+        <Card className="border border-gray-100 hover:border-emerald-200 border-l-[3.5px] border-l-emerald-500 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
+          <CardContent className="pt-4 pb-3 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="text-xs text-gray-500 font-medium">Showing</p>
+                <span className="text-[10px] text-gray-400 font-mono">
+                  (P. {currentPage}/{totalPages || 1})
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900 font-serif mt-0.5">{totalCount}</p>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
           </CardContent>
         </Card>
       </div>

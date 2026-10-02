@@ -96,6 +96,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
     { data: appointments, count },
     { data: pendingAppointments, count: pendingCount },
     { count: todayCount },
+    { count: allTimeTotalCount },
     { data: treatments },
     { data: patients },
   ] = await Promise.all([
@@ -115,6 +116,10 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
       .select('id', { count: 'exact', head: true })
       .gte('scheduled_at', todayStart.toISOString())
       .lte('scheduled_at', todayEnd.toISOString())
+      .is('deleted_at', null),
+    supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
       .is('deleted_at', null),
     supabase
       .from('treatments')
@@ -148,7 +153,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
         currentPage={page}
         pageSize={pageSize}
         filters={{ status, date: dateFilter, search }}
-        stats={{ pending: pendingCount || 0, today: todayCount || 0 }}
+        stats={{ pending: pendingCount || 0, today: todayCount || 0, total: allTimeTotalCount || 0 }}
         isAdmin={staff.role === 'super_admin'}
         treatments={treatments || []}
         patients={patients || []}
