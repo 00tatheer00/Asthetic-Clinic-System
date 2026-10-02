@@ -14,7 +14,7 @@ Welcome to the central technical and operational documentation repository for th
 - [06 - Business Rules](./06-business-rules.md) — Financial calculations, tax handling, and inventory deduction rules.
 - [07 - Security & QA Strategy](./07-security-and-qa-strategy.md) — Threat modeling, RLS architecture, and privacy enforcement.
 - [08 - Implementation Roadmap](./08-implementation-roadmap.md) — Multi-phase milestones and deliverables.
-- [Final Architecture (Phase 10)](./FINAL-ARCHITECTURE.md) — End-to-end production architecture diagram and component topology.
+- [System Architecture](./FINAL-ARCHITECTURE.md) — End-to-end production architecture diagram and component topology.
 
 ---
 
@@ -26,25 +26,10 @@ Welcome to the central technical and operational documentation repository for th
 
 ---
 
-## 3. Deployment, Security & Disaster Recovery
+## 3. Deployment, Security & Operations
 
 - [Production Environment Matrix](./PRODUCTION-ENVIRONMENT.md) — Environment variable classifications (Public vs. Server-Only Secret).
 - [Production Release & Deployment Guide](./PRODUCTION-RELEASE.md) — Step-by-step release guide for GitHub, Supabase, Resend, and Vercel.
 - [Disaster Recovery & Business Continuity](./DISASTER-RECOVERY.md) — Database backup procedures, Vercel rollbacks, and clinic offline protocol.
-- [Release Process & Migration Safety](./RELEASE-PROCESS.md) — Zero-downtime release rules and migration standards for future developers.
+- [Release Process & Migration Safety](./RELEASE-PROCESS.md) — Zero-downtime release rules and migration standards for developers.
 - [Technical Handover Document](./TECHNICAL-HANDOVER.md) — Comprehensive technical handover and local setup instructions.
-
----
-
-## 4. Phase Verification & Audit Reports
-
-- [Phase 5 Audit Report](./PHASE-5-AUDIT.md) — Initial codebase security, transaction, and deployment audit.
-- [Phase 5 QA Matrix](./PHASE-5-QA-MATRIX.md) — 52-scenario operational QA verification test matrix.
-- [Phase 5 Deployment Checklist](./PHASE-5-DEPLOYMENT-CHECKLIST.md) — Pre-deployment checklist.
-- [Phase 5 Completion Report](./PHASE-5-COMPLETION.md) — Phase 5 sign-off.
-- [Release Readiness Assessment](./RELEASE-READINESS.md) — Gate evaluation report.
-- [Go-Live Checklist](./GO-LIVE-CHECKLIST.md) — 18 master production go-live gates.
-- [Go-Live Report](./GO-LIVE-REPORT.md) — Phase 7 go-live verification.
-- [Phase 8 Post-Launch Report](./PHASE-8-POST-LAUNCH.md) — Database indexing, structured logger, and observability review.
-- [Phase 9 Intelligence Report](./PHASE-9-INTELLIGENCE-AUTOMATION.md) — Follow-ups, daily closings, and reporting center.
-- [Final Project Status (Phase 10)](./FINAL-PROJECT-STATUS.md) — Master enterprise maturity sign-off.

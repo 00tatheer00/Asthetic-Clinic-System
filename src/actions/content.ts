@@ -9,6 +9,7 @@ import {
   treatmentSchema,
   productSchema,
 } from '@/lib/validations';
+import { slugify } from '@/lib/utils/helpers';
 import { revalidatePath } from 'next/cache';
 
 // ============================================================
@@ -442,3 +443,84 @@ export async function deleteProduct(productId: string) {
   revalidatePath('/products');
   return { success: true };
 }
+
+// ============================================================
+// Treatment Categories: Quick Add by Doctor / Admin
+// ============================================================
+
+export async function createTreatmentCategory(name: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length < 2) {
+    return { success: false, error: 'Category name must be at least 2 characters.' };
+  }
+
+  const baseSlug = slugify(trimmed);
+  const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+
+  const { data, error } = await supabase
+    .from('treatment_categories')
+    .insert({
+      name: trimmed,
+      slug,
+      is_active: true,
+      sort_order: 0,
+    })
+    .select('id, name')
+    .single();
+
+  if (error) {
+    console.error('[TreatmentCategory] Create failed:', error);
+    return { success: false, error: 'Failed to create treatment category.' };
+  }
+
+  revalidatePath('/dashboard/content/treatments');
+  revalidatePath('/treatments');
+  revalidatePath('/dashboard/pos');
+
+  return { success: true, category: data };
+}
+
+// ============================================================
+// Product Categories: Quick Add by Doctor / Admin
+// ============================================================
+
+export async function createProductCategory(name: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const trimmed = name.trim();
+  if (!trimmed || trimmed.length < 2) {
+    return { success: false, error: 'Category name must be at least 2 characters.' };
+  }
+
+  const baseSlug = slugify(trimmed);
+  const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+
+  const { data, error } = await supabase
+    .from('product_categories')
+    .insert({
+      name: trimmed,
+      slug,
+      sort_order: 0,
+    })
+    .select('id, name')
+    .single();
+
+  if (error) {
+    console.error('[ProductCategory] Create failed:', error);
+    return { success: false, error: 'Failed to create product category.' };
+  }
+
+  revalidatePath('/dashboard/content/products');
+  revalidatePath('/dashboard/inventory');
+  revalidatePath('/dashboard/pos');
+  revalidatePath('/products');
+
+  return { success: true, category: data };
+}
+

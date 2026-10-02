@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { adjustStock, saveProduct, deleteProduct } from '@/actions/content';
+import { adjustStock, saveProduct, deleteProduct, createProductCategory } from '@/actions/content';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -86,6 +87,11 @@ interface InventoryListProps {
 
 export function InventoryList({ products, categories = [], isAdmin }: InventoryListProps) {
   const router = useRouter();
+  const [categoryList, setCategoryList] = useState<Category[]>(categories);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+
   const [filter, setFilter] = useState<'all' | 'low' | 'out'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -160,6 +166,31 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
   ).length;
   const outCount = products.filter((p) => p.stock_quantity <= 0).length;
 
+  const handleCreateCategory = async () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      toast.error('Please enter a category name');
+      return;
+    }
+    setCreatingCategory(true);
+    try {
+      const res = await createProductCategory(trimmed);
+      if (res.success && res.category) {
+        setCategoryList((prev) => [...prev, res.category]);
+        setEditForm((prev) => ({ ...prev, category_id: res.category.id }));
+        setNewCategoryName('');
+        setShowNewCategory(false);
+        toast.success(`Category "${res.category.name}" created and selected!`);
+      } else {
+        toast.error(res.error || 'Failed to create category');
+      }
+    } catch {
+      toast.error('Failed to create category');
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
   // Open Edit Modal with pre-filled product data
   const handleOpenEdit = (product: Product) => {
     setEditForm({
@@ -178,6 +209,8 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
       is_published: product.is_published ?? true,
       is_active: product.is_active ?? true,
     });
+    setShowNewCategory(false);
+    setNewCategoryName('');
     setEditDialog({ open: true, product });
   };
 
@@ -188,7 +221,7 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
       name: '',
       slug: '',
       sku: defaultSku,
-      category_id: categories[0]?.id || '',
+      category_id: categoryList[0]?.id || '',
       purchase_price: '0',
       sale_price: '',
       stock_quantity: '10',
@@ -200,6 +233,8 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
       is_published: true,
       is_active: true,
     });
+    setShowNewCategory(false);
+    setNewCategoryName('');
     setEditDialog({ open: true, product: null });
   };
 
@@ -352,14 +387,14 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
           </Button>
 
           {/* Category Dropdown if categories exist */}
-          {categories.length > 0 && (
+          {categoryList.length > 0 && (
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="h-8 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-rose-500 ml-1"
             >
               <option value="all">All Categories</option>
-              {categories.map((c) => (
+              {categoryList.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
@@ -681,21 +716,78 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                 />
               </div>
 
-              {/* Category */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Category</Label>
-                <select
-                  value={editForm.category_id}
-                  onChange={(e) => setEditForm({ ...editForm, category_id: e.target.value })}
-                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <option value="">No Category / General</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+              {/* Category with Inline Add */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium">Category</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategory(!showNewCategory)}
+                    className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 cursor-pointer flex items-center gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    {showNewCategory ? 'Select Existing Category' : '+ Add Custom Category'}
+                  </button>
+                </div>
+
+                {showNewCategory ? (
+                  <div className="flex items-center gap-2 p-2 bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl">
+                    <Input
+                      placeholder="Type custom product category (e.g. Cleansers, Toners)..."
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleCreateCategory();
+                        }
+                      }}
+                      className="h-8 text-xs bg-white dark:bg-card"
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleCreateCategory}
+                      disabled={creatingCategory || !newCategoryName.trim()}
+                      className="h-8 px-3 text-xs bg-rose-600 hover:bg-rose-700 text-white shrink-0"
+                    >
+                      {creatingCategory ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                      Add
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowNewCategory(false)}
+                      className="h-8 px-2 text-xs text-gray-500"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <select
+                    value={editForm.category_id}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setShowNewCategory(true);
+                      } else {
+                        setEditForm({ ...editForm, category_id: e.target.value });
+                      }
+                    }}
+                    className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="">No Category / General</option>
+                    {categoryList.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                    <option value="__NEW__" className="text-rose-600 font-bold">
+                      + Add New Category (Doctor Custom)...
                     </option>
-                  ))}
-                </select>
+                  </select>
+                )}
               </div>
 
               {/* URL Slug */}

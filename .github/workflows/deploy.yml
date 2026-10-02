@@ -1,0 +1,25 @@
+name: Production Deployment
+
+on:
+  workflow_run:
+    workflows: ["CI / CD Pipeline"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  deploy-production:
+    name: Deploy to Vercel (Production)
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == '00tatheer00/Asthetic-Clinic-System' }}
+    steps:
+      - name: 📥 Check out repository
+        uses: actions/checkout@v4
+
+      - name: 🚀 Trigger Vercel Production Deploy Hook
+        if: env.VERCEL_DEPLOY_HOOK != ''
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          echo "Deploying to Vercel via Deploy Hook..."
+          curl -X POST "$VERCEL_DEPLOY_HOOK"

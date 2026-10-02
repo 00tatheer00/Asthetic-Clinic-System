@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveProduct, deleteProduct } from '@/actions/content';
+import { saveProduct, deleteProduct, createProductCategory } from '@/actions/content';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +48,7 @@ import {
   ChevronRight,
   Loader2,
   ExternalLink,
+  X,
 } from 'lucide-react';
 import { formatCurrency, slugify } from '@/lib/utils/helpers';
 import { toast } from 'sonner';
@@ -98,6 +100,11 @@ export function ProductsList({
   isAdmin,
 }: ProductsListProps) {
   const router = useRouter();
+  const [categoryList, setCategoryList] = useState<Category[]>(categories);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+
   const [searchValue, setSearchValue] = useState(search);
   const [activeSearch, setActiveSearch] = useState(search);
   const [activeCategory, setActiveCategory] = useState<string>(categoryFilter || 'all');
@@ -189,12 +196,37 @@ export function ProductsList({
     } catch {}
   };
 
+  const handleCreateCategory = async () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      toast.error('Please enter a category name');
+      return;
+    }
+    setCreatingCategory(true);
+    try {
+      const res = await createProductCategory(trimmed);
+      if (res.success && res.category) {
+        setCategoryList((prev) => [...prev, res.category]);
+        setCategoryId(res.category.id);
+        setNewCategoryName('');
+        setShowNewCategory(false);
+        toast.success(`Category "${res.category.name}" created and selected!`);
+      } else {
+        toast.error(res.error || 'Failed to create category');
+      }
+    } catch {
+      toast.error('Failed to create category');
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
   const openCreateDialog = () => {
     setEditingProduct(null);
     setName('');
     setSlug('');
     setSku(`PRD-${Math.floor(1000 + Math.random() * 9000)}`);
-    setCategoryId(categories[0]?.id || '');
+    setCategoryId(categoryList[0]?.id || '');
     setPurchasePrice('');
     setSalePrice('');
     setStockQuantity('10');
@@ -205,6 +237,8 @@ export function ProductsList({
     setImageUrl('');
     setIsPublished(true);
     setIsActive(true);
+    setShowNewCategory(false);
+    setNewCategoryName('');
     setDialogOpen(true);
   };
 
@@ -224,6 +258,8 @@ export function ProductsList({
     setImageUrl(prod.image_url || '');
     setIsPublished(prod.is_published);
     setIsActive(prod.is_active);
+    setShowNewCategory(false);
+    setNewCategoryName('');
     setDialogOpen(true);
   };
 
@@ -318,7 +354,7 @@ export function ProductsList({
           >
             All Categories
           </button>
-          {categories.map((cat) => (
+          {categoryList.map((cat) => (
             <button
               key={cat.id}
               onClick={() => handleCategoryFilter(cat.id)}
@@ -552,20 +588,78 @@ export function ProductsList({
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Category</Label>
-                <select
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <option value="">Select Category</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+              {/* Category with Inline Add */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium">Category</Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategory(!showNewCategory)}
+                    className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 cursor-pointer flex items-center gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    {showNewCategory ? 'Select Existing Category' : '+ Add Custom Category'}
+                  </button>
+                </div>
+
+                {showNewCategory ? (
+                  <div className="flex items-center gap-2 p-2 bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl">
+                    <Input
+                      placeholder="Type custom product category (e.g. Cleansers, Toners)..."
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleCreateCategory();
+                        }
+                      }}
+                      className="h-8 text-xs bg-white dark:bg-card"
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleCreateCategory}
+                      disabled={creatingCategory || !newCategoryName.trim()}
+                      className="h-8 px-3 text-xs bg-rose-600 hover:bg-rose-700 text-white shrink-0"
+                    >
+                      {creatingCategory ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                      Add
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowNewCategory(false)}
+                      className="h-8 px-2 text-xs text-gray-500"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <select
+                    value={categoryId}
+                    onChange={(e) => {
+                      if (e.target.value === '__NEW__') {
+                        setShowNewCategory(true);
+                      } else {
+                        setCategoryId(e.target.value);
+                      }
+                    }}
+                    className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  >
+                    <option value="">Select Category</option>
+                    {categoryList.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                    <option value="__NEW__" className="text-rose-600 font-bold">
+                      + Add New Category (Doctor Custom)...
                     </option>
-                  ))}
-                </select>
+                  </select>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -648,15 +742,13 @@ export function ProductsList({
               />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Image URL</Label>
-              <Input
-                placeholder="https://images.unsplash.com/..."
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="text-xs"
-              />
-            </div>
+            {/* Cloudinary Direct Image Upload */}
+            <ImageUpload
+              value={imageUrl}
+              onChange={setImageUrl}
+              category="products"
+              label="Product Image (Upload Image via Cloudinary)"
+            />
 
             <div className="pt-2 border-t grid grid-cols-2 gap-4">
               <div className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
