@@ -47,7 +47,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
             Book Your Appointment
           </h1>
           <p className="text-xs sm:text-sm text-gray-600">
-            Book your skin consultation with Dr. Bilal on University Road, Peshawar. No advance payment required.
+            Book your skin consultation with Dr. Bilal at Sami Tower, Ring Road, Peshawar. No advance payment required.
           </p>
         </div>
 

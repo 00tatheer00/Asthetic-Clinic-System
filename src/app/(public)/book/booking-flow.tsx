@@ -818,7 +818,7 @@ export function BookingFlow({
                           )}
                           {isConfirmed && (
                             <p className="text-emerald-800 font-medium">
-                              🎉 <strong>Slot Confirmed!</strong> Dr. Bilal has approved your appointment. Please arrive 10 minutes prior to your time at University Road, Peshawar.
+                              🎉 <strong>Slot Confirmed!</strong> Dr. Bilal has approved your appointment. Please arrive 10 minutes prior to your time at Sami Tower, Ring Road, Peshawar.
                             </p>
                           )}
                           {isCancelled && (
@@ -1304,7 +1304,7 @@ export function BookingFlow({
             <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-gray-50 border border-gray-100 text-xs text-gray-600 leading-relaxed">
               <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
               <span>
-                No advance payment or card required. Pay on arrival at our clinic on University Road, Peshawar.
+                No advance payment or card required. Pay on arrival at our clinic at Sami Tower, Ring Road, Peshawar.
               </span>
             </div>
 
@@ -1493,7 +1493,7 @@ export function BookingFlow({
             </p>
             <p className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-              100% Sterile clinic on University Road
+              100% Sterile clinic at Sami Tower, Ring Road
             </p>
           </div>
         </div>

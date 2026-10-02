@@ -98,7 +98,7 @@ export default async function PublicGalleryPage() {
             Before & After <span className="text-rose-600">Results</span>
           </h1>
           <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-            Real photos and actual results from our acne, laser hair removal, and HydraFacial patients treated at our clinic on University Road, Peshawar.
+            Real photos and actual results from our acne, laser hair removal, and HydraFacial patients treated at our clinic at Sami Tower, Ring Road, Peshawar.
           </p>
         </div>
 

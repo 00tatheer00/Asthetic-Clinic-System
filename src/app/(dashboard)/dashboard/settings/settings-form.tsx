@@ -574,7 +574,7 @@ export function SettingsForm({
                       value={receiptForm.receiptPhone}
                       onChange={(e) => setReceiptForm({ ...receiptForm, receiptPhone: e.target.value })}
                       disabled={!isAdmin}
-                      placeholder="Tel: +92 91 5842100 | WhatsApp: 0312-9000100"
+                      placeholder="Dr: 0335-6400959 | WhatsApp: 0335-6400959"
                       className="h-8 text-xs"
                     />
                   </div>
@@ -586,7 +586,7 @@ export function SettingsForm({
                     value={receiptForm.receiptAddress}
                     onChange={(e) => setReceiptForm({ ...receiptForm, receiptAddress: e.target.value })}
                     disabled={!isAdmin}
-                    placeholder="Cantonment Plaza, University Rd, Peshawar, KP"
+                    placeholder="Sami Tower, Ring Road, Peshawar, KP"
                     className="h-8 text-xs"
                   />
                 </div>
@@ -655,10 +655,10 @@ export function SettingsForm({
                       {receiptForm.receiptSpecialty || 'Medical Aesthetics, Dermatology & Laser Center'}
                     </p>
                     <p className="text-[9px] text-stone-600">
-                      {receiptForm.receiptAddress || 'Cantonment Plaza, University Rd, Peshawar, KP'}
+                      {receiptForm.receiptAddress || 'Sami Tower, Ring Road, Peshawar, KP'}
                     </p>
                     <p className="text-[9px] text-stone-600 font-bold">
-                      {receiptForm.receiptPhone || 'Tel: +92 91 5842100 | WhatsApp: 0312-9000100'}
+                      {receiptForm.receiptPhone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959'}
                     </p>
                   </div>
 

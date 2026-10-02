@@ -231,7 +231,7 @@ export function InvoicesList({
         : 'https://brimishskincare.com';
     const verifyUrl = `${origin}/verify-invoice?id=${inv.id}&num=${encodeURIComponent(inv.invoice_number)}`;
 
-    const text = `Assalam-o-Alaikum ${inv.customer_name},\n\nHere is your official digital invoice receipt from Brimish Skin Care & Laser Clinic:\n• Invoice #: ${inv.invoice_number}\n• Amount: PKR ${Number(inv.total).toLocaleString()}\n• Payment Method: ${(inv.payment_method || 'Cash').toUpperCase()}\n• Status: ${inv.status.toUpperCase()}\n\nYou can view and verify your digital receipt record anytime at:\n${verifyUrl}\n\nClinic: Cantonment Plaza, University Road, Peshawar\nTel: +92 91 5842100 | WhatsApp: 0312-9000100`;
+    const text = `Assalam-o-Alaikum ${inv.customer_name},\n\nHere is your official digital invoice receipt from Brimish Skin Care & Laser Clinic:\n• Invoice #: ${inv.invoice_number}\n• Amount: PKR ${Number(inv.total).toLocaleString()}\n• Payment Method: ${(inv.payment_method || 'Cash').toUpperCase()}\n• Status: ${inv.status.toUpperCase()}\n\nYou can view and verify your digital receipt record anytime at:\n${verifyUrl}\n\nClinic: Sami Tower, Ring Road, Peshawar\nDoctor / WhatsApp: 0335-6400959`;
 
     const link = buildWhatsAppLink(inv.customer_phone, text);
     window.open(link, '_blank');
@@ -578,10 +578,10 @@ export function InvoicesList({
                       {receiptSettings.receiptSpecialty || 'Medical Aesthetics & Laser Dermatology'}
                     </p>
                     <p className="text-[9px] text-gray-700 mt-0.5">
-                      {receiptSettings.receiptAddress || selectedInvoice.clinic_address || 'Cantonment Plaza, University Rd, Peshawar'}
+                      {receiptSettings.receiptAddress || selectedInvoice.clinic_address || 'Sami Tower, Ring Road, Peshawar'}
                     </p>
                     <p className="text-[9px] font-semibold text-black mt-0.5">
-                      {receiptSettings.receiptPhone || selectedInvoice.clinic_phone || 'Tel: +92 91 5842100 | 0312-9000100'}
+                      {receiptSettings.receiptPhone || selectedInvoice.clinic_phone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959'}
                     </p>
                   </div>
 

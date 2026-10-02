@@ -213,7 +213,7 @@ export function ReportsView({
     const nowIso = new Date().toISOString().split('T')[0];
     const headers = ['Metric / Field', 'Value', 'Details'];
     const rows = [
-      ['Clinic Facility', 'Brimish Skin Care & Laser Clinic, Peshawar', 'Cantonment Plaza, University Road'],
+      ['Clinic Facility', 'Brimish Skin Care & Laser Clinic, Peshawar', 'Sami Tower, Ring Road'],
       ['Reconciliation Date', nowIso, ''],
       ['Cashier / Receptionist', cashierName || 'Front Desk Attendant', ''],
       ['Period Range Filter', timeRange, ''],

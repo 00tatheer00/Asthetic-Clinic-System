@@ -149,8 +149,8 @@ function wrapEmailTemplate(title: string, bodyContent: string): string {
     </div>
     <div class="footer">
       <p style="margin: 0 0 8px 0; font-weight: 600; color: #334155;">Brimish Skin Care Clinic</p>
-      <p style="margin: 0 0 8px 0;">University Road, Peshawar, Khyber Pakhtunkhwa, Pakistan</p>
-      <p style="margin: 0;">Phone / WhatsApp: +92 300 0000000 • Email: info@brimishskincare.com</p>
+      <p style="margin: 0 0 8px 0;">Sami Tower, Ring Road, Peshawar, Khyber Pakhtunkhwa, Pakistan</p>
+      <p style="margin: 0;">Phone / WhatsApp: 0335-6400959 • Email: info@brimishskincare.com</p>
     </div>
   </div>
 </body>
@@ -215,13 +215,13 @@ export async function sendAppointmentConfirmedEmail(data: {
       <table class="table-data">
         <tr><td style="font-weight: 600; width: 140px;">Treatment:</td><td>${data.treatmentName}</td></tr>
         <tr><td style="font-weight: 600;">Date & Time:</td><td>${data.scheduledAt}</td></tr>
-        <tr><td style="font-weight: 600;">Location:</td><td>Brimish Skin Care, University Road, Peshawar</td></tr>
+        <tr><td style="font-weight: 600;">Location:</td><td>Brimish Skin Care, Sami Tower, Ring Road, Peshawar</td></tr>
       </table>
       <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
         <strong>Important Pre-Treatment Instructions:</strong><br>
         • Please arrive 10 minutes prior to your scheduled time.<br>
         • Avoid active exfoliating acids or retinol 48 hours before treatment.<br>
-        • If you need to reschedule, please contact us at ${data.clinicPhone || '+92 300 0000000'}.
+        • If you need to reschedule, please contact us at ${data.clinicPhone || '0335-6400959'}.
       </p>
     `
   );

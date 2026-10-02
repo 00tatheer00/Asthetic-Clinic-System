@@ -102,7 +102,7 @@ export function HeroCinematic() {
           {/* Clinic Badge */}
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-medium text-rose-200 border border-white/15">
             <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-            <span>Dr. Bilal Skin Care Clinic • University Road, Peshawar</span>
+            <span>Dr. Bilal Skin Care Clinic • Sami Tower, Ring Road, Peshawar</span>
           </div>
 
           {/* Short, Clear Headline in Easy Pakistani English */}
@@ -189,8 +189,8 @@ export function HeroCinematic() {
               <MapPin className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-xs sm:text-sm font-bold text-white leading-tight">University Road</div>
-              <div className="text-[10px] sm:text-[11px] text-gray-300">Peshawar, Pakistan</div>
+              <div className="text-xs sm:text-sm font-bold text-white leading-tight">Sami Tower</div>
+              <div className="text-[10px] sm:text-[11px] text-gray-300">Ring Road, Peshawar</div>
             </div>
           </div>
         </div>

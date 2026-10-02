@@ -12,7 +12,7 @@ interface FaqItem {
 const HOME_FAQS: FaqItem[] = [
   {
     q: 'Where is Brimish Skin Care Clinic located in Peshawar?',
-    a: 'We are conveniently located on University Road, Peshawar. Dedicated parking and a comfortable, private clinic environment are available for all patients.',
+    a: 'We are conveniently located at Sami Tower, Ring Road, Peshawar. Dedicated parking and a comfortable, private clinic environment are available for all patients.',
   },
   {
     q: 'Does Dr. Bilal personally examine and treat patients?',
@@ -121,7 +121,7 @@ export function QuickBookBanner() {
         </h2>
 
         <p className="text-gray-300 text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          Book your consultation with Dr. Bilal at Brimish Skin Care Clinic on University Road, Peshawar. Safe and effective skin treatments for real results.
+          Book your consultation with Dr. Bilal at Brimish Skin Care Clinic at Sami Tower, Ring Road, Peshawar. Safe and effective skin treatments for real results.
         </p>
 
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -133,7 +133,7 @@ export function QuickBookBanner() {
             </button>
           </Link>
           <a
-            href="https://wa.me/923000000000"
+            href="https://wa.me/923356400959"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold text-sm sm:text-base px-8 py-4 rounded-full shadow-lg shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer"

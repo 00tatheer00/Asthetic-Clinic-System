@@ -22,14 +22,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Brimish Skin Care & Laser Clinic — Best Aesthetic Clinic in Peshawar | Dr. Bilal Ahmad',
   description:
-    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Specialized in Medical HydraFacial MD, Chemical Peels, Microneedling, and Laser Skin Rejuvenation on University Road, Peshawar. Book without advance payment.',
+    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Specialized in Medical HydraFacial MD, Chemical Peels, Microneedling, and Laser Skin Rejuvenation at Sami Tower, Ring Road, Peshawar. Book without advance payment.',
   keywords: [
     'Brimish Skin Care',
     'Dr Bilal Ahmad dermatologist',
     'best skin clinic Peshawar',
     'skin specialist Peshawar',
     'HydraFacial Peshawar price',
-    'laser clinic University Road Peshawar',
+    'laser clinic Ring Road Peshawar',
     'acne scar treatment Peshawar',
     'chemical peel Peshawar',
     'skin doctor Peshawar KP',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Brimish Skin Care & Laser Clinic — Top Aesthetic Clinic in Peshawar',
     description:
-      'Physician-led clinical skincare, HydraFacial, laser therapy, and personalized acne solutions on University Road, Peshawar.',
+      'Physician-led clinical skincare, HydraFacial, laser therapy, and personalized acne solutions at Sami Tower, Ring Road, Peshawar.',
     url: '/',
     siteName: 'Brimish Skin Care & Laser Clinic',
     images: [
@@ -534,13 +534,13 @@ export default function HomePage() {
             url: process.env.NEXT_PUBLIC_SITE_URL || 'https://brimishskincare.com',
             address: {
               '@type': 'PostalAddress',
-              streetAddress: 'University Road',
+              streetAddress: 'Sami Tower, Ring Road',
               addressLocality: 'Peshawar',
               addressRegion: 'Khyber Pakhtunkhwa',
               addressCountry: 'PK',
             },
             priceRange: 'PKR',
-            telephone: '+92-300-0000000',
+            telephone: '+92-335-6400959',
             medicalSpecialty: 'Dermatology',
             openingHours: 'Mo,Tu,We,Th,Fr,Sa 10:00-19:00',
             physician: {

@@ -1013,10 +1013,10 @@ export function POSTerminal({
                       {receiptSettings.receiptSpecialty || 'Medical Aesthetics, Dermatology & Laser Center'}
                     </p>
                     <p className="text-[9px] text-gray-700 mt-0.5">
-                      {receiptSettings.receiptAddress || clinicSettings?.clinic_address || 'Cantonment Plaza, University Rd, Peshawar'}
+                      {receiptSettings.receiptAddress || clinicSettings?.clinic_address || 'Sami Tower, Ring Road, Peshawar'}
                     </p>
                     <p className="text-[9px] font-semibold text-black mt-0.5">
-                      {receiptSettings.receiptPhone || clinicSettings?.clinic_phone || 'Tel: +92 91 5842100 | WhatsApp: 0312-9000100'}
+                      {receiptSettings.receiptPhone || clinicSettings?.clinic_phone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959'}
                     </p>
                   </div>
 

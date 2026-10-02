@@ -191,7 +191,7 @@ export function DashboardIntelligence({
             <span>•</span>
             <span>Dr. Bilal Skin Care & Laser Clinic</span>
             <span>•</span>
-            <span className="text-rose-600 font-medium">University Road, Peshawar</span>
+            <span className="text-rose-600 font-medium">Sami Tower, Ring Road, Peshawar</span>
           </p>
         </div>
 

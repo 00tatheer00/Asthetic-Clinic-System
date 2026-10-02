@@ -76,10 +76,10 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
   }
 
   const clinicName = clinicSettings?.clinic_name || 'Brimish Skin Care & Laser Clinic';
-  const clinicPhone = clinicSettings?.clinic_phone || '+92 91 5842100 / +92 312 9000100';
+  const clinicPhone = clinicSettings?.clinic_phone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959';
   const clinicAddress =
     clinicSettings?.clinic_address ||
-    'Suite #3, Cantonment Plaza, University Road, Peshawar, KP, Pakistan';
+    'Sami Tower, Ring Road, Peshawar, KP, Pakistan';
 
   return (
     <div className="min-h-screen bg-linear-to-b from-stone-50 via-white to-amber-50/20 py-10 sm:py-16 px-4 sm:px-6">
@@ -406,7 +406,7 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
 
                   <div className="flex items-center gap-2">
                     <a
-                      href={`https://wa.me/923129000100?text=${encodeURIComponent(
+                      href={`https://wa.me/923356400959?text=${encodeURIComponent(
                         `Hello Brimish Clinic, I am verifying my invoice #${invoice.invoice_number} for ${invoice.customer_name}.`
                       )}`}
                       target="_blank"

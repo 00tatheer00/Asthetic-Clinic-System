@@ -85,9 +85,9 @@ export default function PrivacyPage() {
             </p>
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-sm space-y-1">
               <p><strong>Brimish Skin Care &amp; Laser Clinic</strong></p>
-              <p>Suite #3, 2nd Floor, Cantonment Plaza, Main University Road, Peshawar, KP</p>
+              <p>Sami Tower, Ring Road, Peshawar, KP</p>
               <p>Email: <a href="mailto:privacy@brimishskincare.com" className="text-rose-600 underline">privacy@brimishskincare.com</a></p>
-              <p>UAN / WhatsApp: +92 312 9000100 / +92 91 5842100</p>
+              <p>WhatsApp / Call: 0335-6400959</p>
             </div>
           </section>
         </div>

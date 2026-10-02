@@ -16,8 +16,8 @@ export const DEFAULT_RECEIPT_SETTINGS: InvoiceReceiptSettings = {
   receiptTitle: 'BRIMISH SKIN CARE & LASER CLINIC',
   receiptDoctor: 'DR. BILAL AHMAD (MD Aesthetic Medicine)',
   receiptSpecialty: 'Medical Aesthetics, Dermatology & Laser Center',
-  receiptAddress: 'Cantonment Plaza, University Rd, Peshawar, KP',
-  receiptPhone: 'Tel: +92 91 5842100 | WhatsApp: 0312-9000100',
+  receiptAddress: 'Sami Tower, Ring Road, Peshawar, KP',
+  receiptPhone: 'Dr: 0335-6400959 | WhatsApp: 0335-6400959',
   receiptFooterMessage: 'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days of treatment.',
   enableQrVerification: true,
 };

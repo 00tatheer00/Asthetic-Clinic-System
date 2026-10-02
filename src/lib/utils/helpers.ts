@@ -81,7 +81,7 @@ export function formatShortDate(dateString: string): string {
 // Phone Formatting & WhatsApp Helpers
 // ============================================================
 
-export const CLINIC_WHATSAPP_NUMBER = '923129000100'; // 0312-9000100
+export const CLINIC_WHATSAPP_NUMBER = '923356400959'; // 0335-6400959
 
 /**
  * Clean and format Pakistani mobile numbers in real time while typing.

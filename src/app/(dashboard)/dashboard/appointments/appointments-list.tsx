@@ -218,7 +218,7 @@ export function AppointmentsList({
       statusNote = 'You have checked in at reception. The aesthetic doctor will see you shortly.';
     }
 
-    const text = `Assalam-o-Alaikum ${apt.customer_name},\n\nBrimish Skin Care & Laser Clinic:\n• Treatment: ${treatmentName}\n• Scheduled Time: ${appointmentDateFormatted}\n• Status: ${(APPOINTMENT_STATUS_LABELS[apt.status] || apt.status).toUpperCase()}\n\n${statusNote}\n\nClinic Address: Cantonment Plaza, University Road (Opp. Islamia College), Peshawar\nHelpline: +92 91 5842100 | WhatsApp: 0312-9000100`;
+    const text = `Assalam-o-Alaikum ${apt.customer_name},\n\nBrimish Skin Care & Laser Clinic:\n• Treatment: ${treatmentName}\n• Scheduled Time: ${appointmentDateFormatted}\n• Status: ${(APPOINTMENT_STATUS_LABELS[apt.status] || apt.status).toUpperCase()}\n\n${statusNote}\n\nClinic Address: Sami Tower, Ring Road, Peshawar\nDoctor / WhatsApp: 0335-6400959`;
 
     const link = buildWhatsAppLink(apt.customer_phone, text);
     window.open(link, '_blank');

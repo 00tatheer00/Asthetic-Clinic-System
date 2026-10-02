@@ -16,14 +16,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'About Dr. Bilal Ahmad & Brimish Skin Care Clinic | Peshawar Aesthetic Center',
   description:
-    'Learn about Brimish Skin Care & Laser Clinic on University Road, Peshawar. Led by Dr. Bilal Ahmad (MD Aesthetic Medicine). Discover our clinical sterile protocols, physician-guided dermatology, and genuine patient care.',
+    'Learn about Brimish Skin Care & Laser Clinic at Sami Tower, Ring Road, Peshawar. Led by Dr. Bilal Ahmad (MD Aesthetic Medicine). Discover our clinical sterile protocols, physician-guided dermatology, and genuine patient care.',
   keywords: [
     'Dr Bilal Ahmad',
     'Dr Bilal dermatologist Peshawar',
     'about Brimish skin clinic',
     'aesthetic doctor Peshawar',
-    'Cantonment Plaza skin clinic',
-    'skin doctor University Road',
+    'Sami Tower skin clinic',
+    'skin doctor Ring Road',
   ],
   alternates: {
     canonical: '/about',
@@ -85,7 +85,7 @@ export default function AboutPage() {
                 Honest Advice, Real Results. No Fake Whitening Claims.
               </h2>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
-                Founded on University Road Peshawar, Brimish Skin Care Clinic was started with one goal: to protect patients from harmful formula creams and give proper, safe skin care suitable for Pakistani skin tones.
+                Located at Sami Tower, Ring Road, Peshawar, Brimish Skin Care Clinic was started with one goal: to protect patients from harmful formula creams and give proper, safe skin care suitable for Pakistani skin tones.
               </p>
               <p className="text-gray-600 text-sm md:text-base leading-relaxed">
                 Whether you are dealing with stubborn acne, dark patches, pigmentation, or want a fresh bridal glow, we use genuine imported machines and doctor-approved methods.
@@ -176,7 +176,7 @@ export default function AboutPage() {
                 <div className="space-y-2 pt-2 text-xs text-rose-100">
                   <div className="flex items-start gap-2.5">
                     <MapPin className="h-4 w-4 text-rose-300 shrink-0 mt-0.5" />
-                    <span>University Road / Near Hayatabad, Peshawar, Khyber Pakhtunkhwa, Pakistan</span>
+                    <span>Sami Tower, Ring Road, Peshawar, Khyber Pakhtunkhwa, Pakistan</span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Clock className="h-4 w-4 text-rose-300 shrink-0 mt-0.5" />

@@ -9,7 +9,7 @@ interface SeoStructuredDataProps {
 }
 
 export function SeoStructuredData({
-  description = 'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Specializing in HydraFacial MD, medical chemical peels, microneedling, acne treatments, and laser therapy on University Road, Peshawar.',
+  description = 'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Specializing in HydraFacial MD, medical chemical peels, microneedling, acne treatments, and laser therapy at Sami Tower, Ring Road, Peshawar.',
   imageUrl = 'https://brimishskincare.com/images/hero-clinic.jpg',
   isHome = true,
 }: SeoStructuredDataProps) {
@@ -32,14 +32,14 @@ export function SeoStructuredData({
       `${siteUrl}/images/dr-bilal.jpg`,
       `${siteUrl}/images/treatment-hydrafacial.jpg`,
     ],
-    telephone: ['+92915842100', '+923129000100', '+923000000000'],
+    telephone: ['+923356400959'],
     email: 'info@brimishskincare.com',
     priceRange: 'PKR 2,000 - PKR 35,000',
     currenciesAccepted: 'PKR',
     paymentAccepted: 'Cash, Credit Card, Debit Card, JazzCash, EasyPaisa, Bank Transfer',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Suite #3, 2nd Floor, Cantonment Plaza, Main University Road',
+      streetAddress: 'Sami Tower, Ring Road',
       addressLocality: 'Peshawar',
       addressRegion: 'Khyber Pakhtunkhwa',
       postalCode: '25000',
@@ -50,7 +50,7 @@ export function SeoStructuredData({
       latitude: 34.0047,
       longitude: 71.5369,
     },
-    hasMap: 'https://maps.google.com/?q=University+Road+Peshawar+Pakistan',
+    hasMap: 'https://maps.google.com/?q=Sami+Tower+Ring+Road+Peshawar',
     openingHoursSpecification: [
       {
         '@type': 'OpeningHoursSpecification',
@@ -166,7 +166,7 @@ export function SeoStructuredData({
         name: 'Where is Brimish Skin Care Clinic located in Peshawar?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Brimish Skin Care Clinic is conveniently located at Suite #3, 2nd Floor, Cantonment Plaza on Main University Road, Peshawar, Khyber Pakhtunkhwa, Pakistan. Dedicated parking and elevator access are available.',
+          text: 'Brimish Skin Care Clinic is conveniently located at Sami Tower, Ring Road, Peshawar, Khyber Pakhtunkhwa, Pakistan. Dedicated parking and elevator access are available.',
         },
       },
       {

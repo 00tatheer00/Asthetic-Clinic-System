@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: '%s | Brimish Skin Care Clinic Peshawar',
   },
   description:
-    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Authentic HydraFacial MD, medical chemical peels, microneedling, laser hair removal, and clinical skincare on University Road, Peshawar.',
+    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Authentic HydraFacial MD, medical chemical peels, microneedling, laser hair removal, and clinical skincare at Sami Tower, Ring Road, Peshawar.',
   applicationName: 'Brimish Skin Care Clinic',
   generator: 'Next.js',
   manifest: '/manifest.webmanifest',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     'HydraFacial in Peshawar',
     'HydraFacial price Peshawar',
     'laser hair removal Peshawar',
-    'aesthetic clinic University Road Peshawar',
+    'aesthetic clinic Ring Road Peshawar',
     'medical chemical peel Peshawar',
     'acne scar treatment Peshawar',
     'melasma treatment Peshawar',

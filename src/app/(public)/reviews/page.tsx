@@ -8,7 +8,7 @@ export const revalidate = 120; // 2 minutes ISR cache for instant page load
 export const metadata: Metadata = {
   title: 'Patient Reviews & Testimonials | Brimish Skin Care Clinic Peshawar',
   description:
-    'Read real, verified patient testimonials for Dr. Bilal Ahmad and Brimish Skin Care Clinic. Rated 4.9/5 for HydraFacial, acne treatments, and gentle clinical care on University Road, Peshawar.',
+    'Read real, verified patient testimonials for Dr. Bilal Ahmad and Brimish Skin Care Clinic. Rated 4.9/5 for HydraFacial, acne treatments, and gentle clinical care at Sami Tower, Ring Road, Peshawar.',
   keywords: [
     'Dr Bilal reviews Peshawar',
     'Brimish skin care clinic reviews',

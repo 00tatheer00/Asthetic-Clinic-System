@@ -6,11 +6,12 @@ import { CLINIC_WHATSAPP_NUMBER } from '@/lib/utils/helpers';
 export const metadata: Metadata = {
   title: 'Contact & Clinic Location | Brimish Skin Care Clinic Peshawar',
   description:
-    'Visit Brimish Skin Care Clinic at Cantonment Plaza, University Road, Peshawar. Call +92 91 5842100 or WhatsApp 0312-9000100 for appointments, timings, and directions.',
+    'Visit Brimish Skin Care Clinic at Sami Tower, Ring Road, Peshawar. Call or WhatsApp 0335-6400959 for appointments, timings, and directions.',
   keywords: [
     'Brimish clinic contact number',
-    'Dr Bilal phone number',
-    'skin clinic University Road Peshawar address',
+    'Dr Bilal phone number 03356400959',
+    'skin clinic Ring Road Peshawar address',
+    'Sami Tower Peshawar skin specialist',
     'dermatologist appointment Peshawar',
     'Brimish WhatsApp appointment',
   ],
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contact Brimish Skin Care Clinic Peshawar',
     description:
-      'Suite #3, 2nd Floor, Cantonment Plaza, Main University Road, Peshawar. Mon–Sat 10:00 AM – 7:00 PM.',
+      'Sami Tower, Ring Road, Peshawar. Mon–Sat 10:00 AM – 7:00 PM. Call/WhatsApp 0335-6400959.',
     url: '/contact',
   },
 };
@@ -33,13 +34,13 @@ export default function ContactPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider mb-4">
             <MapPin className="h-3.5 w-3.5" />
-            University Road, Peshawar
+            Sami Tower, Ring Road, Peshawar
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-gray-950 tracking-tight">
             Visit Our Clinic & Contact Us
           </h1>
           <p className="mt-4 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Conveniently located on main University Road, Peshawar. Walk in for consultation or contact our front-desk for quick appointment confirmation.
+            Conveniently located at Sami Tower on Ring Road, Peshawar. Walk in for consultation or contact Dr. Bilal&apos;s team for quick appointment confirmation.
           </p>
         </div>
       </section>
@@ -74,12 +75,12 @@ export default function ContactPage() {
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Address</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Clinic Address</h4>
                     <p className="mt-1 text-sm font-semibold text-gray-900 leading-snug">
-                      Suite #3, 2nd Floor, Cantonment Plaza, Main University Road
+                      Sami Tower, Ring Road
                     </p>
                     <p className="text-xs text-rose-600 font-medium mt-0.5">
-                      Opposite Islamia College, Peshawar, KP
+                      Peshawar, Khyber Pakhtunkhwa, Pakistan
                     </p>
                   </div>
                 </div>
@@ -90,19 +91,13 @@ export default function ContactPage() {
                     <Phone className="h-5 w-5" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Phone & WhatsApp</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Doctor Phone & WhatsApp</h4>
                     <div className="flex flex-col gap-1">
                       <a
-                        href="tel:+923129000100"
+                        href="tel:+923356400959"
                         className="text-sm font-semibold text-gray-900 hover:text-rose-600 transition-colors"
                       >
-                        Mobile: 0312-9000100
-                      </a>
-                      <a
-                        href="tel:+92915842100"
-                        className="text-xs text-gray-600 hover:text-rose-600 transition-colors"
-                      >
-                        Landline: +92 91 5842100
+                        Dr. Bilal: 0335-6400959
                       </a>
                       <a
                         href={`https://wa.me/${CLINIC_WHATSAPP_NUMBER}`}
@@ -111,7 +106,7 @@ export default function ContactPage() {
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full w-fit mt-1"
                       >
                         <MessageCircle className="h-3.5 w-3.5" />
-                        Chat on WhatsApp
+                        Chat on WhatsApp (0335-6400959)
                       </a>
                     </div>
                   </div>
@@ -144,7 +139,7 @@ export default function ContactPage() {
                       Monday – Saturday: 10:00 AM – 7:00 PM
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Sunday: Closed (Emergency on-call)
+                      Sunday: Closed (Emergency appointments on WhatsApp)
                     </p>
                   </div>
                 </div>
@@ -153,10 +148,10 @@ export default function ContactPage() {
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100">
                   <div className="flex items-center gap-2 text-xs font-bold text-rose-800 uppercase tracking-wide mb-1.5">
                     <Car className="h-4 w-4 text-rose-600" />
-                    Patient Parking & Directions
+                    Patient Parking & Accessibility
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed">
-                    Dedicated basement parking and building valet available for Brimish patients at Cantonment Plaza. Elevator access directly connects to the 2nd-floor reception.
+                    Easy roadside and dedicated parking available for Brimish patients at Sami Tower, Ring Road. Building elevator provides direct access to clinic reception.
                   </p>
                 </div>
               </div>
@@ -174,11 +169,11 @@ export default function ContactPage() {
                 Clinic Location Map
               </h2>
               <p className="text-xs sm:text-sm text-gray-600">
-                Main University Road, Opp. Islamia College, Peshawar
+                Sami Tower, Ring Road, Peshawar, Khyber Pakhtunkhwa
               </p>
             </div>
             <a
-              href="https://maps.google.com/?q=University+Road+Peshawar+Islamia+College"
+              href="https://maps.google.com/?q=Sami+Tower+Ring+Road+Peshawar"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-md transition-colors"
@@ -191,8 +186,8 @@ export default function ContactPage() {
           {/* Embedded Google Map */}
           <div className="w-full h-80 sm:h-96 rounded-3xl overflow-hidden border border-gray-300 shadow-inner relative bg-gray-200">
             <iframe
-              title="Brimish Skin Care Clinic Peshawar Location Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3307.728994767119!2d71.48202517627447!3d33.999464020921475!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38d9172825bdf255%3A0xe21262d5568fb8d5!2sUniversity%20Rd%2C%20Peshawar%2C%20Khyber%20Pakhtunkhwa%2C%20Pakistan!5e0!3m2!1sen!2s!4v1727870000000!5m2!1sen!2s"
+              title="Brimish Skin Care Clinic - Sami Tower Ring Road Peshawar Location Map"
+              src="https://maps.google.com/maps?q=Sami+Tower,+Ring+Road,+Peshawar,+Pakistan&t=&z=15&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0 }}

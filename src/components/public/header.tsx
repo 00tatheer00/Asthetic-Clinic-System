@@ -43,7 +43,7 @@ export function PublicHeader() {
           <div className="flex items-center gap-6 text-gray-300">
             <span className="flex items-center gap-1.5 hover:text-rose-300 transition-colors">
               <MapPin className="h-3.5 w-3.5 text-rose-400" />
-              University Road, Peshawar
+              Sami Tower, Ring Road, Peshawar
             </span>
             <span className="flex items-center gap-1.5 text-gray-400">
               <Clock className="h-3.5 w-3.5 text-rose-400" />
@@ -56,7 +56,7 @@ export function PublicHeader() {
               PMDC Reg # 98214-P Verified
             </span>
             <span className="text-rose-300 font-medium text-xs hidden lg:inline">
-              Dr. Bilal Ahmad (MD Aesthetic) • University Road, Peshawar
+              Dr. Bilal Ahmad (MD Aesthetic) • Sami Tower, Ring Road, Peshawar
             </span>
             <a
               href={`https://wa.me/${CLINIC_WHATSAPP_NUMBER}`}
@@ -65,7 +65,7 @@ export function PublicHeader() {
               className="inline-flex items-center gap-1.5 text-gray-300 hover:text-emerald-400 transition-colors font-medium"
             >
               <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
-              WhatsApp: 0312-9000100
+              WhatsApp: 0335-6400959
             </a>
           </div>
         </div>
@@ -135,11 +135,11 @@ export function PublicHeader() {
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Phone quick call (Desktop/Tablet) */}
               <a
-                href="tel:+923129000100"
+                href="tel:+923356400959"
                 className="hidden xl:inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-rose-600 px-3 py-1.5 rounded-full hover:bg-rose-50 transition-colors"
               >
                 <Phone className="h-3.5 w-3.5 text-rose-500" />
-                <span>0312-9000100</span>
+                <span>0335-6400959</span>
               </a>
 
               {/* Shopping Bag Cart */}
@@ -236,11 +236,11 @@ export function PublicHeader() {
 
                     <div className="grid grid-cols-2 gap-2">
                       <a
-                        href="tel:+923129000100"
+                        href="tel:+923356400959"
                         className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-white transition-colors"
                       >
                         <Phone className="h-3.5 w-3.5 text-rose-500" />
-                        <span>Call Clinic</span>
+                        <span>Call Doctor</span>
                       </a>
                       <a
                         href={`https://wa.me/${CLINIC_WHATSAPP_NUMBER}`}
@@ -254,7 +254,7 @@ export function PublicHeader() {
                     </div>
 
                     <div className="text-[11px] text-gray-400 text-center pt-2">
-                      Mon – Sat: 10:00 AM – 7:00 PM • University Road, Peshawar
+                      Mon – Sat: 10:00 AM – 7:00 PM • Sami Tower, Ring Road, Peshawar
                     </div>
                   </div>
                 </SheetContent>
@@ -276,11 +276,11 @@ export function PublicHeader() {
           <span>WhatsApp</span>
         </a>
         <a
-          href="tel:+923129000100"
+          href="tel:+923356400959"
           className="flex flex-col items-center justify-center text-gray-600 text-[10px] font-medium px-2 py-1"
         >
           <Phone className="h-5 w-5 text-gray-700" />
-          <span>Call</span>
+          <span>Call Dr</span>
         </a>
         <Link href="/book" prefetch={true} className="flex-1">
           <Button className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-full text-xs font-semibold py-2.5 shadow-md shadow-rose-200">

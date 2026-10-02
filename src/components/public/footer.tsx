@@ -94,25 +94,25 @@ export function PublicFooter() {
               <li className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 mt-0.5 text-rose-400 shrink-0" />
                 <span className="text-sm text-gray-400">
-                  Cantonment Plaza, University Road,<br />
-                  Opp. Islamia College, Peshawar, KP
+                  Sami Tower, Ring Road,<br />
+                  Peshawar, KP
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 text-rose-400 shrink-0" />
-                <a href="tel:+923129000100" className="text-sm text-gray-400 hover:text-rose-400 transition-colors font-medium">
-                  +92 312 9000100
+                <a href="tel:+923356400959" className="text-sm text-gray-400 hover:text-rose-400 transition-colors font-medium">
+                  0335-6400959
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <MessageCircle className="h-4 w-4 text-emerald-400 shrink-0" />
                 <a
-                  href="https://wa.me/923129000100"
+                  href="https://wa.me/923356400959"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-gray-400 hover:text-emerald-400 transition-colors font-medium"
                 >
-                  WhatsApp: 0312-9000100
+                  WhatsApp: 0335-6400959
                 </a>
               </li>
               <li className="flex items-center gap-2.5">

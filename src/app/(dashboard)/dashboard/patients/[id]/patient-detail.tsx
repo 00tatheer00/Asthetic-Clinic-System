@@ -699,7 +699,7 @@ export function PatientDetail({
                   PMDC Reg # 98214-P • Certified Aesthetic Dermatologist
                 </p>
                 <p className="text-[10px] text-gray-500 mt-1">
-                  Cantonment Plaza, University Road, Peshawar | Tel: +92 312 9000100
+                  Sami Tower, Ring Road, Peshawar | Doctor: 0335-6400959
                 </p>
               </div>
               <div className="h-14 w-14 rounded-2xl border border-rose-100 p-1 bg-white shadow-xs shrink-0 flex items-center justify-center">
@@ -781,7 +781,7 @@ export function PatientDetail({
                 size="sm"
                 onClick={() => {
                   if (activeRxPrint) {
-                    const text = `*Assalam-o-Alaikum ${patient.name}*\nHere is your official prescription from *Dr. Bilal Ahmad (Brimish Skin Care Clinic)*:\n\n*Diagnosis:* ${activeRxPrint.diagnosis || 'Clinical Consultation'}\n\n*Regimen:*\n${activeRxPrint.prescription || activeRxPrint.note_text}\n\n*Follow-up:* Valid for 30 days.\nClinic: University Road, Peshawar (0312-9000100)`;
+                    const text = `*Assalam-o-Alaikum ${patient.name}*\nHere is your official prescription from *Dr. Bilal Ahmad (Brimish Skin Care Clinic)*:\n\n*Diagnosis:* ${activeRxPrint.diagnosis || 'Clinical Consultation'}\n\n*Regimen:*\n${activeRxPrint.prescription || activeRxPrint.note_text}\n\n*Follow-up:* Valid for 30 days.\nClinic: Sami Tower, Ring Road, Peshawar (0335-6400959)`;
                     window.open(buildWhatsAppLink(patient.phone, text), '_blank');
                   }
                 }}
