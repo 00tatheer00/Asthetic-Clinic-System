@@ -438,7 +438,16 @@ export function BookingFlow({
       setCurrentStep(4);
     } catch (err: any) {
       console.error('Booking error:', err);
-      setFormError(err.message || 'Something went wrong. Please try again.');
+      const rawMsg = err?.message || '';
+      const isMinified =
+        rawMsg.includes('Minified React error') ||
+        rawMsg.includes('react.dev/errors') ||
+        rawMsg.includes('#441');
+      setFormError(
+        isMinified
+          ? 'Unable to submit booking right now due to a connection error. Please try again or WhatsApp Dr. Bilal Clinic directly at 0335-6400959.'
+          : rawMsg || 'Something went wrong. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }

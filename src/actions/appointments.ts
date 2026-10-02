@@ -13,105 +13,127 @@ import type { AppointmentStatus } from '@/lib/types';
 // ============================================================
 
 export async function createPublicAppointment(formData: unknown) {
-  const parsed = appointmentBookingSchema.safeParse(formData);
+  try {
+    const parsed = appointmentBookingSchema.safeParse(formData);
 
-  if (!parsed.success) {
-    const firstIssue = parsed.error.issues[0];
-    const friendlyError = firstIssue ? firstIssue.message : 'Please check your details and try again.';
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      const friendlyError = firstIssue ? firstIssue.message : 'Please check your details and try again.';
+      return {
+        success: false,
+        error: friendlyError,
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      };
+    }
+
+    const data = parsed.data;
+
+    // Flexible date check: allow today's booking requests with generous 24h grace window for timezones
+    const scheduledTime = new Date(data.scheduled_at).getTime();
+    const pastCutoff = Date.now() - 24 * 60 * 60 * 1000;
+    if (isNaN(scheduledTime) || scheduledTime < pastCutoff) {
+      return { success: false, error: 'Please select a valid upcoming date and time.' };
+    }
+
+    const supabase = createAdminClient();
+
+    // Get treatment name for email with fallback
+    let treatmentName = 'Aesthetic Consultation';
+    let validTreatmentId = data.treatment_id;
+
+    try {
+      const { data: treatment } = await supabase
+        .from('treatments')
+        .select('id, name')
+        .eq('id', data.treatment_id)
+        .maybeSingle();
+
+      if (treatment) {
+        treatmentName = treatment.name;
+        validTreatmentId = treatment.id;
+      } else {
+        // If an ID wasn't found in DB, resolve the first active treatment
+        const { data: firstTreatment } = await supabase
+          .from('treatments')
+          .select('id, name')
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (firstTreatment) {
+          treatmentName = firstTreatment.name;
+          validTreatmentId = firstTreatment.id;
+        }
+      }
+    } catch (tErr) {
+      console.warn('Treatment resolution warning:', tErr);
+    }
+
+    // Format combined message with WhatsApp and custom notes
+    const messageParts: string[] = [];
+    if (data.whatsapp_number && data.whatsapp_number.trim() && data.whatsapp_number.trim() !== data.customer_phone) {
+      messageParts.push(`WhatsApp Contact: ${data.whatsapp_number.trim()}`);
+    }
+    if (data.message && data.message.trim()) {
+      messageParts.push(data.message.trim());
+    }
+    const finalMessage = messageParts.length > 0 ? messageParts.join('\n\n') : null;
+
+    // Create appointment
+    const { data: appointment, error } = await supabase
+      .from('appointments')
+      .insert({
+        customer_name: data.customer_name,
+        customer_phone: data.customer_phone,
+        customer_email: data.customer_email || null,
+        treatment_id: validTreatmentId,
+        scheduled_at: data.scheduled_at,
+        message: finalMessage,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (error || !appointment) {
+      console.error('[Appointment] Create failed:', error);
+      return {
+        success: false,
+        error: error?.message || 'Failed to create appointment. Please try again.',
+      };
+    }
+
+    // Send notification email (non-blocking, logged automatically)
+    try {
+      sendAppointmentReceivedEmail({
+        customerName: data.customer_name,
+        customerPhone: data.customer_phone,
+        treatmentName: treatmentName,
+        scheduledAt: formatDateTime(data.scheduled_at),
+        message: finalMessage || undefined,
+      }).catch(console.error);
+    } catch (emailErr) {
+      console.warn('Email trigger warning:', emailErr);
+    }
+
+    // Revalidate dashboard views immediately
+    try {
+      revalidatePath('/dashboard');
+      revalidatePath('/dashboard/appointments');
+    } catch (revalErr) {
+      console.warn('Revalidation warning:', revalErr);
+    }
+
+    return { success: true, appointmentId: appointment.id };
+  } catch (err: any) {
+    console.error('[createPublicAppointment] Fatal error:', err);
     return {
       success: false,
-      error: friendlyError,
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      error:
+        err?.message && !err.message.includes('Minified React error')
+          ? err.message
+          : 'Unable to submit booking right now. Please call or WhatsApp our clinic at 0335-6400959.',
     };
   }
-
-  const data = parsed.data;
-
-  // Flexible date check: allow today's booking requests with generous 24h grace window for timezones
-  const scheduledTime = new Date(data.scheduled_at).getTime();
-  const pastCutoff = Date.now() - 24 * 60 * 60 * 1000;
-  if (isNaN(scheduledTime) || scheduledTime < pastCutoff) {
-    return { success: false, error: 'Please select a valid upcoming date and time.' };
-  }
-
-  const supabase = createAdminClient();
-
-  // Get treatment name for email with fallback
-  let treatmentName = 'Aesthetic Consultation';
-  let validTreatmentId = data.treatment_id;
-
-  const { data: treatment } = await supabase
-    .from('treatments')
-    .select('id, name')
-    .eq('id', data.treatment_id)
-    .maybeSingle();
-
-  if (treatment) {
-    treatmentName = treatment.name;
-    validTreatmentId = treatment.id;
-  } else {
-    // If an ID wasn't found in DB, resolve the first active treatment
-    const { data: firstTreatment } = await supabase
-      .from('treatments')
-      .select('id, name')
-      .eq('is_active', true)
-      .limit(1)
-      .maybeSingle();
-
-    if (firstTreatment) {
-      treatmentName = firstTreatment.name;
-      validTreatmentId = firstTreatment.id;
-    }
-  }
-
-  // Format combined message with WhatsApp and custom notes
-  const messageParts: string[] = [];
-  if (data.whatsapp_number && data.whatsapp_number.trim() && data.whatsapp_number.trim() !== data.customer_phone) {
-    messageParts.push(`WhatsApp Contact: ${data.whatsapp_number.trim()}`);
-  }
-  if (data.message && data.message.trim()) {
-    messageParts.push(data.message.trim());
-  }
-  const finalMessage = messageParts.length > 0 ? messageParts.join('\n\n') : null;
-
-  // Create appointment
-  const { data: appointment, error } = await supabase
-    .from('appointments')
-    .insert({
-      customer_name: data.customer_name,
-      customer_phone: data.customer_phone,
-      customer_email: data.customer_email || null,
-      treatment_id: validTreatmentId,
-      scheduled_at: data.scheduled_at,
-      message: finalMessage,
-      status: 'pending',
-    })
-    .select('id')
-    .single();
-
-  if (error) {
-    console.error('[Appointment] Create failed:', error);
-    return { success: false, error: 'Failed to create appointment. Please try again.' };
-  }
-
-  // Send notification email (non-blocking, logged automatically)
-  sendAppointmentReceivedEmail({
-    customerName: data.customer_name,
-    customerPhone: data.customer_phone,
-    treatmentName: treatmentName,
-    scheduledAt: formatDateTime(data.scheduled_at),
-    message: finalMessage || undefined,
-  }).catch(console.error);
-
-  // Revalidate dashboard views immediately
-  try {
-    revalidatePath('/dashboard');
-    revalidatePath('/dashboard/appointments');
-  } catch (revalErr) {
-    console.warn('Revalidation warning:', revalErr);
-  }
-
-  return { success: true, appointmentId: appointment.id };
 }
 
 // ============================================================
