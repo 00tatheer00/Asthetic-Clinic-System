@@ -103,6 +103,14 @@ export async function createPublicAppointment(formData: unknown) {
     message: finalMessage || undefined,
   }).catch(console.error);
 
+  // Revalidate dashboard views immediately
+  try {
+    revalidatePath('/dashboard');
+    revalidatePath('/dashboard/appointments');
+  } catch (revalErr) {
+    console.warn('Revalidation warning:', revalErr);
+  }
+
   return { success: true, appointmentId: appointment.id };
 }
 

@@ -504,7 +504,7 @@ export function BookingFlow({
   return (
     <div
       ref={headerTopRef}
-      className="w-full max-w-2xl mx-auto bg-white rounded-3xl sm:rounded-[28px] shadow-2xl border border-gray-100 overflow-hidden flex flex-col relative transition-all duration-300"
+      className="w-full max-w-6xl xl:max-w-7xl mx-auto bg-white rounded-3xl sm:rounded-[32px] shadow-2xl border border-gray-100 flex flex-col relative transition-all duration-300"
     >
       {/* Top Header Card */}
       <div className="p-6 sm:p-8 pb-4 relative border-b border-gray-100/80 bg-white">
@@ -684,10 +684,10 @@ export function BookingFlow({
         )}
       </div>
 
-      {/* Main Scrollable Body Area with ref for auto-scroll to top */}
+      {/* Main Body Area */}
       <div
         ref={scrollContainerRef}
-        className="p-6 sm:p-8 pt-5 overflow-y-auto max-h-[64vh] sm:max-h-[68vh] min-h-[380px]"
+        className="p-6 sm:p-8 pt-5 min-h-[420px]"
       >
         {/* ========================================================================= */}
         {/* TRACKING MODE (Lookup booking by patient name or phone)                    */}
@@ -1646,10 +1646,10 @@ export function BookingFlow({
       </div>
 
       {/* ========================================================================= */}
-      {/* STICKY BOTTOM SUMMARY BAR                                                 */}
+      {/* STICKY BOTTOM SUMMARY BAR (FOR MOBILE & TABLETS)                         */}
       {/* ========================================================================= */}
       {activeMode === 'booking' && currentStep !== 4 && (
-        <div className="p-4 sm:p-5 px-6 sm:px-8 border-t border-gray-100 bg-white/95 backdrop-blur-md flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+        <div className="lg:hidden p-4 sm:p-5 px-6 sm:px-8 border-t border-gray-100 bg-white/95 backdrop-blur-md sticky bottom-0 z-20 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
           {/* Left Side: Treatment count & PKR total */}
           <div>
             <span className="text-xs text-gray-500 block">

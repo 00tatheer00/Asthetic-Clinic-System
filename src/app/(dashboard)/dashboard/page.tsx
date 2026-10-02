@@ -46,6 +46,7 @@ export default async function DashboardPage() {
     sevenDaysInvoicesRes,
     sevenDaysAppointmentsRes,
     monthAppointmentsStatusRes,
+    pendingOnlineBookingsRes,
   ] = await Promise.all([
     supabase
       .from('appointments')
@@ -163,6 +164,15 @@ export default async function DashboardPage() {
       .select('status')
       .gte('scheduled_at', firstDayOfMonthISO)
       .is('deleted_at', null),
+
+    // Pending Online Booking Requests (regardless of scheduled date so staff never misses upcoming bookings)
+    supabase
+      .from('appointments')
+      .select('id, scheduled_at, status, message, customer_name, customer_phone, created_at, treatments(id, name, duration_minutes, price)')
+      .eq('status', 'pending')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(6),
   ]);
 
   // Aggregate today's and monthly revenue
@@ -339,6 +349,18 @@ export default async function DashboardPage() {
     paymentData.cash = todayRevenue;
   }
 
+  // Normalize pending online bookings
+  const normalizedPendingBookings = (pendingOnlineBookingsRes.data || []).map((app: any) => ({
+    id: app.id,
+    scheduled_at: app.scheduled_at,
+    status: app.status,
+    message: app.message,
+    customer_name: app.customer_name || 'Online Patient',
+    customer_phone: app.customer_phone || '',
+    created_at: app.created_at,
+    treatment: Array.isArray(app.treatments) ? app.treatments[0] || null : app.treatments || null,
+  }));
+
   return (
     <DashboardIntelligence
       isAdmin={isAdmin}
@@ -355,6 +377,7 @@ export default async function DashboardPage() {
       }}
       followUps={normalizedFollowUps}
       todayAppointments={normalizedAppointments}
+      pendingBookings={normalizedPendingBookings}
       recentInvoices={normalizedInvoices}
       lowStockProducts={lowStockProductsRes.data || []}
       popularTreatments={popularTreatmentsRes.data || []}

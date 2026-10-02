@@ -88,6 +88,16 @@ interface DashboardIntelligenceProps {
     customer_phone: string;
     treatment: { id: string; name: string; duration_minutes: number | null; price: number | null } | null;
   }>;
+  pendingBookings?: Array<{
+    id: string;
+    scheduled_at: string;
+    status: string;
+    message?: string | null;
+    customer_name: string;
+    customer_phone: string;
+    created_at?: string;
+    treatment: { id?: string; name: string; duration_minutes?: number | null; price?: number | null } | null;
+  }>;
   recentInvoices: Array<{
     id: string;
     invoice_number: string;
@@ -130,6 +140,7 @@ export function DashboardIntelligence({
   stats,
   followUps,
   todayAppointments,
+  pendingBookings = [],
   recentInvoices,
   lowStockProducts,
   popularTreatments,
@@ -418,6 +429,90 @@ export function DashboardIntelligence({
         paymentData={paymentData}
         isAdmin={isAdmin}
       />
+
+      {/* NEW ONLINE WEBSITE BOOKINGS QUEUE */}
+      {pendingBookings.length > 0 && (
+        <Card className="border-2 border-rose-300 bg-gradient-to-r from-rose-50/80 via-pink-50/40 to-white shadow-md rounded-2xl sm:rounded-3xl p-5 space-y-4 animate-in fade-in-50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-rose-200/80">
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-sm animate-pulse">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-serif font-bold text-gray-950 text-base">
+                    New Online Website Bookings
+                  </h3>
+                  <Badge className="bg-rose-600 text-white text-[11px] font-bold px-2 py-0.5">
+                    {pendingBookings.length} Awaiting Approval
+                  </Badge>
+                </div>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Patients booked these slots from the clinic website. Review and confirm on WhatsApp.
+                </p>
+              </div>
+            </div>
+            <Link href="/dashboard/appointments?status=pending">
+              <Button size="sm" className="bg-[#2D1226] hover:bg-[#431b39] text-white text-xs font-semibold rounded-xl">
+                <span>Open Full Queue</span>
+                <ChevronRight className="h-3.5 w-3.5 ml-1" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {pendingBookings.map((apt) => (
+              <div
+                key={apt.id}
+                className="p-3.5 rounded-2xl bg-white border border-rose-200/90 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-2.5"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-gray-950 text-sm truncate">{apt.customer_name}</p>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 uppercase">
+                      Pending
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-rose-700 truncate">
+                    {apt.treatment?.name || 'Aesthetic Treatment'}
+                  </p>
+                  <p className="text-[11px] text-gray-600 flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span>{formatDate(apt.scheduled_at)} · {formatTime(apt.scheduled_at)}</span>
+                  </p>
+                  <p className="text-[11px] text-gray-500 font-mono flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <span>{apt.customer_phone}</span>
+                  </p>
+                  {apt.message && (
+                    <p className="text-[10px] text-gray-400 italic line-clamp-1 border-t border-gray-100 pt-1 mt-1">
+                      &ldquo;{apt.message.split('\n')[0]}&rdquo;
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 flex items-center gap-2">
+                  <Link
+                    href={`/dashboard/appointments?status=pending&search=${encodeURIComponent(apt.customer_name)}`}
+                    className="flex-1 py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold text-center transition"
+                  >
+                    Review
+                  </Link>
+                  <a
+                    href={`https://wa.me/${apt.customer_phone.replace(/^0/, '92')}?text=Assalam-o-Alaikum%20${encodeURIComponent(apt.customer_name)},%20this%20is%20Brimish%20Skin%20Care%20Clinic%20regarding%20your%20appointment%20request%20for%20${encodeURIComponent(apt.treatment?.name || 'treatment')}.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+                    title="WhatsApp Patient"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Today's Live Schedule */}

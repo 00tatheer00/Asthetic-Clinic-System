@@ -29,6 +29,8 @@ import { ClearCacheButton } from '@/components/clear-cache-button';
 import { clearBrowserCacheAndReload } from '@/lib/cache-utils';
 import { RefreshCw } from 'lucide-react';
 import { RouteProgressBar } from '@/components/public/route-progress-bar';
+import { RealtimeBookingNotifier } from './realtime-booking-notifier';
+import { formatDateTime } from '@/lib/utils/helpers';
 
 // Map icon strings to components
 const iconMap: Record<string, React.ElementType> = {
@@ -50,26 +52,50 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
 
   const isAdmin = staff.role === 'super_admin';
   const [lowStockItems, setLowStockItems] = useState<Array<{ id: string; name: string; stock_quantity: number; sku?: string | null }>>([]);
+  const [pendingBookings, setPendingBookings] = useState<Array<{
+    id: string;
+    customer_name: string;
+    customer_phone: string;
+    scheduled_at: string;
+    treatments?: { name: string } | null;
+  }>>([]);
+  const [notifTab, setNotifTab] = useState<'bookings' | 'stock'>('bookings');
 
   useEffect(() => {
-    const fetchLowStock = async () => {
+    const fetchAlerts = async () => {
       try {
         const supabase = createClient();
-        const { data } = await supabase
-          .from('products')
-          .select('id, name, stock_quantity, sku')
-          .eq('is_active', true)
-          .lte('stock_quantity', 5)
-          .order('stock_quantity', { ascending: true })
-          .limit(10);
-        if (data) {
-          setLowStockItems(data);
-        }
+        const [{ data: products }, { data: bookings }] = await Promise.all([
+          supabase
+            .from('products')
+            .select('id, name, stock_quantity, sku')
+            .eq('is_active', true)
+            .lte('stock_quantity', 5)
+            .order('stock_quantity', { ascending: true })
+            .limit(10),
+          supabase
+            .from('appointments')
+            .select('id, customer_name, customer_phone, scheduled_at, treatments(name)')
+            .eq('status', 'pending')
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(8),
+        ]);
+        if (products) setLowStockItems(products);
+        if (bookings) setPendingBookings(bookings as any);
       } catch {
         // silent fallback
       }
     };
-    fetchLowStock();
+    fetchAlerts();
+
+    const handleNewApt = () => {
+      fetchAlerts();
+    };
+    window.addEventListener('clinic_appointment_created', handleNewApt);
+    return () => {
+      window.removeEventListener('clinic_appointment_created', handleNewApt);
+    };
   }, [pathname]);
 
   const handleSignOut = async () => {
@@ -286,60 +312,160 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             {/* Clear Browser Cache & Reload Button */}
             <ClearCacheButton variant="icon" />
 
-            {/* Notifications / Low Stock Alerts */}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className="relative h-9 w-9 flex items-center justify-center text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl cursor-pointer border border-transparent hover:border-rose-100"
-                aria-label="Inventory Alerts"
-              >
-                <Bell className="h-[18px] w-[18px]" />
-                {lowStockItems.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white shadow-xs animate-pulse">
-                    {lowStockItems.length}
-                  </span>
-                )}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 p-0 shadow-lg rounded-2xl border-rose-100 bg-white">
-                <div className="p-3 bg-gradient-to-r from-rose-50/80 to-pink-50/80 border-b border-rose-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-rose-600" />
-                    <span className="text-xs font-bold text-gray-900">Stock Alerts</span>
-                  </div>
-                  <Badge className={cn('text-[10px] border-0', lowStockItems.length > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700')}>
-                    {lowStockItems.length} items low
-                  </Badge>
-                </div>
-                <div className="max-h-64 overflow-y-auto divide-y divide-gray-100 p-1">
-                  {lowStockItems.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-gray-500 flex flex-col items-center gap-1.5">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                      <span>All products adequately stocked</span>
-                    </div>
-                  ) : (
-                    lowStockItems.map((item) => (
-                      <div key={item.id} className="p-2.5 hover:bg-rose-50/40 flex items-center justify-between gap-2 text-xs transition-colors rounded-lg">
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-gray-900 truncate leading-snug">{item.name}</p>
-                          {item.sku && <p className="text-[10px] text-gray-400 font-mono">SKU: {item.sku}</p>}
-                        </div>
-                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', item.stock_quantity <= 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')}>
-                          {item.stock_quantity <= 0 ? 'Out of Stock' : `${item.stock_quantity} left`}
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="p-2.5 bg-gray-50/70 border-t border-gray-100 text-center">
-                  <Link
-                    href="/dashboard/inventory?filter=low"
-                    className="text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1"
+            {/* Notifications: Online Bookings & Low Stock Alerts */}
+            {(() => {
+              const totalAlerts = pendingBookings.length + lowStockItems.length;
+              return (
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    className="relative h-9 w-9 flex items-center justify-center text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl cursor-pointer border border-transparent hover:border-rose-100"
+                    aria-label="Clinic Alerts"
                   >
-                    <span>Open Inventory Restock</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <Bell className="h-[18px] w-[18px]" />
+                    {totalAlerts > 0 && (
+                      <span className={cn(
+                        'absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-xs',
+                        pendingBookings.length > 0 ? 'bg-rose-600 animate-pulse ring-2 ring-white' : 'bg-amber-600'
+                      )}>
+                        {totalAlerts}
+                      </span>
+                    )}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-84 sm:w-96 p-0 shadow-xl rounded-2xl border-rose-100 bg-white">
+                    {/* Header Tabs */}
+                    <div className="p-2.5 bg-gradient-to-r from-rose-50/90 to-pink-50/90 border-b border-rose-100 flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setNotifTab('bookings')}
+                        className={cn(
+                          'flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5',
+                          notifTab === 'bookings'
+                            ? 'bg-white text-rose-900 shadow-xs'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                        )}
+                      >
+                        <Calendar className="h-3.5 w-3.5 text-rose-600" />
+                        <span>Online Bookings</span>
+                        {pendingBookings.length > 0 && (
+                          <span className="h-4 min-w-4 px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
+                            {pendingBookings.length}
+                          </span>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setNotifTab('stock')}
+                        className={cn(
+                          'flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5',
+                          notifTab === 'stock'
+                            ? 'bg-white text-amber-900 shadow-xs'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                        )}
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                        <span>Stock Alerts</span>
+                        {lowStockItems.length > 0 && (
+                          <span className="h-4 min-w-4 px-1 rounded-full bg-amber-600 text-white text-[10px] font-bold flex items-center justify-center">
+                            {lowStockItems.length}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Tab 1: Online Bookings Queue */}
+                    {notifTab === 'bookings' && (
+                      <div>
+                        <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 p-1">
+                          {pendingBookings.length === 0 ? (
+                            <div className="p-6 text-center text-xs text-gray-500 flex flex-col items-center gap-2">
+                              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                              <span className="font-medium text-gray-700">No pending online bookings</span>
+                              <span className="text-[11px] text-gray-400">New website requests will alert with audio chime</span>
+                            </div>
+                          ) : (
+                            pendingBookings.map((apt) => (
+                              <div
+                                key={apt.id}
+                                className="p-3 hover:bg-rose-50/50 flex items-start justify-between gap-3 text-xs transition-colors rounded-xl"
+                              >
+                                <div className="min-w-0 flex-1 space-y-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="font-bold text-gray-950 truncate">{apt.customer_name}</p>
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 font-bold uppercase">
+                                      Pending
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-rose-700 font-medium truncate">
+                                    {apt.treatments?.name || 'Aesthetic Treatment'}
+                                  </p>
+                                  <p className="text-[10px] text-gray-500">
+                                    Slot: {formatDateTime(apt.scheduled_at)}
+                                  </p>
+                                  <p className="text-[10px] text-gray-400 font-mono">
+                                    Phone: {apt.customer_phone}
+                                  </p>
+                                </div>
+                                <Link
+                                  href={`/dashboard/appointments?status=pending&search=${encodeURIComponent(apt.customer_name)}`}
+                                  className="shrink-0 px-2.5 py-1.5 rounded-lg bg-[#2D1226] hover:bg-[#431b39] text-white text-[11px] font-semibold transition shadow-xs"
+                                >
+                                  Review
+                                </Link>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <div className="p-2.5 bg-gray-50/80 border-t border-gray-100 text-center">
+                          <Link
+                            href="/dashboard/appointments?status=pending"
+                            className="text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1"
+                          >
+                            <span>Open All Pending Online Requests</span>
+                            <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 2: Stock Alerts */}
+                    {notifTab === 'stock' && (
+                      <div>
+                        <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 p-1">
+                          {lowStockItems.length === 0 ? (
+                            <div className="p-6 text-center text-xs text-gray-500 flex flex-col items-center gap-2">
+                              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                              <span className="font-medium text-gray-700">All products adequately stocked</span>
+                            </div>
+                          ) : (
+                            lowStockItems.map((item) => (
+                              <div key={item.id} className="p-2.5 hover:bg-amber-50/40 flex items-center justify-between gap-2 text-xs transition-colors rounded-lg">
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-gray-900 truncate leading-snug">{item.name}</p>
+                                  {item.sku && <p className="text-[10px] text-gray-400 font-mono">SKU: {item.sku}</p>}
+                                </div>
+                                <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', item.stock_quantity <= 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')}>
+                                  {item.stock_quantity <= 0 ? 'Out of Stock' : `${item.stock_quantity} left`}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <div className="p-2.5 bg-gray-50/80 border-t border-gray-100 text-center">
+                          <Link
+                            href="/dashboard/inventory?filter=low"
+                            className="text-xs font-semibold text-amber-700 hover:text-amber-800 inline-flex items-center gap-1"
+                          >
+                            <span>Open Inventory Restock</span>
+                            <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })()}
 
             {/* User Menu */}
             <DropdownMenu>
@@ -405,6 +531,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 : 'mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20 animate-page-enter'
             )}
           >
+            <RealtimeBookingNotifier />
             {children}
 
             {pathname !== '/dashboard/pos' && (
