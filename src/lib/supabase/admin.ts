@@ -1,20 +1,18 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ucyulaqwnoarbbhlhdxn.supabase.co';
-// Base64 decoded fallback ensures service role key is ALWAYS available in production
-// even if SUPABASE_SERVICE_ROLE_KEY is not yet configured in hosting dashboard,
-// while avoiding literal string patterns flagged by Git push protection.
-const FALLBACK_SERVICE_ROLE_KEY = Buffer.from(
-  'c2Jfc2VjcmV0X3kySTFXdFdUTmRONkJBa19kUXRYSGdfdWlKeEk4ZTI=',
-  'base64'
-).toString('utf-8');
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
 const SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  FALLBACK_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   '';
+
+if (!SERVICE_ROLE_KEY && typeof window === 'undefined') {
+  console.warn(
+    '[Admin Client] SUPABASE_SERVICE_ROLE_KEY is not set. Public form submissions (bookings, reviews, orders) may fail due to RLS restrictions. Set this env variable in your hosting dashboard.'
+  );
+}
+
 
 /**
  * Supabase admin client using the service role key.

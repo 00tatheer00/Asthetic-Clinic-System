@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Sparkles, Home } from 'lucide-react';
+import { Calendar, Sparkles, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function NotFound() {

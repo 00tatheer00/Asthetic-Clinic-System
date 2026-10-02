@@ -77,7 +77,7 @@ export async function loginStaffAction(
       };
     }
 
-    console.log(`[AuthAction] Successful staff login: ${staff.name} (${staff.role})`);
+
     return { success: true, redirectTo: redirectTo || '/dashboard' };
   } catch (err: unknown) {
     console.error('[AuthAction] Unexpected error during login:', err);

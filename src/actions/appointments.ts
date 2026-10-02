@@ -79,12 +79,17 @@ export async function createPublicAppointment(formData: unknown) {
     }
     const finalMessage = messageParts.length > 0 ? messageParts.join('\n\n') : null;
 
+    // Normalize phone number server-side (strip spaces/dashes, convert +92 to 0)
+    const normalizePhone = (phone: string) =>
+      phone.replace(/[\s\-()]/g, '').replace(/^\+92/, '0');
+    const normalizedPhone = normalizePhone(data.customer_phone);
+
     // Create appointment
     const { data: appointment, error } = await supabase
       .from('appointments')
       .insert({
         customer_name: data.customer_name,
-        customer_phone: data.customer_phone,
+        customer_phone: normalizedPhone,
         customer_email: data.customer_email || null,
         treatment_id: validTreatmentId,
         scheduled_at: data.scheduled_at,

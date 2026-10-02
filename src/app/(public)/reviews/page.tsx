@@ -215,7 +215,7 @@ export default async function ReviewsPage() {
                               />
                             ))}
                             <span className="text-[11px] text-gray-400 ml-1.5">
-                              5.0 Rating
+                              {review.rating}.0 Rating
                             </span>
                           </div>
                         </div>

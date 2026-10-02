@@ -41,7 +41,6 @@ export async function createSale(formData: unknown) {
       return { success: true, saleId: existingSale.id, duplicate: true };
     }
   }
-
   // Calculate line items server-side
   const saleItems: Array<{
     product_id: string | null;
@@ -58,16 +57,28 @@ export async function createSale(formData: unknown) {
 
   let subtotal = 0;
 
+  // Batch-fetch all products and treatments in 2 queries instead of N+1
+  const productIds = data.items.filter(i => i.item_type === 'product' && i.product_id).map(i => i.product_id!);
+  const treatmentIds = data.items.filter(i => i.item_type === 'service' && i.treatment_id).map(i => i.treatment_id!);
+
+  const [productsResult, treatmentsResult] = await Promise.all([
+    productIds.length > 0
+      ? supabase.from('products').select('id, stock_quantity, reserved_quantity, name, sale_price').in('id', productIds)
+      : Promise.resolve({ data: [] as any[] }),
+    treatmentIds.length > 0
+      ? supabase.from('treatments').select('id, price, name, is_active').in('id', treatmentIds)
+      : Promise.resolve({ data: [] as any[] }),
+  ]);
+
+  const productsMap = new Map((productsResult.data || []).map((p: any) => [p.id, p]));
+  const treatmentsMap = new Map((treatmentsResult.data || []).map((t: any) => [t.id, t]));
+
   for (const item of data.items) {
     let verifiedUnitPrice = item.unit_price;
 
     // Validate stock and verify price for product items
     if (item.item_type === 'product' && item.product_id) {
-      const { data: product } = await supabase
-        .from('products')
-        .select('id, stock_quantity, reserved_quantity, name, sale_price')
-        .eq('id', item.product_id)
-        .single();
+      const product = productsMap.get(item.product_id);
 
       if (!product) {
         return { success: false, error: `Product not found: ${item.name}` };
@@ -86,11 +97,7 @@ export async function createSale(formData: unknown) {
 
     // Verify price for treatment/service items
     if (item.item_type === 'service' && item.treatment_id) {
-      const { data: treatment } = await supabase
-        .from('treatments')
-        .select('id, price, name, is_active')
-        .eq('id', item.treatment_id)
-        .single();
+      const treatment = treatmentsMap.get(item.treatment_id);
 
       if (!treatment) {
         return { success: false, error: `Treatment not found: ${item.name}` };

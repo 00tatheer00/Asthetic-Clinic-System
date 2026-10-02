@@ -1,9 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const FALLBACK_SUPABASE_URL = 'https://ucyulaqwnoarbbhlhdxn.supabase.co';
-const FALLBACK_SUPABASE_ANON_KEY = 'sb_publishable_AeIBkfn4hFRKY-gl7TSETA_2I0OCKYz';
-
 /**
  * Next.js middleware for:
  * 1. Refreshing Supabase auth session (token rotation)
@@ -29,8 +26,8 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || FALLBACK_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || FALLBACK_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
   // Helper to construct a redirect response while preserving any session cookies
   const createRedirectResponse = (targetUrl: URL): NextResponse => {
