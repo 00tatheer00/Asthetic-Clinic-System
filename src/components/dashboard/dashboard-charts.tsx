@@ -350,49 +350,49 @@ export function DashboardCharts({
 
       {/* 4 Quick Analytics Mini-KPI Badges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[4px] border-l-rose-400 hover:border-l-rose-600 hover:border-gray-300 hover:shadow-lg hover:shadow-rose-500/10 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <DollarSign className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">7-Day Revenue</p>
-            <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif">
+            <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif group-hover:text-rose-950 transition-colors">
               {formatCurrency(total7DayRevenue)}
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-blue-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[4px] border-l-blue-400 hover:border-l-blue-600 hover:border-gray-300 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <Calendar className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">7-Day Patients</p>
-            <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif">
+            <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif group-hover:text-blue-950 transition-colors">
               {total7DayAppointments} Visits
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-emerald-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[4px] border-l-emerald-400 hover:border-l-emerald-600 hover:border-gray-300 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Completion Rate</p>
-            <p className="text-base sm:text-lg font-bold text-emerald-700 truncate font-serif">
+            <p className="text-base sm:text-lg font-bold text-emerald-700 truncate font-serif group-hover:text-emerald-900 transition-colors">
               {completionRate}% Complete
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-purple-500 hover:shadow-xs transition-all duration-300 shadow-xs flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-gray-200/80 border-l-[4px] border-l-purple-400 hover:border-l-purple-600 hover:border-gray-300 hover:shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1 hover:scale-[1.01] transition-all duration-300 ease-out shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <CreditCard className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Top Payment Channel</p>
-            <p className="text-xs sm:text-sm font-bold text-gray-950 truncate font-serif">
+            <p className="text-xs sm:text-sm font-bold text-gray-950 truncate font-serif group-hover:text-purple-950 transition-colors">
               {dominantPaymentMethod.label} ({dominantPaymentMethod.percent}%)
             </p>
           </div>
@@ -402,7 +402,7 @@ export function DashboardCharts({
       {/* Row 1: Line Chart (Revenue Velocity) + Bar Chart (Patient Inflow) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: 7-Day Revenue Velocity (7 cols) */}
-        <Card className="lg:col-span-7 border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-rose-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+        <Card className="lg:col-span-7 border border-gray-200/80 border-l-[4px] border-l-rose-400 hover:border-l-rose-600 hover:border-gray-300 hover:shadow-xl hover:shadow-rose-500/5 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -427,7 +427,7 @@ export function DashboardCharts({
         </Card>
 
         {/* Right: Daily Patient Appointment Volume (5 cols) */}
-        <Card className="lg:col-span-5 border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-blue-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+        <Card className="lg:col-span-5 border border-gray-200/80 border-l-[4px] border-l-blue-400 hover:border-l-blue-600 hover:border-gray-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -455,7 +455,7 @@ export function DashboardCharts({
       {/* Row 2: Doughnut Charts (Appointment Status Outcomes + Payment Channels) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Appointment Status Breakdown */}
-        <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-amber-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+        <Card className="border border-gray-200/80 border-l-[4px] border-l-amber-400 hover:border-l-amber-600 hover:border-gray-300 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40">
             <div className="flex items-center gap-2">
               <PieChart className="h-4 w-4 text-emerald-600" />
@@ -482,7 +482,7 @@ export function DashboardCharts({
 
               {/* Custom Legend */}
               <div className="flex-1 w-full space-y-2.5 text-xs">
-                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-emerald-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                     <span className="font-semibold text-gray-800">Completed Visits</span>
@@ -490,7 +490,7 @@ export function DashboardCharts({
                   <span className="font-bold text-gray-950">{statusData.completed}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-blue-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                     <span className="font-semibold text-gray-800">Confirmed Slots</span>
@@ -498,7 +498,7 @@ export function DashboardCharts({
                   <span className="font-bold text-gray-950">{statusData.confirmed}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-amber-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
                     <span className="font-semibold text-gray-800">Pending Approval</span>
@@ -506,7 +506,7 @@ export function DashboardCharts({
                   <span className="font-bold text-gray-950">{statusData.pending}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-rose-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                     <span className="font-semibold text-gray-800">Cancelled / No-Show</span>
@@ -520,7 +520,7 @@ export function DashboardCharts({
 
         {/* Payment Channels & Revenue Share */}
         {isAdmin && (
-          <Card className="border border-gray-200/80 border-l-[3.5px] border-l-gray-200/90 hover:border-l-emerald-500 hover:shadow-xs transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
+          <Card className="border border-gray-200/80 border-l-[4px] border-l-purple-400 hover:border-l-purple-600 hover:border-gray-300 hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden">
             <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-purple-600" />
@@ -547,7 +547,7 @@ export function DashboardCharts({
 
                 {/* Custom Legend */}
                 <div className="flex-1 w-full space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-emerald-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <Banknote className="h-4 w-4 text-emerald-600" />
                       <span className="font-semibold text-gray-800">Cash at Front-Desk</span>
@@ -557,7 +557,7 @@ export function DashboardCharts({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-purple-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <CreditCard className="h-4 w-4 text-purple-600" />
                       <span className="font-semibold text-gray-800">Card POS Machine</span>
@@ -567,7 +567,7 @@ export function DashboardCharts({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:border-sky-200 hover:shadow-xs hover:translate-x-1.5 transition-all duration-200 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-sky-600" />
                       <span className="font-semibold text-gray-800">Bank Transfer / Raast</span>

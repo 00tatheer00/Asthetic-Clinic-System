@@ -317,28 +317,28 @@ export function AppointmentsList({
     <div className="space-y-4">
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-100 hover:border-rose-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Today</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.today}</p>
+            <p className="text-xs text-gray-500 font-medium">Today</p>
+            <p className="text-2xl font-bold text-gray-900 font-serif">{stats.today}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-100 hover:border-amber-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Pending Review</p>
-            <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
+            <p className="text-xs text-gray-500 font-medium">Pending Review</p>
+            <p className="text-2xl font-bold text-amber-600 font-serif">{stats.pending}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-100 hover:border-blue-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Showing</p>
-            <p className="text-2xl font-bold text-gray-900">{totalCount}</p>
+            <p className="text-xs text-gray-500 font-medium">Showing</p>
+            <p className="text-2xl font-bold text-gray-900 font-serif">{totalCount}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="border border-gray-100 hover:border-indigo-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default bg-white">
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Page</p>
-            <p className="text-2xl font-bold text-gray-900">{currentPage}/{totalPages || 1}</p>
+            <p className="text-xs text-gray-500 font-medium">Page</p>
+            <p className="text-2xl font-bold text-gray-900 font-serif">{currentPage}/{totalPages || 1}</p>
           </CardContent>
         </Card>
       </div>
