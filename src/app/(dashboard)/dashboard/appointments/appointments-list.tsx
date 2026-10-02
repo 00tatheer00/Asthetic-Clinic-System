@@ -27,6 +27,7 @@ import {
 import {
   Search, MoreVertical, CheckCircle2, XCircle, Clock, UserCheck,
   ChevronLeft, ChevronRight, Loader2, Phone, Calendar, Plus, Edit3, Trash2,
+  Eye, Sparkles, MessageCircle, AlertCircle,
 } from 'lucide-react';
 import { formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
@@ -42,7 +43,7 @@ interface Appointment {
   scheduled_at: string;
   status: AppointmentStatus;
   message: string | null;
-  treatments: { id: string; name: string } | null;
+  treatments: { id: string; name: string; price?: number | null; duration_minutes?: number | null } | null;
   patients: { id: string; name: string; phone: string } | null;
 }
 
@@ -61,6 +62,7 @@ interface PatientOption {
 
 interface AppointmentsListProps {
   appointments: Appointment[];
+  pendingAppointments?: Appointment[];
   totalCount: number;
   currentPage: number;
   pageSize: number;
@@ -91,6 +93,7 @@ const DATE_FILTERS = [
 
 export function AppointmentsList({
   appointments,
+  pendingAppointments = [],
   totalCount,
   currentPage,
   pageSize,
@@ -103,6 +106,8 @@ export function AppointmentsList({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState(filters.search);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [processedPendingIds, setProcessedPendingIds] = useState<string[]>([]);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     appointmentId: string;
@@ -200,13 +205,24 @@ export function AppointmentsList({
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
+  const reviewPendingItems = (
+    pendingAppointments.length > 0
+      ? pendingAppointments
+      : appointments.filter((a) => a.status === 'pending')
+  ).filter((a) => !processedPendingIds.includes(a.id) && a.status === 'pending');
+
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams();
-    if (key === 'status') params.set('status', value);
-    else params.set('status', filters.status);
+    let newStatus = key === 'status' ? value : filters.status;
+    let newDate = key === 'date' ? value : filters.date;
 
-    if (key === 'date') params.set('date', value);
-    else params.set('date', filters.date);
+    // When switching to pending status, reset date to 'all' so pending requests across all dates are visible!
+    if (key === 'status' && value === 'pending') {
+      newDate = 'all';
+    }
+
+    params.set('status', newStatus);
+    params.set('date', newDate);
 
     if (key === 'search') params.set('search', value);
     else if (filters.search) params.set('search', filters.search);
@@ -215,16 +231,31 @@ export function AppointmentsList({
     router.push(`/dashboard/appointments?${params.toString()}`);
   };
 
+  const handleOpenReview = () => {
+    setShowReviewModal(true);
+    if (filters.status !== 'pending' || filters.date !== 'all') {
+      const params = new URLSearchParams();
+      params.set('status', 'pending');
+      params.set('date', 'all');
+      if (filters.search) params.set('search', filters.search);
+      params.set('page', '1');
+      router.push(`/dashboard/appointments?${params.toString()}`);
+    }
+  };
+
   const handleSearch = () => {
     updateFilter('search', searchValue);
   };
 
   const handleStatusChange = async (appointmentId: string, newStatus: AppointmentStatus) => {
+    setProcessedPendingIds((prev) => [...prev, appointmentId]);
     startTransition(async () => {
       const result = await updateAppointmentStatus(appointmentId, newStatus);
       if (result.success) {
         toast.success(`Appointment ${APPOINTMENT_STATUS_LABELS[newStatus] || newStatus}`);
+        router.refresh();
       } else {
+        setProcessedPendingIds((prev) => prev.filter((id) => id !== appointmentId));
         toast.error(result.error || 'Failed to update');
       }
     });
@@ -386,17 +417,55 @@ export function AppointmentsList({
                 {stats.pending} Online Booking Request{stats.pending > 1 ? 's' : ''} Awaiting Review
               </p>
               <p className="text-xs text-amber-700">
-                Patients are waiting for your confirmation. Review and approve or decline their slot.
+                Patients are waiting for your confirmation. Review details, connect on WhatsApp, and approve or decline.
               </p>
             </div>
           </div>
           <Button
             size="sm"
-            onClick={() => updateFilter('status', 'pending')}
-            className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-full px-4 py-1.5 h-8 shrink-0 shadow-xs"
+            onClick={handleOpenReview}
+            className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-full px-4 py-1.5 h-8 shrink-0 shadow-xs flex items-center gap-1.5 cursor-pointer"
           >
+            <Eye className="h-3.5 w-3.5" />
             Review Requests ({stats.pending})
           </Button>
+        </div>
+      )}
+
+      {/* Active Pending Filter Indicator Banner */}
+      {filters.status === 'pending' && (
+        <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-xl bg-amber-200/70 text-amber-800 flex items-center justify-center font-bold text-xs shrink-0">
+              {stats.pending}
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-gray-900">
+                Viewing Pending Booking Requests ({stats.pending} awaiting review)
+              </p>
+              <p className="text-[11px] text-amber-700">
+                Showing pending requests across all dates. Click an action below or open the Quick Review window.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              size="sm"
+              onClick={() => setShowReviewModal(true)}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg px-3.5 h-8 shadow-xs flex items-center gap-1.5"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Open Review Window
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => updateFilter('status', 'all')}
+              className="border-amber-300 text-amber-900 hover:bg-amber-100 text-xs rounded-lg px-3 h-8 font-medium"
+            >
+              View All Appointments
+            </Button>
+          </div>
         </div>
       )}
 
@@ -937,6 +1006,152 @@ export function AppointmentsList({
                 )}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Review Dialog for Online Booking Requests */}
+      <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between pr-6">
+              <DialogTitle className="flex items-center gap-2 text-base font-bold text-gray-900">
+                <div className="h-7 w-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+                  <Clock className="h-4 w-4" />
+                </div>
+                <span>Online Booking Requests</span>
+              </DialogTitle>
+              <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs px-2.5 py-0.5 font-bold">
+                {reviewPendingItems.length} Pending
+              </Badge>
+            </div>
+            <DialogDescription className="text-xs text-gray-500">
+              Review new patient bookings submitted online. Confirm their slot, chat on WhatsApp, or decline.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-2">
+            {reviewPendingItems.length === 0 ? (
+              <div className="py-10 text-center">
+                <div className="h-12 w-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <h4 className="text-sm font-bold text-gray-900">All Caught Up!</h4>
+                <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+                  There are no pending booking requests right now. All requests have been reviewed and processed.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => setShowReviewModal(false)}
+                  className="mt-4 h-8 text-xs bg-gray-900 hover:bg-gray-800 text-white rounded-lg px-4"
+                >
+                  Close Window
+                </Button>
+              </div>
+            ) : (
+              reviewPendingItems.map((apt) => {
+                const cleanPhone = apt.customer_phone.replace(/[^0-9]/g, '');
+                const waMessage = encodeURIComponent(
+                  `Assalam-o-Alaikum ${apt.customer_name}, this is Brimish Skin Clinic. We received your booking request for ${apt.treatments?.name || 'Treatment'} on ${formatDateTime(apt.scheduled_at)}. We would like to confirm your appointment.`
+                );
+                const waUrl = `https://wa.me/${cleanPhone.startsWith('0') ? '92' + cleanPhone.slice(1) : cleanPhone}?text=${waMessage}`;
+
+                return (
+                  <div
+                    key={apt.id}
+                    className="p-4 rounded-xl border border-amber-200/90 bg-amber-50/40 hover:bg-amber-50/70 transition-all space-y-3 shadow-2xs"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-gray-900 text-sm">{apt.customer_name}</h4>
+                          <Badge className="bg-amber-100 text-amber-800 text-[10px] font-semibold border-amber-300">
+                            Awaiting Review
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-600 mt-1 flex-wrap">
+                          <span className="font-medium text-gray-700 flex items-center gap-1">
+                            <Phone className="h-3 w-3 text-gray-400" />
+                            {formatPhone(apt.customer_phone)}
+                          </span>
+                          {apt.customer_email && (
+                            <span className="text-gray-500 text-[11px]">
+                              {apt.customer_email}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-left sm:text-right">
+                        <div className="inline-block bg-white px-2.5 py-1 rounded-lg border border-gray-200 text-xs font-semibold text-gray-800 shadow-2xs">
+                          {apt.treatments?.name || 'Aesthetic Treatment'}
+                          {apt.treatments?.price ? ` • PKR ${apt.treatments.price.toLocaleString()}` : ''}
+                        </div>
+                        <p className="text-xs text-amber-900 font-semibold flex items-center sm:justify-end gap-1 mt-1">
+                          <Clock className="h-3 w-3 text-amber-600" />
+                          {formatDateTime(apt.scheduled_at)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {apt.message && (
+                      <div className="bg-white/80 p-2.5 rounded-lg border border-amber-100 text-xs text-gray-700">
+                        <span className="font-semibold text-gray-900">Patient Note: </span>
+                        <span>{apt.message}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-amber-200/60 flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-emerald-700 hover:text-emerald-800 font-semibold bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition-colors"
+                        >
+                          <Phone className="h-3 w-3 text-emerald-600" />
+                          Chat on WhatsApp
+                        </a>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setShowReviewModal(false);
+                            handleOpenEdit(apt);
+                          }}
+                          className="h-8 text-xs border-gray-200 hover:bg-white text-gray-700 rounded-lg flex items-center gap-1 font-medium"
+                        >
+                          <Edit3 className="h-3 w-3 text-blue-600" />
+                          Reschedule / Edit
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isPending}
+                          onClick={() => handleStatusChange(apt.id, 'cancelled')}
+                          className="h-8 text-xs border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg flex items-center gap-1 font-medium"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          Decline
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => handleStatusChange(apt.id, 'confirmed')}
+                          className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-1 font-semibold shadow-xs"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Approve & Confirm
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -94,7 +94,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
   // Parallel database execution for blazing speed
   const [
     { data: appointments, count },
-    { count: pendingCount },
+    { data: pendingAppointments, count: pendingCount },
     { count: todayCount },
     { data: treatments },
     { data: patients },
@@ -102,9 +102,14 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
     query,
     supabase
       .from('appointments')
-      .select('id', { count: 'exact', head: true })
+      .select(
+        '*, treatments(id, name, price, duration_minutes), patients(id, name, phone)',
+        { count: 'exact' }
+      )
       .eq('status', 'pending')
-      .is('deleted_at', null),
+      .is('deleted_at', null)
+      .order('scheduled_at', { ascending: true })
+      .limit(50),
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
@@ -138,6 +143,7 @@ export default async function AppointmentsPage({ searchParams }: PageProps) {
 
       <AppointmentsList
         appointments={appointments || []}
+        pendingAppointments={pendingAppointments || []}
         totalCount={count || 0}
         currentPage={page}
         pageSize={pageSize}
