@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -58,7 +57,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
   };
 
   const navContent = (
-    <ScrollArea className="flex-1 py-2">
+    <div className="flex-1 min-h-0 overflow-y-auto py-2 px-1 overscroll-contain [scrollbar-width:thin] [scrollbar-color:rgba(244,63,94,0.3)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 hover:[&::-webkit-scrollbar-thumb]:bg-rose-300">
       {DASHBOARD_NAV_SECTIONS.map((section) => {
         const visibleItems = section.items.filter(
           (item) => !('adminOnly' in item && item.adminOnly) || isAdmin
@@ -74,7 +73,10 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             )}
             {visibleItems.map((item) => {
               const Icon = iconMap[item.icon] || LayoutDashboard;
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const isActive =
+                item.href === '/dashboard'
+                  ? pathname === '/dashboard'
+                  : pathname === item.href || pathname.startsWith(item.href + '/');
 
               const link = (
                 <Link
@@ -109,7 +111,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
           </div>
         );
       })}
-    </ScrollArea>
+    </div>
   );
 
   return (
@@ -120,7 +122,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-300 shrink-0 select-none z-20',
+          'hidden lg:flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-300 shrink-0 select-none z-20 min-h-0 overflow-hidden',
           collapsed ? 'w-[68px]' : 'w-64'
         )}
       >
@@ -194,7 +196,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                     <span className="text-sm font-bold text-gray-900 font-serif">Brimish</span>
                   </div>
                 </div>
-                <div className="flex flex-col h-[calc(100%-4rem)]">
+                <div className="flex flex-col h-[calc(100%-4rem)] min-h-0 overflow-hidden">
                   {navContent}
                 </div>
               </SheetContent>
