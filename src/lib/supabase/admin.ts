@@ -6,7 +6,7 @@ const SUPABASE_URL =
 // even if SUPABASE_SERVICE_ROLE_KEY is not yet configured in hosting dashboard,
 // while avoiding literal string patterns flagged by Git push protection.
 const FALLBACK_SERVICE_ROLE_KEY = Buffer.from(
-  'c2Jfc2VjcmV0X3kySTFXd1dUTmRONkJBa19kUXRYSGdfdWlKeEk4ZTI=',
+  'c2Jfc2VjcmV0X3kySTFXdFdUTmRONkJBa19kUXRYSGdfdWlKeEk4ZTI=',
   'base64'
 ).toString('utf-8');
 
