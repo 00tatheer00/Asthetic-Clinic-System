@@ -107,7 +107,7 @@ export function LoginForm() {
               alt="Brimish Skin Care Clinic Logo"
               width={76}
               height={76}
-              className="w-full h-full object-cover rounded-xl"
+              className="w-full h-full object-contain p-1"
               priority
             />
           </div>

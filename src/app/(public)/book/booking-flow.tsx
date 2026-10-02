@@ -539,7 +539,7 @@ export function BookingFlow({
                   alt="Brimish Skin Care"
                   width={48}
                   height={48}
-                  className="h-full w-full object-cover rounded-xl"
+                  className="h-full w-full object-contain p-0.5"
                 />
               </div>
               <div>
@@ -1488,7 +1488,7 @@ export function BookingFlow({
                   alt="Brimish Skin Care Clinic Logo"
                   width={64}
                   height={64}
-                  className="h-full w-full object-cover rounded-xl"
+                  className="h-full w-full object-contain p-1"
                 />
               </div>
               <div className="h-16 w-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15 shrink-0">

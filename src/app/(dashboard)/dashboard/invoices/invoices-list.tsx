@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { sendInvoiceEmail, voidInvoice } from '@/actions/clinic';
 import { Card, CardContent } from '@/components/ui/card';
@@ -491,24 +492,36 @@ export function InvoicesList({
 
                     {/* Clinic Header & Identification */}
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-5 border-b-2 border-emerald-900/20">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
-                            BRIMISH SKIN CARE &amp; LASER CLINIC
-                          </h1>
+                      <div className="flex items-start gap-4">
+                        <div className="relative w-16 h-16 shrink-0 rounded-xl p-1 bg-white border border-amber-200/80 shadow-xs flex items-center justify-center">
+                          <Image
+                            src="/images/logo.png"
+                            alt="Brimish Skin Care Clinic Logo"
+                            width={56}
+                            height={56}
+                            className="w-14 h-14 object-contain"
+                            priority
+                          />
                         </div>
-                        <p className="text-xs font-semibold text-emerald-800 mt-0.5">
-                          Medical Aesthetics, Dermatology &amp; Laser Center
-                        </p>
-                        <p className="text-xs text-gray-600 mt-1 font-medium">
-                          Clinical Director: <span className="font-bold text-gray-900">Dr. Bilal Ahmad</span> (MD Aesthetic Medicine)
-                        </p>
-                        <p className="text-[11px] text-gray-600 mt-1 max-w-sm leading-relaxed">
-                          {selectedInvoice.clinic_address || 'Suite #3, 2nd Floor, Cantonment Plaza, University Road, Peshawar, KP'}
-                        </p>
-                        <p className="text-[11px] text-gray-600">
-                          UAN / Phone: <span className="font-semibold text-gray-800">{selectedInvoice.clinic_phone || '+92 91 5842100 / +92 312 9000100'}</span>
-                        </p>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                              BRIMISH SKIN CARE &amp; LASER CLINIC
+                            </h1>
+                          </div>
+                          <p className="text-xs font-semibold text-emerald-800 mt-0.5">
+                            Medical Aesthetics, Dermatology &amp; Laser Center
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1 font-medium">
+                            Clinical Director: <span className="font-bold text-gray-900">Dr. Bilal Ahmad</span> (MD Aesthetic Medicine)
+                          </p>
+                          <p className="text-[11px] text-gray-600 mt-1 max-w-sm leading-relaxed">
+                            {selectedInvoice.clinic_address || 'Suite #3, 2nd Floor, Cantonment Plaza, University Road, Peshawar, KP'}
+                          </p>
+                          <p className="text-[11px] text-gray-600">
+                            UAN / Phone: <span className="font-semibold text-gray-800">{selectedInvoice.clinic_phone || '+92 91 5842100 / +92 312 9000100'}</span>
+                          </p>
+                        </div>
                       </div>
 
                       <div className="text-left sm:text-right w-full sm:w-auto bg-emerald-50/60 p-3 rounded-lg border border-emerald-200/80">
@@ -770,6 +783,15 @@ export function InvoicesList({
                   /* ========================================================== */
                   <div className="w-full max-w-[340px] bg-white border border-gray-300 print:border-0 shadow-sm p-4 font-mono text-[11px] text-gray-900 leading-tight">
                     <div className="text-center pb-2 border-b border-dashed border-gray-400">
+                      <div className="flex justify-center mb-1.5">
+                        <Image
+                          src="/images/logo.png"
+                          alt="Brimish Skin Care Logo"
+                          width={44}
+                          height={44}
+                          className="w-11 h-11 object-contain"
+                        />
+                      </div>
                       <p className="text-[10px] font-bold tracking-widest text-emerald-800 uppercase">
                         *** FBR TIER-1 INTEGRATED POS ***
                       </p>
