@@ -36,6 +36,7 @@ import { formatCurrency, formatDate, formatTime } from '@/lib/utils/helpers';
 import { searchClinicGlobal, completeFollowUp, type GlobalSearchResult } from '@/actions/intelligence';
 import { APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import type {
   ChartDayData,
@@ -268,16 +269,16 @@ export function DashboardIntelligence({
 
       {/* 3. Primary KPI Metrics Grid (Interactive Cards) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Today's Appointments */}
+        {/* Today's Appointments (Blue) */}
         <Link href="/dashboard/appointments" className="group block focus:outline-none">
-          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
+          <Card className="border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-blue-50/20 rounded-2xl cursor-pointer">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700/80">
                     Today&apos;s Appointments
                   </p>
-                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif">
+                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-blue-950 transition-colors">
                     {stats.todayAppointments}
                   </p>
                   <p className="text-xs text-blue-600 mt-1.5 flex items-center gap-1 font-medium">
@@ -285,7 +286,7 @@ export function DashboardIntelligence({
                     <span>{stats.todayCompletedVisits} completed</span>
                   </p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <Calendar className="h-5 w-5" />
                 </div>
               </div>
@@ -293,17 +294,17 @@ export function DashboardIntelligence({
           </Card>
         </Link>
 
-        {/* Revenue KPI (Admin Only) */}
+        {/* Revenue KPI (Admin Only - Emerald) */}
         {isAdmin ? (
           <Link href="/dashboard/invoices" className="group block focus:outline-none">
-            <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
+            <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-emerald-50/20 rounded-2xl cursor-pointer">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700/80">
                       Today&apos;s Revenue
                     </p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1 font-serif tracking-tight">
+                    <p className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1 font-serif tracking-tight group-hover:text-emerald-950 transition-colors">
                       {formatCurrency(stats.todayRevenue)}
                     </p>
                     <p className="text-xs text-emerald-700 mt-1.5 flex items-center gap-1 font-medium">
@@ -311,7 +312,7 @@ export function DashboardIntelligence({
                       <span>Month: {formatCurrency(stats.monthRevenue)}</span>
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                     <DollarSign className="h-5 w-5" />
                   </div>
                 </div>
@@ -320,21 +321,21 @@ export function DashboardIntelligence({
           </Link>
         ) : (
           <Link href="/dashboard/patients" className="group block focus:outline-none">
-            <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
+            <Card className="border border-indigo-200/80 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-indigo-50/20 rounded-2xl cursor-pointer">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700/80">
                       Total Patients
                     </p>
-                    <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif">
+                    <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-indigo-950 transition-colors">
                       {stats.totalPatients}
                     </p>
                     <p className="text-xs text-indigo-600 mt-1.5 font-medium">
                       Registered Clinic Directory
                     </p>
                   </div>
-                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                     <Users className="h-5 w-5" />
                   </div>
                 </div>
@@ -343,23 +344,23 @@ export function DashboardIntelligence({
           </Link>
         )}
 
-        {/* Pending Web Orders */}
+        {/* Pending Web Orders (Amber) */}
         <Link href="/dashboard/orders" className="group block focus:outline-none">
-          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
+          <Card className="border border-amber-200/80 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-amber-50/20 rounded-2xl cursor-pointer">
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">
                     Pending Orders
                   </p>
-                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif">
+                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-amber-950 transition-colors">
                     {stats.pendingOrders}
                   </p>
                   <p className="text-xs text-amber-700 mt-1.5 font-medium">
                     Web Checkout Dispatch
                   </p>
                 </div>
-                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                   <Package className="h-5 w-5" />
                 </div>
               </div>
@@ -367,31 +368,39 @@ export function DashboardIntelligence({
           </Card>
         </Link>
 
-        {/* Low Stock Items */}
+        {/* Low Stock Items (Rose if low stock, Teal if optimal) */}
         <Link href="/dashboard/inventory" className="group block focus:outline-none">
-          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white rounded-2xl cursor-pointer">
+          <Card className={cn(
+            'transition-all duration-300 rounded-2xl cursor-pointer',
+            stats.lowStockCount > 0
+              ? 'border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 bg-gradient-to-br from-white via-white to-rose-50/20'
+              : 'border border-teal-200/80 hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/10 bg-gradient-to-br from-white via-white to-teal-50/20'
+          )}>
             <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                  <p className={cn(
+                    'text-[11px] font-bold uppercase tracking-wider',
+                    stats.lowStockCount > 0 ? 'text-rose-700/80' : 'text-teal-700/80'
+                  )}>
                     Low Stock Items
                   </p>
-                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif">
+                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-gray-900 transition-colors">
                     {stats.lowStockCount}
                   </p>
                   <p
                     className={`text-xs mt-1.5 font-medium ${
-                      stats.lowStockCount > 0 ? 'text-rose-600' : 'text-emerald-600'
+                      stats.lowStockCount > 0 ? 'text-rose-600' : 'text-teal-600'
                     }`}
                   >
                     {stats.lowStockCount > 0 ? 'Requires Reordering' : 'Stock Optimal'}
                   </p>
                 </div>
                 <div
-                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${
+                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${
                     stats.lowStockCount > 0
-                      ? 'bg-rose-100/80 text-rose-600'
-                      : 'bg-emerald-100/80 text-emerald-600'
+                      ? 'bg-rose-100/80 text-rose-600 group-hover:bg-rose-600 group-hover:text-white'
+                      : 'bg-teal-100/80 text-teal-600 group-hover:bg-teal-600 group-hover:text-white'
                   }`}
                 >
                   <AlertTriangle className="h-5 w-5" />
@@ -413,7 +422,7 @@ export function DashboardIntelligence({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Today's Live Schedule */}
         <div className="lg:col-span-8 space-y-6">
-          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
+          <Card className="border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
             <CardHeader className="flex flex-row items-center justify-between p-5 sm:p-6 pb-4 border-b border-gray-100 bg-gray-50/50">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
@@ -550,7 +559,7 @@ export function DashboardIntelligence({
 
         {/* Right Column (4 cols): Front-Desk Quick Actions & Room Readiness */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white space-y-4">
+          <Card className="border border-indigo-200/80 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white space-y-4">
             <div>
               <CardTitle className="text-base font-bold text-gray-950 font-serif">
                 Front-Desk Quick Actions

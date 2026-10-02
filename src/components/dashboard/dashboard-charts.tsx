@@ -350,48 +350,52 @@ export function DashboardCharts({
 
       {/* 4 Quick Analytics Mini-KPI Badges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 shadow-xs flex items-center gap-3 cursor-pointer group">
-          <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        {/* 7-Day Revenue (Rose) */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-white via-white to-rose-50/25 border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-rose-100/70 text-rose-600 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
             <DollarSign className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">7-Day Revenue</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700/80">7-Day Revenue</p>
             <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif group-hover:text-rose-950 transition-colors">
               {formatCurrency(total7DayRevenue)}
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 shadow-xs flex items-center gap-3 cursor-pointer group">
-          <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        {/* 7-Day Patients (Blue) */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-white via-white to-blue-50/25 border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-blue-100/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
             <Calendar className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">7-Day Patients</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/80">7-Day Patients</p>
             <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif group-hover:text-blue-950 transition-colors">
               {total7DayAppointments} Visits
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 shadow-xs flex items-center gap-3 cursor-pointer group">
-          <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        {/* Completion Rate (Emerald) */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-white via-white to-emerald-50/25 border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-emerald-100/70 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Completion Rate</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700/80">Completion Rate</p>
             <p className="text-base sm:text-lg font-bold text-emerald-700 truncate font-serif group-hover:text-emerald-900 transition-colors">
               {completionRate}% Complete
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 shadow-xs flex items-center gap-3 cursor-pointer group">
-          <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        {/* Top Payment Channel (Purple) */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-white via-white to-purple-50/25 border border-purple-200/80 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 shadow-xs flex items-center gap-3 cursor-pointer group">
+          <div className="h-10 w-10 rounded-xl bg-purple-100/70 text-purple-600 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
             <CreditCard className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Top Payment Channel</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700/80">Top Payment Channel</p>
             <p className="text-xs sm:text-sm font-bold text-gray-950 truncate font-serif group-hover:text-purple-950 transition-colors">
               {dominantPaymentMethod.label} ({dominantPaymentMethod.percent}%)
             </p>
@@ -401,8 +405,8 @@ export function DashboardCharts({
 
       {/* Row 1: Line Chart (Revenue Velocity) + Bar Chart (Patient Inflow) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: 7-Day Revenue Velocity (7 cols) */}
-        <Card className="lg:col-span-7 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
+        {/* Left: 7-Day Revenue Velocity (7 cols - Rose) */}
+        <Card className="lg:col-span-7 border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -426,8 +430,8 @@ export function DashboardCharts({
           </CardContent>
         </Card>
 
-        {/* Right: Daily Patient Appointment Volume (5 cols) */}
-        <Card className="lg:col-span-5 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
+        {/* Right: Daily Patient Appointment Volume (5 cols - Blue) */}
+        <Card className="lg:col-span-5 border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -454,8 +458,8 @@ export function DashboardCharts({
 
       {/* Row 2: Doughnut Charts (Appointment Status Outcomes + Payment Channels) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Appointment Status Breakdown */}
-        <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
+        {/* Appointment Status Breakdown (Emerald) */}
+        <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40">
             <div className="flex items-center gap-2">
               <PieChart className="h-4 w-4 text-emerald-600" />
@@ -482,7 +486,7 @@ export function DashboardCharts({
 
               {/* Custom Legend */}
               <div className="flex-1 w-full space-y-2.5 text-xs">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-emerald-50/50 border border-emerald-200/80 hover:border-emerald-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                     <span className="font-semibold text-gray-800">Completed Visits</span>
@@ -490,7 +494,7 @@ export function DashboardCharts({
                   <span className="font-bold text-gray-950">{statusData.completed}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-blue-50/50 border border-blue-200/80 hover:border-blue-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                     <span className="font-semibold text-gray-800">Confirmed Slots</span>
@@ -498,7 +502,7 @@ export function DashboardCharts({
                   <span className="font-bold text-gray-950">{statusData.confirmed}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-amber-50/50 border border-amber-200/80 hover:border-amber-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
                     <span className="font-semibold text-gray-800">Pending Approval</span>
@@ -506,7 +510,7 @@ export function DashboardCharts({
                   <span className="font-bold text-gray-950">{statusData.pending}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-rose-50/50 border border-rose-200/80 hover:border-rose-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
                     <span className="font-semibold text-gray-800">Cancelled / No-Show</span>
@@ -518,9 +522,9 @@ export function DashboardCharts({
           </CardContent>
         </Card>
 
-        {/* Payment Channels & Revenue Share */}
+        {/* Payment Channels & Revenue Share (Purple) */}
         {isAdmin && (
-          <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
+          <Card className="border border-purple-200/80 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
             <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-purple-600" />
@@ -547,7 +551,7 @@ export function DashboardCharts({
 
                 {/* Custom Legend */}
                 <div className="flex-1 w-full space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-emerald-50/50 border border-emerald-200/80 hover:border-emerald-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <Banknote className="h-4 w-4 text-emerald-600" />
                       <span className="font-semibold text-gray-800">Cash at Front-Desk</span>
@@ -557,7 +561,7 @@ export function DashboardCharts({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-purple-50/50 border border-purple-200/80 hover:border-purple-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <CreditCard className="h-4 w-4 text-purple-600" />
                       <span className="font-semibold text-gray-800">Card POS Machine</span>
@@ -567,7 +571,7 @@ export function DashboardCharts({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-white border border-gray-200 hover:border-gray-300 hover:shadow-xs transition-all duration-150 cursor-pointer">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50/70 hover:bg-sky-50/50 border border-sky-200/80 hover:border-sky-500 hover:shadow-xs transition-all duration-150 cursor-pointer">
                     <div className="flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-sky-600" />
                       <span className="font-semibold text-gray-800">Bank Transfer / Raast</span>

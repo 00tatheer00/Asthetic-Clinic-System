@@ -415,75 +415,79 @@ export function ReportsView({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border border-rose-200/80 shadow-xs bg-gradient-to-br from-rose-50 to-pink-50/50">
+        {/* Total Revenue (Rose) */}
+        <Card className="border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/15 transition-all duration-300 shadow-xs bg-gradient-to-br from-white via-white to-rose-50/40 rounded-2xl cursor-pointer">
           <CardHeader className="pb-2">
-            <CardDescription className="text-rose-700 font-medium text-xs">
+            <CardDescription className="text-rose-700/80 font-bold uppercase tracking-wider text-[11px]">
               Total Revenue Collected
             </CardDescription>
-            <CardTitle className="text-2xl font-extrabold text-gray-900">
+            <CardTitle className="text-2xl font-extrabold text-gray-900 font-serif">
               {formatCurrency(totalRevenue)}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-[11px] text-gray-500 flex items-center gap-1">
-              <CheckCircle className="h-3 w-3 text-emerald-600" />
+            <p className="text-[11px] text-gray-500 flex items-center gap-1 font-medium">
+              <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
               {paidInvoices.length} paid invoices in period
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200/80 shadow-sm">
+        {/* Average Ticket Value (Blue) */}
+        <Card className="border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/15 transition-all duration-300 shadow-xs bg-gradient-to-br from-white via-white to-blue-50/40 rounded-2xl cursor-pointer">
           <CardHeader className="pb-2">
-            <CardDescription className="text-gray-500 font-medium text-xs">
+            <CardDescription className="text-blue-700/80 font-bold uppercase tracking-wider text-[11px]">
               Average Ticket Value
             </CardDescription>
-            <CardTitle className="text-2xl font-extrabold text-gray-900">
+            <CardTitle className="text-2xl font-extrabold text-gray-900 font-serif">
               {formatCurrency(avgTicket)}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-[11px] text-gray-500">Per paying transaction</p>
+            <p className="text-[11px] text-gray-500 font-medium">Per paying transaction</p>
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200/80 shadow-sm">
+        {/* Appointment Completion Rate (Emerald) */}
+        <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/15 transition-all duration-300 shadow-xs bg-gradient-to-br from-white via-white to-emerald-50/40 rounded-2xl cursor-pointer">
           <CardHeader className="pb-2">
-            <CardDescription className="text-gray-500 font-medium text-xs">
+            <CardDescription className="text-emerald-700/80 font-bold uppercase tracking-wider text-[11px]">
               Appointment Completion Rate
             </CardDescription>
-            <CardTitle className="text-2xl font-extrabold text-emerald-600">
+            <CardTitle className="text-2xl font-extrabold text-emerald-600 font-serif">
               {completionRate}%
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-[11px] text-gray-500">
+            <p className="text-[11px] text-gray-500 font-medium">
               {completedAppts} of {totalAppts} total appointments
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200/80 shadow-sm">
+        {/* Retail Stock Valuation (Amber) */}
+        <Card className="border border-amber-200/80 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/15 transition-all duration-300 shadow-xs bg-gradient-to-br from-white via-white to-amber-50/40 rounded-2xl cursor-pointer">
           <CardHeader className="pb-2">
-            <CardDescription className="text-gray-500 font-medium text-xs">
+            <CardDescription className="text-amber-700/80 font-bold uppercase tracking-wider text-[11px]">
               Retail Stock Valuation
             </CardDescription>
-            <CardTitle className="text-2xl font-extrabold text-gray-900">
+            <CardTitle className="text-2xl font-extrabold text-gray-900 font-serif">
               {formatCurrency(totalStockValuation)}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <p className="text-[11px] text-gray-500">{totalStockItems} items across all categories</p>
+            <p className="text-[11px] text-gray-500 font-medium">{totalStockItems} items across all categories</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Analytics Breakdown Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Appointment Status Breakdown */}
-        <Card className="border border-gray-200/80 shadow-sm">
+        {/* Appointment Status Breakdown (Blue) */}
+        <Card className="border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
           <CardHeader>
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-rose-600" />
+              <Calendar className="h-4 w-4 text-blue-600" />
               Appointment Attendance & Funnel
             </CardTitle>
             <CardDescription className="text-xs">
@@ -559,11 +563,11 @@ export function ReportsView({
           </CardContent>
         </Card>
 
-        {/* Payment Methods Breakdown */}
-        <Card className="border border-gray-200/80 shadow-sm">
+        {/* Payment Methods Breakdown (Purple) */}
+        <Card className="border border-purple-200/80 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
           <CardHeader>
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-rose-600" />
+              <CreditCard className="h-4 w-4 text-purple-600" />
               Payment Methods Breakdown
             </CardTitle>
             <CardDescription className="text-xs">
@@ -589,7 +593,7 @@ export function ReportsView({
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
                       <div
-                        className="bg-rose-500 h-2 rounded-full transition-all"
+                        className="bg-purple-500 h-2 rounded-full transition-all"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -614,8 +618,8 @@ export function ReportsView({
         </Card>
       </div>
 
-      {/* One-Click CSV Data Export Hub */}
-      <Card className="border border-gray-200/80 shadow-sm rounded-2xl bg-white">
+      {/* One-Click CSV Data Export Hub (Emerald) */}
+      <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
         <CardHeader>
           <CardTitle className="text-base font-bold flex items-center gap-2 text-gray-900">
             <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
@@ -630,9 +634,9 @@ export function ReportsView({
             <Button
               onClick={handleExportInvoices}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50"
+              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50/60 hover:shadow-md hover:shadow-emerald-500/15 transition-all duration-200 group cursor-pointer"
             >
-              <Download className="h-4 w-4 text-emerald-600" />
+              <Download className="h-4 w-4 text-emerald-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Invoices CSV</span>
               <span className="text-[10px] text-gray-400">{invoices.length} invoices</span>
             </Button>
@@ -640,9 +644,9 @@ export function ReportsView({
             <Button
               onClick={handleExportAppointments}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
+              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-blue-200 hover:border-blue-500 hover:bg-blue-50/60 hover:shadow-md hover:shadow-blue-500/15 transition-all duration-200 group cursor-pointer"
             >
-              <Download className="h-4 w-4 text-blue-600" />
+              <Download className="h-4 w-4 text-blue-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Appointments CSV</span>
               <span className="text-[10px] text-gray-400">{appointments.length} bookings</span>
             </Button>
@@ -650,9 +654,9 @@ export function ReportsView({
             <Button
               onClick={handleExportPatients}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 border-gray-200 hover:border-purple-300 hover:bg-purple-50/50"
+              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-purple-200 hover:border-purple-500 hover:bg-purple-50/60 hover:shadow-md hover:shadow-purple-500/15 transition-all duration-200 group cursor-pointer"
             >
-              <Download className="h-4 w-4 text-purple-600" />
+              <Download className="h-4 w-4 text-purple-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Patients CSV</span>
               <span className="text-[10px] text-gray-400">{patients.length} patient records</span>
             </Button>
@@ -660,9 +664,9 @@ export function ReportsView({
             <Button
               onClick={handleExportInventory}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 border-gray-200 hover:border-amber-300 hover:bg-amber-50/50"
+              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-amber-200 hover:border-amber-500 hover:bg-amber-50/60 hover:shadow-md hover:shadow-amber-500/15 transition-all duration-200 group cursor-pointer"
             >
-              <Download className="h-4 w-4 text-amber-600" />
+              <Download className="h-4 w-4 text-amber-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Inventory CSV</span>
               <span className="text-[10px] text-gray-400">{products.length} products</span>
             </Button>
