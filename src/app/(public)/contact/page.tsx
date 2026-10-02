@@ -3,8 +3,25 @@ import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: 'Get in touch with Brimish Skin Care clinic in Peshawar. Send us a message, call, or visit us.',
+  title: 'Contact & Clinic Location | Brimish Skin Care Clinic Peshawar',
+  description:
+    'Visit Brimish Skin Care Clinic at Cantonment Plaza, University Road, Peshawar. Call +92 91 5842100 or WhatsApp +92 312 9000100 for immediate doctor appointments, timings, and directions.',
+  keywords: [
+    'Brimish clinic contact number',
+    'Dr Bilal phone number',
+    'skin clinic University Road Peshawar address',
+    'dermatologist appointment Peshawar',
+    'Brimish WhatsApp appointment',
+  ],
+  alternates: {
+    canonical: '/contact',
+  },
+  openGraph: {
+    title: 'Contact Brimish Skin Care Clinic Peshawar',
+    description:
+      'Suite #3, 2nd Floor, Cantonment Plaza, Main University Road, Peshawar. Mon–Sat 10:00 AM – 7:00 PM.',
+    url: '/contact',
+  },
 };
 
 export default function ContactPage() {

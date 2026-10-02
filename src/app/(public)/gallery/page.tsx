@@ -5,9 +5,25 @@ import type { Metadata } from 'next';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Clinical Results & Before & After Gallery | Brimish Skin Care Clinic Peshawar',
+  title: 'Before & After Clinical Results Gallery | Brimish Skin Care Clinic Peshawar',
   description:
-    'Real patient treatment transformations at Brimish Skin Care Clinic, Peshawar. Real results for Acne, HydraFacial, Anti-Aging, and Pigmentation treatments.',
+    'Verified before and after clinical transformations for acne scar reduction, melasma lightening, HydraFacial glow, and microneedling at Brimish Skin Care Clinic in Peshawar.',
+  keywords: [
+    'acne before after Peshawar',
+    'hydrafacial results Peshawar',
+    'skin clinic before and after',
+    'melasma treatment results Pakistan',
+    'chemical peel before after',
+  ],
+  alternates: {
+    canonical: '/gallery',
+  },
+  openGraph: {
+    title: 'Before & After Clinical Results | Brimish Skin Care Clinic',
+    description:
+      'Real patient clinical outcomes and skin transformations supervised by Dr. Bilal Ahmad in Peshawar.',
+    url: '/gallery',
+  },
 };
 
 const FALLBACK_TREATMENTS = [

@@ -15,10 +15,48 @@ import { Button } from '@/components/ui/button';
 import { HomeFaqSection, QuickBookBanner } from '@/components/public/home-interactive';
 import { HeroCinematic } from '@/components/public/hero-cinematic';
 
-export const metadata = {
-  title: 'Brimish Skin Care Clinic — Best Aesthetic & Dermatology Clinic in Peshawar',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Brimish Skin Care & Laser Clinic — Best Aesthetic Clinic in Peshawar | Dr. Bilal Ahmad',
   description:
-    'Peshawar’s trusted skin clinic by Dr. Bilal. We offer HydraFacial, laser hair removal, chemical peels, and acne treatments on University Road, Peshawar.',
+    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Specialized in Medical HydraFacial MD, Chemical Peels, Microneedling, and Laser Skin Rejuvenation on University Road, Peshawar. Book without advance payment.',
+  keywords: [
+    'Brimish Skin Care',
+    'Dr Bilal Ahmad dermatologist',
+    'best skin clinic Peshawar',
+    'skin specialist Peshawar',
+    'HydraFacial Peshawar price',
+    'laser clinic University Road Peshawar',
+    'acne scar treatment Peshawar',
+    'chemical peel Peshawar',
+    'skin doctor Peshawar KP',
+  ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Brimish Skin Care & Laser Clinic — Top Aesthetic Clinic in Peshawar',
+    description:
+      'Physician-led clinical skincare, HydraFacial, laser therapy, and personalized acne solutions on University Road, Peshawar.',
+    url: '/',
+    siteName: 'Brimish Skin Care & Laser Clinic',
+    images: [
+      {
+        url: '/images/hero-clinic.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Brimish Skin Care Clinic Consultation Lounge Peshawar',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Brimish Skin Care & Laser Clinic Peshawar',
+    description:
+      'Best aesthetic dermatology and laser skin rejuvenation clinic in Peshawar by Dr. Bilal Ahmad.',
+    images: ['/images/hero-clinic.jpg'],
+  },
 };
 
 export default function HomePage() {

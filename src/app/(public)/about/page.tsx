@@ -14,9 +14,27 @@ import {
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About Us | Brimish Skin Care Clinic Peshawar',
+  title: 'About Dr. Bilal Ahmad & Brimish Skin Care Clinic | Peshawar Aesthetic Center',
   description:
-    'Learn about Brimish Skin Care Clinic in Peshawar led by Dr. Bilal. Safe, genuine skin treatments, laser hair removal, and HydraFacial on University Road.',
+    'Learn about Brimish Skin Care & Laser Clinic on University Road, Peshawar. Led by Dr. Bilal Ahmad (MD Aesthetic Medicine). Discover our clinical sterile protocols, physician-guided dermatology, and genuine patient care.',
+  keywords: [
+    'Dr Bilal Ahmad',
+    'Dr Bilal dermatologist Peshawar',
+    'about Brimish skin clinic',
+    'aesthetic doctor Peshawar',
+    'Cantonment Plaza skin clinic',
+    'skin doctor University Road',
+  ],
+  alternates: {
+    canonical: '/about',
+  },
+  openGraph: {
+    title: 'About Dr. Bilal Ahmad & Brimish Clinic | Peshawar Aesthetic Center',
+    description:
+      'Physician-led clinical excellence, sterile aesthetic treatments, and proven skincare solutions in Peshawar.',
+    url: '/about',
+    images: ['/images/dr-bilal.jpg'],
+  },
 };
 
 export default function AboutPage() {

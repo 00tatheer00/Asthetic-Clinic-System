@@ -6,9 +6,24 @@ import type { Metadata } from 'next';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Patient Reviews & Experiences | Brimish Skin Care Clinic Peshawar',
+  title: 'Patient Reviews & Testimonials | Brimish Skin Care Clinic Peshawar',
   description:
-    'Read real, verified patient testimonials and clinical reviews for Dr. Bilal and Brimish Skin Care Clinic in Peshawar.',
+    'Read real, verified patient testimonials for Dr. Bilal Ahmad and Brimish Skin Care Clinic. Rated 4.9/5 for HydraFacial, acne treatments, and gentle clinical care on University Road, Peshawar.',
+  keywords: [
+    'Dr Bilal reviews Peshawar',
+    'Brimish skin care clinic reviews',
+    'best skin clinic patient feedback',
+    'hydrafacial review Peshawar',
+  ],
+  alternates: {
+    canonical: '/reviews',
+  },
+  openGraph: {
+    title: 'Patient Reviews & Clinical Testimonials | Brimish Skin Care Clinic',
+    description:
+      'Discover why over 150+ patients rate Brimish Skin Care 4.9/5 for medical aesthetic treatments in Peshawar.',
+    url: '/reviews',
+  },
 };
 
 const FALLBACK_TREATMENTS = [

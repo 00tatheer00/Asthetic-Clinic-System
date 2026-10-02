@@ -1,79 +1,108 @@
 import { MetadataRoute } from 'next';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brimishskincare.com';
+  const currentDate = new Date();
 
+  // Core static public routes with strict SEO hierarchy
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${baseUrl}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
+      lastModified: currentDate,
+      changeFrequency: 'daily',
       priority: 1.0,
     },
     {
       url: `${baseUrl}/treatments`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: 'weekly',
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/products`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.9,
+      priority: 0.95,
     },
     {
       url: `${baseUrl}/book`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/products`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/gallery`,
-      lastModified: new Date(),
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/reviews`,
+      lastModified: currentDate,
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/about`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/reviews`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/contact`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.75,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: currentDate,
+      changeFrequency: 'yearly',
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: currentDate,
+      changeFrequency: 'yearly',
+      priority: 0.5,
     },
   ];
 
   try {
-    const supabase = await createClient();
-    
-    // Fetch published active treatments
+    const supabase = createAdminClient();
+
+    // Query active published treatments
     const { data: treatments } = await supabase
       .from('treatments')
-      .select('id, updated_at')
+      .select('id, slug, updated_at')
       .eq('is_active', true);
 
     const treatmentRoutes: MetadataRoute.Sitemap = (treatments || []).map((t) => ({
-      url: `${baseUrl}/treatments#${t.id}`,
-      lastModified: t.updated_at ? new Date(t.updated_at) : new Date(),
-      changeFrequency: 'monthly',
+      url: `${baseUrl}/treatments?treatment=${encodeURIComponent(t.slug || t.id)}`,
+      lastModified: t.updated_at ? new Date(t.updated_at) : currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    }));
+
+    // Query active published products
+    const { data: products } = await supabase
+      .from('products')
+      .select('id, slug, updated_at')
+      .eq('is_active', true)
+      .eq('is_published', true)
+      .is('deleted_at', null);
+
+    const productRoutes: MetadataRoute.Sitemap = (products || []).map((p) => ({
+      url: `${baseUrl}/products?product=${encodeURIComponent(p.slug || p.id)}`,
+      lastModified: p.updated_at ? new Date(p.updated_at) : currentDate,
+      changeFrequency: 'weekly',
       priority: 0.8,
     }));
 
-    return [...staticRoutes, ...treatmentRoutes];
+    return [...staticRoutes, ...treatmentRoutes, ...productRoutes];
   } catch {
-    // Fallback gracefully to static routes if database is unreachable at build time
+    // Graceful fallback to all primary clinic routes
     return staticRoutes;
   }
 }

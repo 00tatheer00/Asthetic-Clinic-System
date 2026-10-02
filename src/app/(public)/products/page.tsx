@@ -6,9 +6,27 @@ import { Shield, Truck, RefreshCw } from 'lucide-react';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Shop Clinical Skincare Products | Brimish Skin Care Clinic Peshawar',
+  title: 'Dermatologist-Recommended Skincare Products | Brimish Skin Care Peshawar',
   description:
-    'Browse and order dermatologist-recommended medical skincare products from Brimish Skin Care. Gentle cleansers, hydrating moisturizers, broad-spectrum sunscreen, and potent serums.',
+    'Order authentic clinical skincare formulated for Pakistani skin. Ceramide cleansers, barrier repair moisturizers, broad-spectrum SPF 50+ sunscreens, and active serums. Fast Cash on Delivery across Pakistan.',
+  keywords: [
+    'skincare products Peshawar',
+    'medical skincare Pakistan',
+    'sunscreen SPF 50 Peshawar',
+    'ceramide cleanser Pakistan',
+    'niacinamide serum Peshawar',
+    'Dr Bilal skincare',
+    'clinical acne face wash',
+  ],
+  alternates: {
+    canonical: '/products',
+  },
+  openGraph: {
+    title: 'Clinical Skincare Products | Brimish Skin Care Clinic',
+    description:
+      'Physician-approved skincare products for radiant, clear skin. Authentic formulas with cash on delivery across Pakistan.',
+    url: '/products',
+  },
 };
 
 const FALLBACK_CATEGORIES = [

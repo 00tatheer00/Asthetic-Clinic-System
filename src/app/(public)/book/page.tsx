@@ -4,9 +4,25 @@ import { Shield, Clock, Phone, MapPin, CheckCircle, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Book an Appointment | Brimish Skin Care Clinic Peshawar',
+  title: 'Book Doctor Consultation & Skin Treatment | Brimish Clinic Peshawar',
   description:
-    'Book your skincare consultation or aesthetic treatment at Brimish Skin Care clinic in Peshawar. Choose your treatments, pick a time, and confirm via WhatsApp. No deposit, no card required.',
+    'Book your medical skincare consultation with Dr. Bilal Ahmad in Peshawar. Select treatments, pick a date & time, and receive instant WhatsApp confirmation. Zero deposit, no advance card payment needed.',
+  keywords: [
+    'book dermatologist Peshawar',
+    'Dr Bilal appointment booking',
+    'skin doctor consultation online',
+    'hydrafacial booking Peshawar',
+    'laser consultation Peshawar',
+  ],
+  alternates: {
+    canonical: '/book',
+  },
+  openGraph: {
+    title: 'Book Appointment | Brimish Skin Care Clinic Peshawar',
+    description:
+      'Zero advance deposit. Select your treatment and reserve your slot with Dr. Bilal in Peshawar.',
+    url: '/book',
+  },
 };
 
 interface BookPageProps {

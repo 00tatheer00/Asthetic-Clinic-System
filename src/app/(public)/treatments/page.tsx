@@ -9,9 +9,29 @@ import type { Metadata } from 'next';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Our Treatments | Brimish Skin Care Clinic Peshawar',
+  title: 'Clinical Skin & Laser Treatments | Brimish Skin Care Clinic Peshawar',
   description:
-    'Browse our complete range of professional aesthetic and medical dermatology treatments at Brimish Skin Care in Peshawar. Led by Dr. Bilal.',
+    'Explore physician-led treatments in Peshawar: Medical HydraFacial MD, Chemical Peels, Collagen Microneedling, Carbon Laser Peels, and Acne Rejuvenation protocols by Dr. Bilal Ahmad. Transparent PKR pricing.',
+  keywords: [
+    'HydraFacial Peshawar',
+    'chemical peel Peshawar',
+    'microneedling Peshawar',
+    'carbon laser peel Peshawar',
+    'acne treatment Peshawar',
+    'laser hair removal Peshawar',
+    'skin rejuvenation Peshawar KP',
+    'Brimish treatments price',
+  ],
+  alternates: {
+    canonical: '/treatments',
+  },
+  openGraph: {
+    title: 'Aesthetic & Laser Treatments | Brimish Skin Care Clinic Peshawar',
+    description:
+      'Physician-administered skin rejuvenation protocols in Peshawar. Safe for Pakistani skin tones, zero burning risk.',
+    url: '/treatments',
+    images: ['/images/treatment-hydrafacial.jpg'],
+  },
 };
 
 // Rich fallback categories & treatments if database connection is cold or empty
