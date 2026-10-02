@@ -185,6 +185,39 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         {/* Nav */}
         {navContent}
 
+        {/* Developer Attribution */}
+        {!collapsed ? (
+          <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50/60 text-center shrink-0">
+            <p className="text-[11px] font-medium text-gray-500">
+              Made by{' '}
+              <a
+                href="tel:03374005515"
+                className="font-bold text-gray-900 hover:text-rose-600 transition-colors"
+              >
+                Tech4Edges
+              </a>
+            </p>
+            <a
+              href="tel:03374005515"
+              className="text-[10px] text-gray-400 hover:text-rose-600 font-mono tracking-tight transition-colors block mt-0.5"
+            >
+              03374005515
+            </a>
+          </div>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger className="w-full">
+              <div className="py-2 flex items-center justify-center border-t border-gray-100 bg-gray-50/60 cursor-pointer shrink-0">
+                <span className="text-[10px] font-bold text-gray-400">T4E</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p className="font-semibold text-xs">Made by Tech4Edges</p>
+              <p className="text-[10px] font-mono text-gray-400">03374005515</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         {/* Collapse Toggle */}
         <div className="border-t border-gray-100 p-2 shrink-0 bg-white">
           <Button
@@ -229,6 +262,17 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                 </div>
                 <div className="flex flex-col h-[calc(100%-4rem)] min-h-0 overflow-hidden">
                   {navContent}
+                  <div className="p-3 border-t border-gray-100 bg-gray-50/60 text-center shrink-0">
+                    <p className="text-xs font-medium text-gray-600">
+                      Made by{' '}
+                      <a href="tel:03374005515" className="font-bold text-rose-600">
+                        Tech4Edges
+                      </a>
+                    </p>
+                    <a href="tel:03374005515" className="text-[11px] text-gray-400 font-mono block mt-0.5">
+                      03374005515
+                    </a>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
@@ -362,6 +406,25 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             )}
           >
             {children}
+
+            {pathname !== '/dashboard/pos' && (
+              <footer className="mt-12 pt-4 border-t border-gray-200/70 text-center text-xs text-gray-400 flex flex-wrap items-center justify-center gap-1.5">
+                <span>Made by</span>
+                <a
+                  href="tel:03374005515"
+                  className="font-bold text-gray-700 hover:text-rose-600 transition-colors"
+                >
+                  Tech4Edges
+                </a>
+                <span className="text-gray-300">•</span>
+                <a
+                  href="tel:03374005515"
+                  className="font-mono text-gray-500 hover:text-rose-600 transition-colors"
+                >
+                  03374005515
+                </a>
+              </footer>
+            )}
           </div>
         </main>
       </div>

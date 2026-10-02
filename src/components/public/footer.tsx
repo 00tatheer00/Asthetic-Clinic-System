@@ -159,9 +159,27 @@ export function PublicFooter() {
               <span className="text-gray-700 hidden sm:inline">•</span>
               <ClearCacheButton variant="subtle" />
             </div>
-            <p className="text-xs text-gray-600 flex items-center gap-1">
-              Made with <Heart className="h-3 w-3 text-rose-500 fill-rose-500" /> in Peshawar
-            </p>
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                Made with <Heart className="h-3 w-3 text-rose-500 fill-rose-500" /> in Peshawar
+              </p>
+              <span className="text-gray-700 hidden sm:inline">•</span>
+              <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                <span>Made by</span>
+                <a
+                  href="tel:03374005515"
+                  className="font-semibold text-rose-400 hover:text-rose-300 transition-colors"
+                >
+                  Tech4Edges
+                </a>
+                <a
+                  href="tel:03374005515"
+                  className="text-gray-400 hover:text-rose-300 font-mono text-[11px] transition-colors"
+                >
+                  03374005515
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>

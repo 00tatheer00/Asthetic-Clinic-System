@@ -31,6 +31,8 @@ import {
   Calendar,
   Trash2,
   Plus,
+  Code2,
+  Phone,
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import {
@@ -1204,6 +1206,43 @@ export function SettingsForm({
               <RefreshCw className={cn('h-3.5 w-3.5', clearingCache && 'animate-spin')} />
               {clearingCache ? 'Purging Cache...' : 'Purge Cache & Reload'}
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Developer & Technology Attribution Card */}
+      <Card className="border border-gray-200 shadow-xs bg-white">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Code2 className="h-5 w-5 text-rose-600" />
+              <div>
+                <CardTitle className="text-base">Software Engineering &amp; Technology Partner</CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  Platform architecture, development, and technical support.
+                </CardDescription>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-rose-700 bg-rose-50 border-rose-200 text-xs w-fit font-semibold">
+              Official Developer
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-1">
+          <div className="p-4 rounded-xl border border-gray-200 bg-gray-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-gray-900 font-serif">Made by Tech4Edges</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Brimish Skin Care &amp; Laser Clinic Management System &amp; Web Platform
+              </p>
+            </div>
+            <a
+              href="tel:03374005515"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-900 hover:border-rose-300 hover:text-rose-600 transition-all shadow-xs w-fit"
+            >
+              <Phone className="h-3.5 w-3.5 text-rose-500" />
+              <span className="font-mono">03374005515</span>
+            </a>
           </div>
         </CardContent>
       </Card>
