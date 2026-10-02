@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { getAuthenticatedStaff } from '@/lib/supabase/auth-helpers';
 import { ReviewsList } from './reviews-list';
 import type { Metadata } from 'next';
@@ -23,7 +23,8 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
   const currentPage = Math.max(1, parseInt(page, 10) || 1);
   const pageSize = 15;
 
-  const supabase = await createClient();
+  // Use admin client so staff sees all pending reviews without RLS restriction
+  const supabase = createAdminClient();
 
   const query = supabase
     .from('reviews')

@@ -301,10 +301,10 @@ export const reviewSubmissionSchema = z.object({
   rating: ratingSchema,
   review_text: z
     .string()
-    .min(20, 'Review must be at least 20 characters')
+    .min(3, 'Review must be at least 3 characters')
     .max(2000, 'Review must be at most 2000 characters')
     .trim(),
-  treatment_id: z.string().uuid().optional().nullable(),
+  treatment_id: z.string().optional().or(z.literal('')),
   // Honeypot field — must be empty
   website: z.string().max(0, 'Invalid submission').optional().or(z.literal('')),
 });

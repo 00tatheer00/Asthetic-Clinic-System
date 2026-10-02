@@ -59,13 +59,14 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
     scheduled_at: string;
     treatments?: { name: string } | null;
   }>>([]);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState<number>(0);
   const [notifTab, setNotifTab] = useState<'bookings' | 'stock'>('bookings');
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
         const supabase = createClient();
-        const [{ data: products }, { data: bookings }] = await Promise.all([
+        const [{ data: products }, { data: bookings }, { count: revCount }] = await Promise.all([
           supabase
             .from('products')
             .select('id, name, stock_quantity, sku')
@@ -80,9 +81,15 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             .is('deleted_at', null)
             .order('created_at', { ascending: false })
             .limit(8),
+          supabase
+            .from('reviews')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'pending')
+            .is('deleted_at', null),
         ]);
         if (products) setLowStockItems(products);
         if (bookings) setPendingBookings(bookings as any);
+        if (typeof revCount === 'number') setPendingReviewsCount(revCount);
       } catch {
         // silent fallback
       }
@@ -148,7 +155,12 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                     )}
                   />
                   {!collapsed && <span className="transition-colors duration-200">{item.label}</span>}
-                  {isActive && !collapsed && (
+                  {item.href === '/dashboard/reviews' && pendingReviewsCount > 0 && !collapsed && (
+                    <span className="ml-auto inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 text-white rounded-full shadow-xs animate-pulse">
+                      {pendingReviewsCount}
+                    </span>
+                  )}
+                  {isActive && !collapsed && !(item.href === '/dashboard/reviews' && pendingReviewsCount > 0) && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse" />
                   )}
                 </Link>

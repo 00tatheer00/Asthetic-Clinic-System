@@ -17,33 +17,62 @@ import { revalidatePath } from 'next/cache';
 // ============================================================
 
 export async function submitReview(formData: unknown) {
-  const parsed = reviewSubmissionSchema.safeParse(formData);
-  if (!parsed.success) {
-    return { success: false, error: 'Validation failed', fieldErrors: parsed.error.flatten().fieldErrors };
-  }
+  try {
+    const parsed = reviewSubmissionSchema.safeParse(formData);
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      return {
+        success: false,
+        error: firstIssue?.message || 'Please check all required fields and try again.',
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      };
+    }
 
-  // Honeypot check
-  if (parsed.data.website && parsed.data.website.length > 0) {
-    // Bot detected — silently succeed
+    // Honeypot check
+    if (parsed.data.website && parsed.data.website.length > 0) {
+      // Bot detected — silently succeed
+      return { success: true };
+    }
+
+    const supabase = createAdminClient();
+
+    const rawTreatmentId = (parsed.data.treatment_id || '').trim();
+    const cleanTreatmentId =
+      rawTreatmentId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawTreatmentId)
+        ? rawTreatmentId
+        : null;
+
+    const { error } = await supabase.from('reviews').insert({
+      reviewer_name: parsed.data.reviewer_name,
+      rating: parsed.data.rating,
+      review_text: parsed.data.review_text,
+      treatment_id: cleanTreatmentId,
+      status: 'pending',
+    });
+
+    if (error) {
+      console.error('[Review] Submit failed:', error);
+      return { success: false, error: 'Failed to submit review. Please try again.' };
+    }
+
+    // Revalidate dashboard and public reviews caches immediately
+    try {
+      revalidatePath('/dashboard/reviews');
+      revalidatePath('/reviews');
+      revalidatePath('/dashboard');
+      revalidatePath('/');
+    } catch (revalErr) {
+      console.warn('Revalidation warning:', revalErr);
+    }
+
     return { success: true };
+  } catch (err: any) {
+    console.error('[submitReview] Unexpected error:', err);
+    return {
+      success: false,
+      error: err?.message || 'Something went wrong while submitting your review. Please try again.',
+    };
   }
-
-  const supabase = createAdminClient();
-
-  const { error } = await supabase.from('reviews').insert({
-    reviewer_name: parsed.data.reviewer_name,
-    rating: parsed.data.rating,
-    review_text: parsed.data.review_text,
-    treatment_id: parsed.data.treatment_id || null,
-    status: 'pending',
-  });
-
-  if (error) {
-    console.error('[Review] Submit failed:', error);
-    return { success: false, error: 'Failed to submit review.' };
-  }
-
-  return { success: true };
 }
 
 // ============================================================
@@ -83,62 +112,76 @@ export async function moderateReview(
   action: 'approve' | 'reject',
   rejectionReason?: string
 ) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthorized' };
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
 
-  const { data: staff } = await supabase
-    .from('staff')
-    .select('id')
-    .eq('auth_user_id', user.id)
-    .single();
+    const { data: staff } = await supabase
+      .from('staff')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
 
-  if (!staff) return { success: false, error: 'Staff not found' };
+    if (!staff) return { success: false, error: 'Staff not found' };
 
-  const { error } = await supabase
-    .from('reviews')
-    .update({
-      status: action === 'approve' ? 'approved' : 'rejected',
-      moderated_at: new Date().toISOString(),
-      moderated_by: staff.id,
-      rejection_reason: action === 'reject' ? rejectionReason || null : null,
-    })
-    .eq('id', reviewId);
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('reviews')
+      .update({
+        status: action === 'approve' ? 'approved' : 'rejected',
+        moderated_at: new Date().toISOString(),
+        moderated_by: staff.id,
+        rejection_reason: action === 'reject' ? rejectionReason || null : null,
+      })
+      .eq('id', reviewId);
 
-  if (error) return { success: false, error: 'Failed to moderate review.' };
+    if (error) return { success: false, error: 'Failed to moderate review.' };
 
-  revalidatePath('/dashboard/reviews');
-  revalidatePath('/reviews');
-  return { success: true };
+    revalidatePath('/dashboard/reviews');
+    revalidatePath('/reviews');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    console.error('[moderateReview] Error:', err);
+    return { success: false, error: err?.message || 'Failed to update review status.' };
+  }
 }
 
 export async function deleteReview(reviewId: string) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: 'Unauthorized' };
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
 
-  const { data: staff } = await supabase
-    .from('staff')
-    .select('id, role')
-    .eq('auth_user_id', user.id)
-    .single();
+    const { data: staff } = await supabase
+      .from('staff')
+      .select('id, role')
+      .eq('auth_user_id', user.id)
+      .single();
 
-  if (!staff || staff.role !== 'super_admin') {
-    return { success: false, error: 'Only admin can delete reviews.' };
+    if (!staff || staff.role !== 'super_admin') {
+      return { success: false, error: 'Only admin can delete reviews.' };
+    }
+
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from('reviews')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', reviewId);
+
+    if (error) return { success: false, error: 'Failed to delete review.' };
+
+    revalidatePath('/dashboard/reviews');
+    revalidatePath('/reviews');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    console.error('[deleteReview] Error:', err);
+    return { success: false, error: err?.message || 'Failed to delete review.' };
   }
-
-  const { error } = await supabase
-    .from('reviews')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('id', reviewId);
-
-  if (error) return { success: false, error: 'Failed to delete review.' };
-
-  revalidatePath('/dashboard/reviews');
-  revalidatePath('/reviews');
-  return { success: true };
 }
 
 // ============================================================
