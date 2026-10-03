@@ -352,7 +352,7 @@ export function BookingFlow({
     }
 
     const [timePart, modifier] = (selectedTimeSlot || '12:00 pm').split(' ');
-    let [hoursStr, minutesStr] = (timePart || '12:00').split(':');
+    const [hoursStr, minutesStr] = (timePart || '12:00').split(':');
     let hours = parseInt(hoursStr || '12', 10);
     const minutes = parseInt(minutesStr || '0', 10);
 

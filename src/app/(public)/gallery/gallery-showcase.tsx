@@ -53,7 +53,21 @@ const FALLBACK_CASES: CaseItem[] = [
 function BeforeAfterSlider({ item }: { item: CaseItem }) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.clientWidth);
+    }
+    const handleResize = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -143,7 +157,7 @@ function BeforeAfterSlider({ item }: { item: CaseItem }) {
             src={item.before_image_url}
             alt="Before treatment result"
             className="absolute inset-0 w-full h-full object-cover max-w-none pointer-events-none"
-            style={{ width: containerRef.current ? `${containerRef.current.clientWidth}px` : '100%' }}
+            style={{ width: containerWidth ? `${containerWidth}px` : '100%' }}
           />
           <div className="absolute top-3 left-3 z-10 bg-gray-900/80 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
             BEFORE
