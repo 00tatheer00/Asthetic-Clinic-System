@@ -1079,7 +1079,7 @@ export function OrdersList({
                     </div>
                     <div className="flex justify-between items-center pt-0.5">
                       <span>Order Status:</span>
-                      <span className="font-bold uppercase text-[9px] px-1 py-0.2 rounded bg-black text-white">
+                      <span className="font-bold uppercase text-[10px] px-1.5 py-0.5 border border-black rounded text-black bg-white">
                         {ORDER_STATUS_LABELS[slipOrder.status] || slipOrder.status}
                       </span>
                     </div>

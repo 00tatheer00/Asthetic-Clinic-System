@@ -625,8 +625,8 @@ export function InvoicesList({
                       <span>Status:</span>
                       <span
                         className={cn(
-                          'font-bold uppercase text-[9px] px-1 py-0.2 rounded',
-                          selectedInvoice.status === 'paid' ? 'bg-black text-white' : 'text-red-700 border border-black'
+                          'font-bold uppercase text-[10px] px-1.5 py-0.5 border border-black rounded text-black bg-white',
+                          selectedInvoice.status !== 'paid' && 'text-red-700'
                         )}
                       >
                         {selectedInvoice.status === 'paid' ? 'PAID IN FULL' : selectedInvoice.status}

@@ -129,6 +129,17 @@ export function printReceipt(elementId: string, options?: PrintReceiptOptions | 
       text-shadow: none !important;
     }
 
+    /* Prevent solid black blocks on badges in print — convert to clean outlined border */
+    .printable-receipt-wrapper .bg-black,
+    .printable-receipt-wrapper [class*="bg-black"],
+    .printable-receipt-wrapper [class*="bg-stone-900"],
+    .printable-receipt-wrapper [class*="bg-gray-900"] {
+      background-color: transparent !important;
+      background: transparent !important;
+      color: #000000 !important;
+      border: 1px solid #000000 !important;
+    }
+
     .printable-receipt-wrapper .flex { display: flex !important; }
     .printable-receipt-wrapper .justify-between { justify-content: space-between !important; }
     .printable-receipt-wrapper .justify-center { justify-content: center !important; }

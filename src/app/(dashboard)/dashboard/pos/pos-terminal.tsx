@@ -1095,7 +1095,7 @@ export function POSTerminal({
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Status:</span>
-                      <span className="font-bold uppercase text-[9px] px-1 py-0.2 rounded bg-black text-white">
+                      <span className="font-bold uppercase text-[10px] px-1.5 py-0.5 border border-black rounded text-black bg-white">
                         PAID IN FULL
                       </span>
                     </div>
