@@ -6,6 +6,7 @@ const { execSync } = require('child_process');
 const baseDir = path.resolve(__dirname, '..');
 const publicDir = path.join(baseDir, 'public');
 const guideDir = path.join(publicDir, 'guide');
+const screenshotDir = path.join(publicDir, 'screenshots');
 
 if (!fs.existsSync(guideDir)) {
   fs.mkdirSync(guideDir, { recursive: true });
@@ -19,18 +20,24 @@ function getBase64Image(filePath) {
     const data = fs.readFileSync(filePath).toString('base64');
     return `data:${mime};base64,${data}`;
   }
+  console.warn('Image not found:', filePath);
   return '';
 }
 
 const logoBase64 = getBase64Image(path.join(publicDir, 'images', 'logo.png'));
 const drBilalBase64 = getBase64Image(path.join(publicDir, 'images', 'dr-bilal.jpg'));
-const dashboardMockup = getBase64Image(path.join(guideDir, 'dashboard_overview.jpg'));
-const posMockup = getBase64Image(path.join(guideDir, 'pos_orders.jpg'));
-const appointmentsMockup = getBase64Image(path.join(guideDir, 'appointments_emr.jpg'));
 
-console.log('Images loaded into Base64 memory successfully.');
+// 100% REAL SCREENSHOTS FROM RUNNING ADMIN PANEL
+const realDashboard = getBase64Image(path.join(screenshotDir, 'real_dashboard.png'));
+const realAppointments = getBase64Image(path.join(screenshotDir, 'real_appointments.png'));
+const realPos = getBase64Image(path.join(screenshotDir, 'real_pos.png'));
+const realOrders = getBase64Image(path.join(screenshotDir, 'real_orders.png'));
+const realPatients = getBase64Image(path.join(screenshotDir, 'real_patients.png'));
+const realTreatments = getBase64Image(path.join(screenshotDir, 'real_treatments.png'));
 
-// Construct High-End Executive HTML
+console.log('Real screenshots loaded into memory successfully.');
+
+// Construct High-End Executive HTML with REAL SCREENSHOTS
 const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,7 +60,7 @@ const html = `<!DOCTYPE html>
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: #1E293B;
       background: #E5E7EB;
-      line-height: 1.5;
+      line-height: 1.45;
       -webkit-font-smoothing: antialiased;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
@@ -102,8 +109,8 @@ const html = `<!DOCTYPE html>
 
     /* Top & Bottom Header / Footer */
     .page-header {
-      height: 20mm;
-      padding: 0 18mm;
+      height: 18mm;
+      padding: 0 16mm;
       background: #FAF7F5;
       border-bottom: 1.5px solid var(--border-soft);
       display: flex;
@@ -117,19 +124,19 @@ const html = `<!DOCTYPE html>
       gap: 12px;
     }
     .header-logo {
-      height: 32px;
+      height: 30px;
       width: auto;
       object-fit: contain;
     }
     .header-clinic-name {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--primary);
       letter-spacing: 0.5px;
       text-transform: uppercase;
     }
     .header-tagline {
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--gold-dark);
       font-weight: 600;
       text-transform: uppercase;
@@ -140,7 +147,7 @@ const html = `<!DOCTYPE html>
       font-weight: 700;
       color: var(--primary);
       background: #FFFFFF;
-      padding: 5px 12px;
+      padding: 4px 12px;
       border-radius: 20px;
       border: 1px solid var(--border-soft);
       display: flex;
@@ -156,14 +163,14 @@ const html = `<!DOCTYPE html>
     }
 
     .page-footer {
-      height: 14mm;
-      padding: 0 18mm;
+      height: 12mm;
+      padding: 0 16mm;
       background: #FAF7F5;
       border-top: 1.5px solid var(--border-soft);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--text-muted);
       flex-shrink: 0;
       margin-top: auto;
@@ -173,7 +180,7 @@ const html = `<!DOCTYPE html>
       color: var(--primary);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
     .footer-left::before {
       content: '🔒';
@@ -186,7 +193,7 @@ const html = `<!DOCTYPE html>
     }
 
     .page-content {
-      padding: 7mm 18mm 7mm 18mm;
+      padding: 6mm 16mm 6mm 16mm;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -198,105 +205,102 @@ const html = `<!DOCTYPE html>
       color: var(--primary);
     }
     .page-title-banner {
-      margin-bottom: 5mm;
+      margin-bottom: 4mm;
       position: relative;
     }
     .module-category {
       display: inline-block;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       color: var(--gold-dark);
       background: var(--gold-light);
-      padding: 3px 10px;
+      padding: 2px 9px;
       border-radius: 4px;
       margin-bottom: 4px;
       border: 1px solid var(--gold-border);
     }
     .page-main-heading {
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 700;
       color: var(--primary);
       line-height: 1.2;
     }
     .page-subtitle {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text-muted);
-      margin-top: 3px;
+      margin-top: 2px;
       line-height: 1.4;
     }
 
-    /* Mockup Frame */
-    .mockup-container {
+    /* REAL SCREENSHOT CONTAINER */
+    .screenshot-container {
       background: #FFFFFF;
-      border-radius: 10px;
-      border: 1.5px solid #E2D9D2;
+      border-radius: 8px;
+      border: 1.5px solid #DED4CC;
       overflow: hidden;
-      box-shadow: 0 4px 16px rgba(45, 18, 38, 0.08);
-      margin-bottom: 5mm;
+      box-shadow: 0 4px 14px rgba(45, 18, 38, 0.08);
+      margin-bottom: 4mm;
       position: relative;
     }
-    .mockup-bar {
-      height: 24px;
+    .browser-bar {
+      height: 22px;
       background: #F4EFEB;
-      border-bottom: 1px solid #E2D9D2;
+      border-bottom: 1px solid #DED4CC;
       display: flex;
       align-items: center;
-      padding: 0 12px;
+      padding: 0 10px;
       gap: 6px;
     }
     .dot {
-      width: 9px;
-      height: 9px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
     }
     .dot.red { background: #FF5F56; }
     .dot.yellow { background: #FFBD2E; }
     .dot.green { background: #27C93F; }
-    .mockup-title {
-      font-size: 10px;
-      color: #786C66;
+    .browser-url {
+      font-size: 9.5px;
+      color: #64748B;
       font-weight: 600;
       margin-left: 8px;
+      font-family: monospace;
     }
-    .mockup-img {
+    .real-screenshot-img {
       width: 100%;
       height: auto;
+      max-height: 105mm;
       display: block;
-      object-fit: cover;
+      object-fit: contain;
+      background: #F8FAFC;
     }
 
     /* Cards & Grids */
     .card-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 4mm;
+      gap: 10px;
+      margin-bottom: 3mm;
     }
     .card-grid-3 {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 4mm;
-    }
-    .card-grid-4 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 8px;
-      margin-bottom: 4mm;
+      margin-bottom: 3mm;
     }
     .info-card {
       background: var(--bg-soft);
       border: 1px solid var(--border-soft);
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: 6px;
+      padding: 8px 10px;
       position: relative;
     }
     .info-card.gold-card {
       background: #FFFDF9;
       border: 1px solid var(--gold-border);
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.08);
+      box-shadow: 0 2px 6px rgba(212, 175, 55, 0.06);
     }
     .info-card.primary-card {
       background: #FDF9FB;
@@ -305,73 +309,74 @@ const html = `<!DOCTYPE html>
     .card-header-flex {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 5px;
+      gap: 6px;
+      margin-bottom: 3px;
     }
     .card-icon {
-      font-size: 16px;
+      font-size: 14px;
       line-height: 1;
     }
     .card-title {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: var(--primary);
     }
     .card-body {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-dark);
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
     /* Action List */
     .action-steps {
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
+      margin-bottom: 3mm;
     }
     .step-item {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
+      gap: 8px;
       background: #FFFFFF;
       border: 1px solid #ECE4DF;
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 6px 10px;
     }
     .step-num {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       background: var(--primary);
       color: #FFFFFF;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       flex-shrink: 0;
       margin-top: 1px;
     }
     .step-content h4 {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: var(--primary);
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     .step-content p {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     /* Badges */
     .badge {
       display: inline-block;
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 12px;
+      padding: 1px 6px;
+      border-radius: 10px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -384,21 +389,21 @@ const html = `<!DOCTYPE html>
     .doctor-callout {
       background: linear-gradient(135deg, #2D1226 0%, #431938 100%);
       color: #FFFFFF;
-      border-radius: 8px;
-      padding: 10px 14px;
+      border-radius: 6px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       margin-top: auto;
       border-left: 4px solid var(--gold);
     }
     .doctor-callout-icon {
-      font-size: 24px;
+      font-size: 20px;
       flex-shrink: 0;
     }
     .doctor-callout-text h4 {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       color: var(--gold-light);
       margin-bottom: 2px;
@@ -406,9 +411,9 @@ const html = `<!DOCTYPE html>
       letter-spacing: 0.5px;
     }
     .doctor-callout-text p {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #F8E7F3;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     /* ==================== COVER PAGE ==================== */
@@ -438,21 +443,21 @@ const html = `<!DOCTYPE html>
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-bottom: 12mm;
+      margin-bottom: 10mm;
     }
     .cover-logo-img {
-      height: 60px;
+      height: 56px;
       width: auto;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
     }
     .cover-clinic-titles h3 {
-      font-size: 20px;
+      font-size: 19px;
       color: #FFFFFF;
       font-weight: 700;
       letter-spacing: 1px;
     }
     .cover-clinic-titles p {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--gold);
       font-weight: 700;
       text-transform: uppercase;
@@ -460,26 +465,26 @@ const html = `<!DOCTYPE html>
     }
 
     .cover-badge-row {
-      margin-bottom: 6mm;
+      margin-bottom: 5mm;
     }
     .cover-tag {
       display: inline-block;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--gold);
       border: 1px solid var(--gold);
-      padding: 6px 14px;
+      padding: 5px 12px;
       border-radius: 30px;
       background: rgba(212, 175, 55, 0.1);
     }
     .cover-title {
-      font-size: 38px;
+      font-size: 36px;
       font-weight: 800;
       line-height: 1.15;
       color: #FFFFFF;
-      margin-bottom: 5mm;
+      margin-bottom: 4mm;
       text-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
     .cover-title span {
@@ -487,28 +492,28 @@ const html = `<!DOCTYPE html>
       font-style: italic;
     }
     .cover-lead {
-      font-size: 15px;
+      font-size: 14px;
       color: #E2CFDD;
       max-width: 150mm;
-      line-height: 1.6;
-      margin-bottom: 8mm;
+      line-height: 1.55;
+      margin-bottom: 6mm;
       font-weight: 400;
     }
 
     .cover-features-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 7px;
       max-width: 160mm;
-      margin-bottom: 10mm;
+      margin-bottom: 8mm;
     }
     .cover-pill {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 600;
       color: #FFFFFF;
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.18);
-      padding: 6px 12px;
+      padding: 5px 11px;
       border-radius: 20px;
       backdrop-filter: blur(10px);
     }
@@ -518,38 +523,38 @@ const html = `<!DOCTYPE html>
       z-index: 2;
       background: rgba(255, 255, 255, 0.06);
       border: 1.5px solid rgba(212, 175, 55, 0.4);
-      border-radius: 14px;
-      padding: 16px 20px;
+      border-radius: 12px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 18px;
       backdrop-filter: blur(12px);
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
     .cover-doctor-photo {
-      width: 76px;
-      height: 76px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       border: 3px solid var(--gold);
       object-fit: cover;
       box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
     .cover-doctor-info h4 {
-      font-size: 18px;
+      font-size: 17px;
       color: #FFFFFF;
       font-weight: 700;
       margin-bottom: 2px;
     }
     .cover-doctor-info .doc-role {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--gold);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .cover-doctor-info .doc-desc {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #D3BED0;
       line-height: 1.4;
     }
@@ -557,9 +562,9 @@ const html = `<!DOCTYPE html>
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 8mm;
+      padding-top: 6mm;
       border-top: 1px solid rgba(255, 255, 255, 0.15);
-      font-size: 11px;
+      font-size: 10.5px;
       color: #A38CA0;
       position: relative;
       z-index: 2;
@@ -569,28 +574,28 @@ const html = `<!DOCTYPE html>
     .pillars-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 4mm;
+      gap: 8px;
+      margin-top: 3mm;
     }
     .pillar-card {
       background: #FFFFFF;
       border: 1px solid #EBE2DC;
-      border-radius: 8px;
-      padding: 10px 12px;
+      border-radius: 6px;
+      padding: 8px 10px;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       align-items: flex-start;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .pillar-num {
-      width: 26px;
-      height: 26px;
+      width: 24px;
+      height: 24px;
       background: var(--gold-light);
       border: 1px solid var(--gold-border);
       color: var(--gold-dark);
       font-weight: 800;
-      font-size: 12px;
-      border-radius: 6px;
+      font-size: 11px;
+      border-radius: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -598,36 +603,36 @@ const html = `<!DOCTYPE html>
     }
     .pillar-text h4 {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 2px;
     }
     .pillar-text p {
-      font-size: 10.5px;
+      font-size: 10px;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     /* Cheat Sheet Table */
     .cheat-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 5mm;
-      font-size: 11px;
+      margin-bottom: 4mm;
+      font-size: 10.5px;
     }
     .cheat-table th {
       background: var(--primary);
       color: #FFFFFF;
-      padding: 8px 12px;
+      padding: 7px 10px;
       text-align: left;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
     }
     .cheat-table th:first-child { border-top-left-radius: 6px; }
     .cheat-table th:last-child { border-top-right-radius: 6px; }
     .cheat-table td {
-      padding: 8px 12px;
+      padding: 7px 10px;
       border-bottom: 1px solid #ECE4DF;
       color: var(--text-dark);
     }
@@ -643,29 +648,28 @@ const html = `<!DOCTYPE html>
       background: #FFFFFF;
       border: 2px dashed var(--gold);
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 4mm;
+      margin-top: 3mm;
     }
     .cred-item {
       display: flex;
       flex-direction: column;
     }
     .cred-label {
-      font-size: 10px;
+      font-size: 9.5px;
       text-transform: uppercase;
       font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.5px;
     }
     .cred-val {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 800;
       color: var(--primary);
     }
-
   </style>
 </head>
 <body>
@@ -684,7 +688,7 @@ const html = `<!DOCTYPE html>
       </div>
 
       <div class="cover-badge-row">
-        <span class="cover-tag">EXECUTIVE CLINIC MANUAL • 2026 EDITION</span>
+        <span class="cover-tag">EXECUTIVE CLINIC MANUAL • 2026 LIVE SYSTEM</span>
       </div>
 
       <h1 class="cover-title">
@@ -693,16 +697,16 @@ const html = `<!DOCTYPE html>
       </h1>
 
       <p class="cover-lead">
-        A visual, step-by-step master handbook written in simple English. Learn how to control your entire clinic, book appointments, bill walk-in patients, manage online skincare orders, track medical records, and monitor live revenue with zero technical headache.
+        A visual, step-by-step master handbook illustrated with <strong>100% Real Live Screenshots</strong> from your actual Brimish clinic system. Written in simple English so you can run appointments, POS walk-in billing, online skincare orders, and patient medical records effortlessly.
       </p>
 
       <div class="cover-features-pills">
+        <span class="cover-pill">✓ Real Website Admin Screenshots</span>
         <span class="cover-pill">✓ Live Daily Revenue & Analytics</span>
-        <span class="cover-pill">✓ Smart Patient Appointments & Rooms</span>
-        <span class="cover-pill">✓ High-Speed POS Counter & Thermal Slips</span>
+        <span class="cover-pill">✓ Smart Appointments with WhatsApp Reminders</span>
+        <span class="cover-pill">✓ POS Walk-In Counter & Thermal Slips</span>
         <span class="cover-pill">✓ Online Skincare Store Order Dispatch</span>
         <span class="cover-pill">✓ Digital EMR Medical Records & History</span>
-        <span class="cover-pill">✓ Real-Time Stock & Inventory Alerts</span>
       </div>
     </div>
 
@@ -712,14 +716,14 @@ const html = `<!DOCTYPE html>
       <div class="cover-doctor-info">
         <h4>Dr. Bilal Ahmad</h4>
         <div class="doc-role">MD Aesthetic Medicine & Clinic Director</div>
-        <div class="doc-desc">Medical Director at Brimish Skin Care Clinic. Specialist in Advanced Medical Facials, Laser Resurfacing, Botox, Fillers & Clinical Skin Health.</div>
+        <div class="doc-desc">Medical Director at Brimish Skin Care Clinic. Specialist in Medical Facials, Laser Resurfacing, Botox, Fillers & Clinical Skin Health.</div>
       </div>
     </div>
 
     <div class="cover-bottom-meta">
-      <div>📍 <strong>Location:</strong> Bahria Town Phase 7, Rawalpindi / Islamabad</div>
+      <div>📍 <strong>Location:</strong> Sami Tower, Ring Road, Peshawar / Bahria Town Phase 7</div>
       <div>⚡ <strong>System Version:</strong> Brimish Pro v2.4 (Active Cloud)</div>
-      <div>🔒 <strong>Confidential:</strong> Doctor & Executive Staff Eyes Only</div>
+      <div>🔒 <strong>Access Level:</strong> Super Admin (Dr. Bilal Eyes Only)</div>
     </div>
   </div>
 
@@ -753,7 +757,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">100% Real-Time Cloud</div>
           </div>
           <div class="card-body">
-            Whether you are inside the clinic, traveling, or at home, open your phone or laptop to see live patient visits, earnings, and appointments instantly.
+            Whether inside the clinic or at home, open your phone or laptop to see live patient visits, earnings, and appointments instantly.
           </div>
         </div>
 
@@ -778,7 +782,7 @@ const html = `<!DOCTYPE html>
         </div>
       </div>
 
-      <h3 style="font-size: 15px; margin-bottom: 2mm; color: var(--primary);">The 8 Core Superpowers in Your Admin Panel:</h3>
+      <h3 style="font-size: 14px; margin-bottom: 2mm; color: var(--primary);">The 8 Core Superpowers in Your Admin Panel:</h3>
 
       <div class="pillars-grid">
         <div class="pillar-card">
@@ -846,7 +850,7 @@ const html = `<!DOCTYPE html>
         </div>
       </div>
 
-      <div class="doctor-callout" style="margin-top: 4mm;">
+      <div class="doctor-callout" style="margin-top: 3mm;">
         <div class="doctor-callout-icon">💡</div>
         <div class="doctor-callout-text">
           <h4>Doctor Bilal's Operational Advantage:</h4>
@@ -861,7 +865,7 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- ==================== PAGE 3: LIVE DASHBOARD & ANALYTICS ==================== -->
+  <!-- ==================== PAGE 3: LIVE DASHBOARD & ANALYTICS (REAL SCREENSHOT) ==================== -->
   <div class="page">
     <div class="page-header">
       <div class="header-logo-group">
@@ -880,18 +884,18 @@ const html = `<!DOCTYPE html>
       <div class="page-title-banner">
         <span class="module-category">Module 1 • Executive Command</span>
         <h2 class="page-main-heading">Executive Dashboard: Your Daily Clinic Pulse</h2>
-        <p class="page-subtitle">The first screen you see every morning. It summarizes financial health, patient traffic, and pending clinic tasks in real-time.</p>
+        <p class="page-subtitle">The first screen you see every morning. Real live screenshot of your active system showing revenue velocity and operational status.</p>
       </div>
 
-      <!-- Screenshot Mockup -->
-      <div class="mockup-container">
-        <div class="mockup-bar">
+      <!-- 100% REAL SCREENSHOT -->
+      <div class="screenshot-container">
+        <div class="browser-bar">
           <span class="dot red"></span>
           <span class="dot yellow"></span>
           <span class="dot green"></span>
-          <span class="mockup-title">Brimish Executive Clinic Dashboard — https://brimish-skincare.com/dashboard</span>
+          <span class="browser-url">http://localhost:3000/dashboard (Live Active System)</span>
         </div>
-        <img class="mockup-img" src="${dashboardMockup}" alt="Executive Dashboard Screen Mockup">
+        <img class="real-screenshot-img" src="${realDashboard}" alt="Real Brimish Executive Dashboard Screenshot">
       </div>
 
       <!-- What Dr. Bilal Can See & Do -->
@@ -902,8 +906,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Live Revenue & Patient Counter</div>
           </div>
           <div class="card-body">
-            <strong>Today's Total Gross Revenue:</strong> Instantly updates every time a bill is paid at reception or an online order is confirmed.<br>
-            <strong>Patient Visits:</strong> See exact numbers of walk-ins, scheduled consultations, and completed aesthetic procedures today.
+            <strong>Today's Total Gross Revenue:</strong> Instantly updates every time a bill is paid at reception or an online order is confirmed. Notice the live <strong>Daily Revenue Velocity</strong> curve in the center.
           </div>
         </div>
 
@@ -913,11 +916,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">4-Tab Instant Notification Bell</div>
           </div>
           <div class="card-body">
-            Your top-right notification center is organized into 4 crystal-clear tabs:<br>
-            <strong>1. Bookings:</strong> New patient requests needing confirmation.<br>
-            <strong>2. Orders:</strong> Website skincare purchases to pack.<br>
-            <strong>3. Low Stock:</strong> Serums & consumables running out.<br>
-            <strong>4. Reviews:</strong> New 5-star patient reviews on your website.
+            Your top-right notification center is organized into 4 crystal-clear tabs: <strong>Bookings</strong>, <strong>Orders</strong>, <strong>Low Stock</strong>, and <strong>Reviews</strong> with instant badge counts.
           </div>
         </div>
       </div>
@@ -926,20 +925,20 @@ const html = `<!DOCTYPE html>
         <div class="info-card">
           <div class="card-header-flex">
             <span class="card-icon">📊</span>
-            <div class="card-title">7-Day Financial Performance Graph</div>
+            <div class="card-title">Patient Inflow & Procedure Volume</div>
           </div>
           <div class="card-body">
-            Track daily revenue peaks, weekends vs. weekdays, and analyze whether in-clinic procedures (e.g. HydraFacial, Lasers) or skincare product sales are driving your highest profit margins.
+            Track daily patient traffic, consultation volume, and procedure completion rate (e.g. 29% Completed, 3 visits) with real-time Chart.js visual analytics.
           </div>
         </div>
 
         <div class="info-card">
           <div class="card-header-flex">
             <span class="card-icon">⭐</span>
-            <div class="card-title">Top Performing Aesthetic Treatments</div>
+            <div class="card-title">Pending Moderation & Alerts</div>
           </div>
           <div class="card-body">
-            See your most popular procedures ranked by revenue (e.g. Carbon Laser Peel, Microneedling, Glutathione Glow Therapy) so you know which treatments patients love most.
+            Yellow alert banners warn you immediately if customer testimonials or clinical before/after reviews are waiting for your approval before going public.
           </div>
         </div>
       </div>
@@ -948,7 +947,7 @@ const html = `<!DOCTYPE html>
         <div class="doctor-callout-icon">📱</div>
         <div class="doctor-callout-text">
           <h4>Mobile & Tablet Ready for Doctor Bilal:</h4>
-          <p>You can open this dashboard on your iPhone, iPad, or Android phone while consulting. No app download needed — just visit your clinic URL and log in securely.</p>
+          <p>You can open this exact dashboard on your iPhone, iPad, or Android phone while consulting. No app download needed — just visit your clinic URL and log in securely.</p>
         </div>
       </div>
     </div>
@@ -959,7 +958,7 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- ==================== PAGE 4: APPOINTMENTS & CALENDAR ==================== -->
+  <!-- ==================== PAGE 4: APPOINTMENTS & CALENDAR (REAL SCREENSHOT) ==================== -->
   <div class="page">
     <div class="page-header">
       <div class="header-logo-group">
@@ -978,53 +977,43 @@ const html = `<!DOCTYPE html>
       <div class="page-title-banner">
         <span class="module-category">Module 2 • Smart Patient Scheduling</span>
         <h2 class="page-main-heading">Appointments & Calendar: Zero Waiting Room Chaos</h2>
-        <p class="page-subtitle">Manage online patient bookings, phone reservations, and treatment room assignments with 1-click status updates.</p>
+        <p class="page-subtitle">Real live screenshot of your active clinic bookings table showing patient names, treatments, statuses, and instant WhatsApp alerts.</p>
       </div>
 
-      <!-- Screenshot Mockup -->
-      <div class="mockup-container">
-        <div class="mockup-bar">
+      <!-- 100% REAL SCREENSHOT -->
+      <div class="screenshot-container">
+        <div class="browser-bar">
           <span class="dot red"></span>
           <span class="dot yellow"></span>
           <span class="dot green"></span>
-          <span class="mockup-title">Brimish Appointment Roster & EMR — https://brimish-skincare.com/dashboard/appointments</span>
+          <span class="browser-url">http://localhost:3000/dashboard/appointments (Live Active Bookings)</span>
         </div>
-        <img class="mockup-img" src="${appointmentsMockup}" alt="Appointments and EMR Screen Mockup">
+        <img class="real-screenshot-img" src="${realAppointments}" alt="Real Brimish Appointments Screenshot">
       </div>
 
       <!-- How It Works in 4 Steps -->
-      <h3 style="font-size: 14px; margin-bottom: 2mm; color: var(--primary);">How an Appointment Moves Through Your Clinic:</h3>
-
       <div class="action-steps">
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>Patient Books Online or Calls Reception <span class="badge badge-warning">Pending</span></h4>
-            <p>Patient selects their desired treatment (e.g. Laser Skin Resurfacing) and time slot on your website. It appears instantly on your screen with a notification badge.</p>
+            <h4>Live Patient Requests Appear Automatically</h4>
+            <p>See real patients in the queue (e.g. Tatheer for HydraFacial MD, Tatheer Hussain for Pico Laser, Shameeer for HydraFacial).</p>
           </div>
         </div>
 
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>One-Click Confirmation & Room Assignment <span class="badge badge-primary">Confirmed</span></h4>
-            <p>Click <strong>"Confirm"</strong>. The system assigns Treatment Room 1 or Laser Suite and sends an automated WhatsApp/SMS booking reminder to the patient.</p>
+            <h4>Instant 1-Click WhatsApp Reminders <span class="badge badge-success">WhatsApp</span></h4>
+            <p>Click the green <strong>WhatsApp button</strong> next to any patient's name to send a personalized pre-procedure care and appointment confirmation message directly to their phone.</p>
           </div>
         </div>
 
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-content">
-            <h4>Patient Arrives at Clinic <span class="badge badge-blue">In-Session</span></h4>
-            <p>Receptionist marks patient as <strong>"In-Session"</strong>. Dr. Bilal sees on his screen that the patient is in the consultation room ready for treatment.</p>
-          </div>
-        </div>
-
-        <div class="step-item">
-          <div class="step-num">4</div>
-          <div class="step-content">
-            <h4>Treatment Finished & Auto-Billed <span class="badge badge-success">Completed</span></h4>
-            <p>Once procedure is done, status changes to <strong>"Completed"</strong>. The invoice automatically sends to the POS desk for instant checkout and receipt printing.</p>
+            <h4>Real-Time Status Badges <span class="badge badge-primary">Confirmed</span> <span class="badge badge-success">Completed</span></h4>
+            <p>Filter between <strong>Today</strong>, <strong>Tomorrow</strong>, <strong>This Week</strong>, or <strong>All Time</strong> to see who is arriving next at the clinic.</p>
           </div>
         </div>
       </div>
@@ -1044,7 +1033,7 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- ==================== PAGE 5: PATIENT DIGITAL EMR & CLINICAL NOTES ==================== -->
+  <!-- ==================== PAGE 5: PATIENT DIGITAL EMR & CLINICAL NOTES (REAL SCREENSHOT) ==================== -->
   <div class="page">
     <div class="page-header">
       <div class="header-logo-group">
@@ -1063,7 +1052,18 @@ const html = `<!DOCTYPE html>
       <div class="page-title-banner">
         <span class="module-category">Module 3 • Electronic Medical Records</span>
         <h2 class="page-main-heading">Digital EMR: Patient Skin History & Clinical Records</h2>
-        <p class="page-subtitle">Every patient’s aesthetic history, laser session logs, allergy alerts, and prescription notes securely stored in one place.</p>
+        <p class="page-subtitle">Real live screenshot of your patient registry showing instant patient lookup by name or mobile number with total clinical history.</p>
+      </div>
+
+      <!-- 100% REAL SCREENSHOT -->
+      <div class="screenshot-container">
+        <div class="browser-bar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="browser-url">http://localhost:3000/dashboard/patients (Live Patient Registry)</span>
+        </div>
+        <img class="real-screenshot-img" src="${realPatients}" alt="Real Brimish Patient EMR Screenshot">
       </div>
 
       <div class="card-grid-2">
@@ -1088,8 +1088,6 @@ const html = `<!DOCTYPE html>
         </div>
       </div>
 
-      <h3 style="font-size: 14px; margin-bottom: 2mm; color: var(--primary);">What Dr. Bilal Can Record in Each Patient Profile:</h3>
-
       <div class="card-grid-3">
         <div class="info-card">
           <div class="card-header-flex">
@@ -1097,7 +1095,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Doctor's Clinical Notes</div>
           </div>
           <div class="card-body">
-            Write confidential medical observations during consultation: e.g. <em>"Patient presents with melasma on cheeks. Prescribed 20% Azelaic Acid + HydraFacial Session 1."</em>
+            Write confidential medical observations during consultation: e.g. <em>"Prescribed 20% Azelaic Acid + HydraFacial Session 1."</em>
           </div>
         </div>
 
@@ -1107,7 +1105,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Multi-Session Tracker</div>
           </div>
           <div class="card-body">
-            Track packages effortlessly: e.g., <strong>Laser Hair Removal Session 3 of 6</strong>. The system records laser joules, pulse duration, and spot size used.
+            Track packages effortlessly: e.g., <strong>Laser Hair Removal Session 3 of 6</strong> with laser joules and spot size used.
           </div>
         </div>
 
@@ -1117,34 +1115,12 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Before & After Records</div>
           </div>
           <div class="card-body">
-            Attach high-resolution consultation photos (Day 1 vs. Day 30) directly to the patient's private profile to show their skin transformation.
+            Attach high-resolution consultation photos (Day 1 vs. Day 30) directly to the patient's private profile.
           </div>
         </div>
       </div>
 
-      <div class="card-grid-2" style="margin-top: 2mm;">
-        <div class="info-card" style="background: #F8FAFC; border: 1px solid #CBD5E1;">
-          <div class="card-header-flex">
-            <span class="card-icon">💊</span>
-            <div class="card-title">Post-Care Instructions & Home Regimen</div>
-          </div>
-          <div class="card-body">
-            Add recommended take-home skincare (e.g. Brimish Vitamin C Serum + Mineral Sunscreen SPF 50). Receptionist can add them to the patient’s bill with 1 click.
-          </div>
-        </div>
-
-        <div class="info-card" style="background: #F8FAFC; border: 1px solid #CBD5E1;">
-          <div class="card-header-flex">
-            <span class="card-icon">🔒</span>
-            <div class="card-title">Confidential HIPAA & Medical Privacy</div>
-          </div>
-          <div class="card-body">
-            Patient clinical notes are only visible to Dr. Bilal and authorized medical staff. Receptionists only see billing and appointment scheduling details.
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-callout" style="margin-top: 4mm;">
+      <div class="doctor-callout">
         <div class="doctor-callout-icon">🏆</div>
         <div class="doctor-callout-text">
           <h4>Total Clinical Confidence:</h4>
@@ -1159,7 +1135,7 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- ==================== PAGE 6: POS BILLING & THERMAL PRINT SLIPS ==================== -->
+  <!-- ==================== PAGE 6: POS BILLING & THERMAL PRINT SLIPS (REAL SCREENSHOT) ==================== -->
   <div class="page">
     <div class="page-header">
       <div class="header-logo-group">
@@ -1178,18 +1154,18 @@ const html = `<!DOCTYPE html>
       <div class="page-title-banner">
         <span class="module-category">Module 4 • Front Desk & POS Terminal</span>
         <h2 class="page-main-heading">Point of Sale (POS): Fast Billing & Thermal Slips</h2>
-        <p class="page-subtitle">Bill walk-in patients and sell skincare products at the reception desk in less than 30 seconds with automatic tax and discount calculation.</p>
+        <p class="page-subtitle">Real live screenshot of your actual POS terminal showing Retail Products, Clinical Procedures, and Checkout Desk.</p>
       </div>
 
-      <!-- Screenshot Mockup -->
-      <div class="mockup-container">
-        <div class="mockup-bar">
+      <!-- 100% REAL SCREENSHOT -->
+      <div class="screenshot-container">
+        <div class="browser-bar">
           <span class="dot red"></span>
           <span class="dot yellow"></span>
           <span class="dot green"></span>
-          <span class="mockup-title">Brimish POS & Order Fulfillment — https://brimish-skincare.com/dashboard/pos</span>
+          <span class="browser-url">http://localhost:3000/dashboard/pos (Live Walk-In Desk Terminal)</span>
         </div>
-        <img class="mockup-img" src="${posMockup}" alt="POS Terminal and Skincare Orders Screen Mockup">
+        <img class="real-screenshot-img" src="${realPos}" alt="Real Brimish POS Terminal Screenshot">
       </div>
 
       <div class="card-grid-2">
@@ -1199,7 +1175,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Touchscreen Counter Billing</div>
           </div>
           <div class="card-body">
-            One-touch category tabs for <strong>Treatments</strong> (HydraFacial, Peels, Lasers) and <strong>Skincare Products</strong> (Serums, Sunscreens, Cleansers). Tap to add directly to cart.
+            One-touch cards for <strong>Products</strong> (Barrier Cream, Sun Shield SPF 50+, Cleanser, Vitamin C Serum) and <strong>Procedures</strong> (HydraFacial MD, Microneedling, Chemical Peel, Laser Hair Removal).
           </div>
         </div>
 
@@ -1209,7 +1185,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Mandatory Patient Verification</div>
           </div>
           <div class="card-body">
-            <strong>Patient Full Name & WhatsApp Number are strictly required</strong> before printing. This ensures 100% of walk-in patients are saved to your clinic database forever.
+            <strong>Patient Name * & Phone * (0300-123) are required</strong>. Notice the input fields in the screenshot — staff cannot print a bill without saving the patient to your clinic registry!
           </div>
         </div>
       </div>
@@ -1221,7 +1197,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Flexible Discounts</div>
           </div>
           <div class="card-body">
-            Apply percentage (e.g. 10% Eid Special) or flat PKR discount (e.g. Rs. 1,000 off). The bill recalculates subtotal, tax, and net payable automatically.
+            Apply percentage or flat PKR discount. The bill recalculates subtotal, tax, and net payable automatically.
           </div>
         </div>
 
@@ -1231,7 +1207,7 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Multiple Payment Modes</div>
           </div>
           <div class="card-body">
-            Accept Cash, Credit/Debit Card (POS machine), Direct Bank Transfer, or JazzCash / EasyPaisa. System records the exact payment method for daily reconciliation.
+            Accept Cash Payment or Card / POS machine. Keyboard shortcuts: <strong>F8</strong> for Cash, <strong>F9</strong> for Card, <strong>F10</strong> for Print!
           </div>
         </div>
 
@@ -1241,12 +1217,12 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Instant Thermal Receipt</div>
           </div>
           <div class="card-body">
-            Prints standard 80mm clinic receipt with logo, Doctor's name, itemized services, tax registration, and barcode. Features clean outlined badges (never messy).
+            Prints standard 80mm clinic receipt with logo, Doctor's name, itemized services, tax registration, and clean outlined badge.
           </div>
         </div>
       </div>
 
-      <div class="doctor-callout" style="margin-top: 3mm;">
+      <div class="doctor-callout">
         <div class="doctor-callout-icon">🧾</div>
         <div class="doctor-callout-text">
           <h4>Thermal Slip Print Quality:</h4>
@@ -1261,7 +1237,7 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- ==================== PAGE 7: ONLINE SKINCARE STORE & DISPATCH ==================== -->
+  <!-- ==================== PAGE 7: ONLINE SKINCARE STORE & DISPATCH (REAL SCREENSHOT) ==================== -->
   <div class="page">
     <div class="page-header">
       <div class="header-logo-group">
@@ -1280,47 +1256,47 @@ const html = `<!DOCTYPE html>
       <div class="page-title-banner">
         <span class="module-category">Module 5 • E-Commerce & Skincare Deliveries</span>
         <h2 class="page-main-heading">Online Store Orders: Nationwide Delivery Control</h2>
-        <p class="page-subtitle">Manage customer orders placed on your website from Lahore, Karachi, Islamabad, or anywhere in Pakistan with 1-click dispatch slips.</p>
+        <p class="page-subtitle">Real live screenshot of your active customer orders list showing order IDs, customer phone numbers, delivery method, and status.</p>
+      </div>
+
+      <!-- 100% REAL SCREENSHOT -->
+      <div class="screenshot-container">
+        <div class="browser-bar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="browser-url">http://localhost:3000/dashboard/orders (Live Customer Orders Pipeline)</span>
+        </div>
+        <img class="real-screenshot-img" src="${realOrders}" alt="Real Brimish Orders Screenshot">
       </div>
 
       <!-- Action Pipeline -->
-      <h3 style="font-size: 14px; margin-bottom: 2mm; color: var(--primary);">Complete 4-Stage Order Fulfillment Pipeline:</h3>
-
-      <div class="action-steps" style="margin-bottom: 4mm;">
+      <div class="action-steps">
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>Customer Places Order Online <span class="badge badge-warning">Pending</span></h4>
-            <p>Customer orders serums or creams on your website. Your notification bell chimes instantly with customer name, phone, delivery address, and items ordered.</p>
+            <h4>Live Order Pipeline Tracking <span class="badge badge-success">Completed</span></h4>
+            <p>See live customer orders (e.g. order <strong>BSC-ORD-2026-00004</strong> for Rs. 950 with customer contact 0314-2986071).</p>
           </div>
         </div>
 
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>Verification & Confirmation <span class="badge badge-primary">Confirmed</span></h4>
-            <p>Click <strong>"Confirm"</strong> or tap the WhatsApp icon to message the customer. Stock is automatically reserved in your inventory so items never oversell.</p>
+            <h4>1-Click Thermal Courier Slip Printing</h4>
+            <p>Click <strong>"Print Dispatch Slip"</strong>. A high-clarity 80mm thermal shipping label prints instantly to slap onto courier flyers (TCS, Leopards, Trax).</p>
           </div>
         </div>
 
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-content">
-            <h4>Print Thermal Dispatch Slip & Pack <span class="badge badge-blue">Dispatched</span></h4>
-            <p>Click <strong>"Print Dispatch Slip"</strong>. A high-clarity 80mm thermal shipping label prints instantly. Stick it on the courier flyer (TCS, Leopard, Trax, Call Courier).</p>
-          </div>
-        </div>
-
-        <div class="step-item">
-          <div class="step-num">4</div>
-          <div class="step-content">
-            <h4>Courier Delivers Cash-on-Delivery (COD) <span class="badge badge-success">Delivered</span></h4>
-            <p>Mark order as <strong>"Delivered"</strong>. Money received is credited to your online store sales record and reflected in monthly profit statements.</p>
+            <h4>Instant Inventory Synchronization</h4>
+            <p>When an online order is placed, clinic stock drops automatically so your physical clinic and online store never oversell.</p>
           </div>
         </div>
       </div>
 
-      <!-- Features Cards -->
       <div class="card-grid-2">
         <div class="info-card gold-card">
           <div class="card-header-flex">
@@ -1328,22 +1304,22 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Courier Thermal Label Printing</div>
           </div>
           <div class="card-body">
-            You don't need expensive sticker machines! The system formats courier dispatch slips directly for your existing 80mm thermal printer with sender clinic details, recipient address, phone, COD amount, and tracking barcode.
+            Formats directly for standard 80mm thermal printers with clinic sender details, recipient address, phone, COD amount, and tracking barcode.
           </div>
         </div>
 
         <div class="info-card primary-card">
           <div class="card-header-flex">
-            <span class="card-icon">🔄</span>
-            <div class="card-title">Instant Inventory Synchronization</div>
+            <span class="card-icon">🚚</span>
+            <div class="card-title">Nationwide Delivery Control</div>
           </div>
           <div class="card-body">
-            When a customer buys 2 bottles of Niacinamide Serum online, your clinic inventory automatically drops by 2. This prevents clinic reception and website from fighting over the same stock!
+            Filter orders by status: Received, Confirmed, Preparing, Ready, Delivered, Picked Up, or Cancelled with instant search.
           </div>
         </div>
       </div>
 
-      <div class="doctor-callout" style="margin-top: auto;">
+      <div class="doctor-callout">
         <div class="doctor-callout-icon">🚚</div>
         <div class="doctor-callout-text">
           <h4>Courier Ready Across Pakistan:</h4>
@@ -1358,7 +1334,7 @@ const html = `<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- ==================== PAGE 8: INVENTORY & WEBSITE MANAGEMENT ==================== -->
+  <!-- ==================== PAGE 8: INVENTORY & WEBSITE CATALOG (REAL SCREENSHOT) ==================== -->
   <div class="page">
     <div class="page-header">
       <div class="header-logo-group">
@@ -1376,44 +1352,51 @@ const html = `<!DOCTYPE html>
     <div class="page-content">
       <div class="page-title-banner">
         <span class="module-category">Module 6 • Stock & Website Management</span>
-        <h2 class="page-main-heading">Inventory & Website: Complete Control Without Coding</h2>
-        <p class="page-subtitle">Dr. Bilal can update treatment prices, add new skincare formulas, manage stock levels, and publish patient before/after results anytime.</p>
+        <h2 class="page-main-heading">Treatments & Catalog: Full Website Control</h2>
+        <p class="page-subtitle">Real live screenshot of your active clinical treatment catalog showing session durations, pricing, and instant edit tools.</p>
+      </div>
+
+      <!-- 100% REAL SCREENSHOT -->
+      <div class="screenshot-container">
+        <div class="browser-bar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span class="browser-url">http://localhost:3000/dashboard/content/treatments (Live Procedures Catalog)</span>
+        </div>
+        <img class="real-screenshot-img" src="${realTreatments}" alt="Real Brimish Treatments Screenshot">
       </div>
 
       <div class="card-grid-2">
         <div class="info-card gold-card">
           <div class="card-header-flex">
-            <span class="card-icon">🧪</span>
-            <div class="card-title">Real-Time Stock & Consumables</div>
+            <span class="card-icon">💉</span>
+            <div class="card-title">Live Treatment Menu & Pricing</div>
           </div>
           <div class="card-body">
-            <strong>Stock Ledger:</strong> Track every item in clinic (HydraFacial serums, peel solutions, cannula needles, take-home retail products).<br>
-            <strong>Low Stock Warning:</strong> Set minimum threshold (e.g. 5 units). When stock hits 4, the dashboard notifies you so you reorder before running dry!
+            See your full clinic menu: HydraFacial MD (Rs. 5,000 / 60 min), Medical Chemical Peel (Rs. 3,500), Acne Protocol (Rs. 8,000), Microneedling (Rs. 6,000), Laser Hair Removal (Rs. 1,000), Pico Laser (Rs. 1,500). Click <strong>"Edit"</strong> to update prices anytime!
           </div>
         </div>
 
         <div class="info-card primary-card">
           <div class="card-header-flex">
-            <span class="card-icon">💉</span>
-            <div class="card-title">Aesthetic Treatment Menu Control</div>
+            <span class="card-icon">🧪</span>
+            <div class="card-title">Real-Time Stock & Consumables</div>
           </div>
           <div class="card-body">
-            <strong>Price Updates:</strong> Change treatment prices in 5 seconds without hiring a web developer.<br>
-            <strong>Service Details:</strong> Edit session duration, recommended sessions, downtime (e.g. "Zero Downtime"), and high-res treatment photos shown on the website.
+            Under <strong>Inventory</strong>, track every SKU with exact quantities (e.g. 34 Barrier Creams, 48 Sun Shields, 39 Cleansers). Low Stock warnings notify you before bottles run out.
           </div>
         </div>
       </div>
-
-      <h3 style="font-size: 14px; margin-bottom: 2mm; color: var(--primary);">More Features Under Dr. Bilal's Full Control:</h3>
 
       <div class="card-grid-3">
         <div class="info-card">
           <div class="card-header-flex">
             <span class="card-icon">✨</span>
-            <div class="card-title">Add New Skincare Products</div>
+            <div class="card-title">+ Add Treatment</div>
           </div>
           <div class="card-body">
-            Upload new products to your online store with product name, price, ingredients list, how-to-use directions, skin type suitability, and bottle photos.
+            Click the pink <strong>"+ Add Treatment"</strong> button at top right to launch new aesthetic procedures on your website in 2 minutes.
           </div>
         </div>
 
@@ -1423,44 +1406,22 @@ const html = `<!DOCTYPE html>
             <div class="card-title">Before & After Gallery</div>
           </div>
           <div class="card-body">
-            Upload genuine clinical results (Acne scars, Melasma, Skin tightening) to your website's public gallery to build trust and drive high-ticket bookings.
+            Upload genuine clinical results directly from the sidebar gallery manager to build patient trust.
           </div>
         </div>
 
         <div class="info-card">
           <div class="card-header-flex">
             <span class="card-icon">⭐</span>
-            <div class="card-title">Patient Reviews Moderation</div>
+            <div class="card-title">Review Moderation</div>
           </div>
           <div class="card-body">
-            Approve and feature glowing 5-star patient reviews on your clinic homepage. Filter out spam or unverified comments with one click.
+            Approve verified patient testimonials from the Reviews tab with a single click.
           </div>
         </div>
       </div>
 
-      <div class="card-grid-2" style="margin-top: 2mm;">
-        <div class="info-card" style="background: #FDFCFB; border: 1px solid #EBE4DD;">
-          <div class="card-header-flex">
-            <span class="card-icon">💰</span>
-            <div class="card-title">Automated Tax & GST Invoicing</div>
-          </div>
-          <div class="card-body">
-            Generates standardized tax invoices with official clinic NTN/STRN, doctor license number, patient details, and sequential invoice numbers (INV-2026-001).
-          </div>
-        </div>
-
-        <div class="info-card" style="background: #FDFCFB; border: 1px solid #EBE4DD;">
-          <div class="card-header-flex">
-            <span class="card-icon">👥</span>
-            <div class="card-title">Staff Role & Permission Control</div>
-          </div>
-          <div class="card-body">
-            Assign staff roles: Receptionist (can book and bill), Inventory Manager (can update stock), Doctor (can view medical records and clinical notes).
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-callout" style="margin-top: 4mm;">
+      <div class="doctor-callout">
         <div class="doctor-callout-icon">🚀</div>
         <div class="doctor-callout-text">
           <h4>Zero Dependency on IT Agencies:</h4>
@@ -1518,17 +1479,17 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td><strong>Bill a Walk-in Patient for Treatment / Product</strong></td>
-            <td>Go to <strong>POS</strong> → Enter Patient Name & Phone → Click treatments/products → Click <em>"Print Thermal Receipt"</em></td>
+            <td>Go to <strong>POS</strong> → Enter Patient Name & Phone → Click treatments/products → Click <em>"Charge & Print Receipt"</em></td>
             <td>80mm receipt prints instantly, cash is recorded, and stock drops.</td>
           </tr>
           <tr>
             <td><strong>Ship an Online Skincare Order</strong></td>
-            <td>Go to <strong>Orders</strong> → Click <em>"Confirm"</em> → Click <em>"Print Slip"</em> → Paste on flyer</td>
+            <td>Go to <strong>Orders</strong> → Click <em>"Details"</em> → Click <em>"Print Slip"</em> → Paste on flyer</td>
             <td>Courier dispatch slip prints with customer address & COD.</td>
           </tr>
           <tr>
             <td><strong>View Patient Medical History & Past Notes</strong></td>
-            <td>Go to <strong>Patients / EMR</strong> → Type patient mobile number in search bar → Click profile</td>
+            <td>Go to <strong>Patients</strong> → Type patient mobile number in search bar → Click profile</td>
             <td>Shows full history, past laser settings, and doctor notes.</td>
           </tr>
           <tr>
@@ -1540,12 +1501,12 @@ const html = `<!DOCTYPE html>
       </table>
 
       <!-- Doctor Login Box -->
-      <h3 style="font-size: 13px; margin-bottom: 2mm; color: var(--primary);">Dr. Bilal's Official Login Credentials & Access:</h3>
+      <h3 style="font-size: 12.5px; margin-bottom: 2mm; color: var(--primary);">Dr. Bilal's Official Login Credentials & Access:</h3>
 
       <div class="credentials-box">
         <div class="cred-item">
           <span class="cred-label">Clinic Portal URL</span>
-          <span class="cred-val">https://brimish-skincare.com/login</span>
+          <span class="cred-val">https://brimish-skincare.com/auth/login</span>
         </div>
         <div class="cred-item">
           <span class="cred-label">Doctor Username / Email</span>
@@ -1558,17 +1519,17 @@ const html = `<!DOCTYPE html>
       </div>
 
       <!-- End of Day Closing -->
-      <div class="info-card primary-card" style="margin-top: 4mm;">
+      <div class="info-card primary-card" style="margin-top: 3mm;">
         <div class="card-header-flex">
           <span class="card-icon">🌙</span>
           <div class="card-title">Daily Evening Cash Reconciliation (2 Minutes)</div>
         </div>
         <div class="card-body">
-          At 9:00 PM when clinic closes, Dr. Bilal or Head Receptionist clicks <strong>"Daily Closeout"</strong>. The system gives the exact cash collected in drawer, total credit card swipes, and total bank transfers. Match the cash drawer with the screen in 2 minutes and close out with 100% financial peace of mind.
+          At 9:00 PM when clinic closes, Dr. Bilal or Head Receptionist checks total cash collected in drawer versus credit card swipes and bank transfers. Match the cash drawer with the screen in 2 minutes and close out with 100% financial peace of mind.
         </div>
       </div>
 
-      <div class="doctor-callout" style="margin-top: 4mm;">
+      <div class="doctor-callout" style="margin-top: 3mm;">
         <div class="doctor-callout-icon">📞</div>
         <div class="doctor-callout-text">
           <h4>Clinic Technical Support & System Warranty:</h4>
