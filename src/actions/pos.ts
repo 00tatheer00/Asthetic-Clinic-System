@@ -252,6 +252,7 @@ export async function createSale(formData: unknown) {
       sale_id: sale.id,
       patient_id: data.patient_id || null,
       customer_name: data.customer_name || 'Walk-in Customer',
+      customer_phone: data.customer_phone || null,
       clinic_name: settings?.clinic_name || 'Brimish Skin Care & Laser Clinic',
       clinic_address: settings?.clinic_address || 'Sami Tower, Ring Road, Peshawar, KP, Pakistan',
       clinic_phone: settings?.clinic_phone || '0335-6400959',

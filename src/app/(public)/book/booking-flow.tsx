@@ -908,6 +908,58 @@ export function BookingFlow({
               </button>
             </div>
 
+            {/* YOUR SELECTED TREATMENTS — Visible when items are selected (especially helpful on mobile) */}
+            {selectedItems.length > 0 && (
+              <div className="p-4 rounded-2xl bg-[#2D1226]/[0.03] border border-[#2D1226]/15 space-y-3 animate-in fade-in-50 slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-lg bg-[#2D1226] text-white flex items-center justify-center">
+                      <Check className="h-3.5 w-3.5" />
+                    </div>
+                    <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                      Your Selected Treatments ({selectedItems.length})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedItems([])}
+                    className="text-[11px] text-rose-600 hover:text-rose-800 font-semibold underline"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedItems.map((item) => (
+                    <div
+                      key={item.optionId}
+                      className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full bg-white border border-[#2D1226]/20 shadow-xs text-xs font-medium text-gray-900 hover:border-[#2D1226]/40 transition-colors"
+                    >
+                      <span className="truncate max-w-[180px]">
+                        {item.serviceName} · {item.optionName}
+                      </span>
+                      <span className="text-[11px] text-rose-700 font-bold whitespace-nowrap">
+                        PKR {item.price.toLocaleString()}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.optionId)}
+                        className="h-5 w-5 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 flex items-center justify-center transition-colors shrink-0"
+                        title="Remove treatment"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-[#2D1226]/10 text-xs">
+                  <span className="text-gray-600 font-medium">Estimated Total</span>
+                  <span className="font-serif font-bold text-gray-950 text-base">
+                    PKR {totalPKR.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Search Input with Magnifier */}
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

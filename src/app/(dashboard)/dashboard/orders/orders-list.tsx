@@ -44,6 +44,8 @@ import {
   Phone,
   Mail,
   MapPin,
+  Printer,
+  MessageCircle,
 } from 'lucide-react';
 import { formatCurrency, formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/constants';
@@ -119,6 +121,7 @@ export function OrdersList({
   const [selectedStatus, setSelectedStatus] = useState<string>(filters.status || 'all');
   const [currentPageState, setCurrentPageState] = useState<number>(initialPage || 1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [loadingOrderId, setLoadingOrderId] = useState<string | null>(null);
 
   // Instant in-memory filtering (0ms latency!)
   const filteredOrders = useMemo(() => {
@@ -174,9 +177,14 @@ export function OrdersList({
     }
   };
 
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus, reason?: string) => {
+    setLoadingOrderId(orderId);
     startTransition(async () => {
-      const result = await updateOrderStatus(orderId, newStatus);
+      const result = await updateOrderStatus(orderId, {
+        status: newStatus,
+        cancellation_reason: reason,
+      });
+      setLoadingOrderId(null);
       if (result.success) {
         toast.success(`Order marked as ${ORDER_STATUS_LABELS[newStatus] || newStatus}`);
         if (selectedOrder && selectedOrder.id === orderId) {
@@ -294,7 +302,112 @@ export function OrdersList({
                       <span className="text-xs text-gray-500">{formatDateTime(order.created_at)}</span>
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Direct Quick Action Button */}
+                        {order.status === 'received' && (
+                          <Button
+                            size="sm"
+                            disabled={isPending && loadingOrderId === order.id}
+                            onClick={() => handleStatusChange(order.id, 'confirmed')}
+                            className="h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs"
+                            title="Confirm this order"
+                          >
+                            {isPending && loadingOrderId === order.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Confirm
+                          </Button>
+                        )}
+                        {order.status === 'confirmed' && (
+                          <Button
+                            size="sm"
+                            disabled={isPending && loadingOrderId === order.id}
+                            onClick={() => handleStatusChange(order.id, 'preparing')}
+                            className="h-7 px-2.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs"
+                            title="Start preparing items"
+                          >
+                            {isPending && loadingOrderId === order.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <Package className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Prepare
+                          </Button>
+                        )}
+                        {order.status === 'preparing' && (
+                          <Button
+                            size="sm"
+                            disabled={isPending && loadingOrderId === order.id}
+                            onClick={() => handleStatusChange(order.id, 'ready')}
+                            className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs"
+                            title="Mark ready for dispatch or pickup"
+                          >
+                            {isPending && loadingOrderId === order.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Ready
+                          </Button>
+                        )}
+                        {order.status === 'ready' && (
+                          <Button
+                            size="sm"
+                            disabled={isPending && loadingOrderId === order.id}
+                            onClick={() =>
+                              handleStatusChange(
+                                order.id,
+                                order.delivery_method === 'delivery' ? 'delivered' : 'picked_up'
+                              )
+                            }
+                            className="h-7 px-2.5 text-xs bg-green-600 hover:bg-green-700 text-white font-semibold shadow-xs"
+                            title={order.delivery_method === 'delivery' ? 'Mark delivered' : 'Mark picked up'}
+                          >
+                            {isPending && loadingOrderId === order.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : order.delivery_method === 'delivery' ? (
+                              <Truck className="h-3.5 w-3.5 mr-1" />
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            {order.delivery_method === 'delivery' ? 'Deliver' : 'Pick Up'}
+                          </Button>
+                        )}
+                        {order.status === 'shipped' && (
+                          <Button
+                            size="sm"
+                            disabled={isPending && loadingOrderId === order.id}
+                            onClick={() => handleStatusChange(order.id, 'delivered')}
+                            className="h-7 px-2.5 text-xs bg-green-600 hover:bg-green-700 text-white font-semibold shadow-xs"
+                            title="Mark delivered"
+                          >
+                            {isPending && loadingOrderId === order.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <Truck className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Deliver
+                          </Button>
+                        )}
+                        {['delivered', 'picked_up'].includes(order.status) && (
+                          <Button
+                            size="sm"
+                            disabled={isPending && loadingOrderId === order.id}
+                            onClick={() => handleStatusChange(order.id, 'completed')}
+                            className="h-7 px-2.5 text-xs bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow-xs"
+                            title="Complete order"
+                          >
+                            {isPending && loadingOrderId === order.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Complete
+                          </Button>
+                        )}
+
                         <Button
                           size="sm"
                           variant="ghost"
@@ -304,42 +417,103 @@ export function OrdersList({
                           <Eye className="h-3.5 w-3.5 mr-1" />
                           Details
                         </Button>
+
                         <DropdownMenu>
                           <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100">
                             <MoreVertical className="h-4 w-4" />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
+                          <DropdownMenuContent align="end" className="w-52">
                             {order.status === 'received' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'confirmed')}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" /> Confirm
-                              </DropdownMenuItem>
+                              <>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'confirmed')}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-blue-600" /> Confirm Order
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'preparing')}>
+                                  <Package className="mr-2 h-4 w-4 text-indigo-600" /> Confirm & Prepare
+                                </DropdownMenuItem>
+                              </>
                             )}
                             {order.status === 'confirmed' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'preparing')}>
-                                <Package className="mr-2 h-4 w-4 text-blue-600" /> Preparing
-                              </DropdownMenuItem>
+                              <>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'preparing')}>
+                                  <Package className="mr-2 h-4 w-4 text-indigo-600" /> Start Preparing
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'ready')}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" /> Mark Ready
+                                </DropdownMenuItem>
+                              </>
                             )}
                             {order.status === 'preparing' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'ready')}>
-                                <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" /> Ready
-                              </DropdownMenuItem>
+                              <>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'ready')}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-600" /> Ready
+                                </DropdownMenuItem>
+                                {order.delivery_method === 'delivery' && (
+                                  <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'shipped')}>
+                                    <Truck className="mr-2 h-4 w-4 text-amber-600" /> Dispatch (In Transit)
+                                  </DropdownMenuItem>
+                                )}
+                              </>
                             )}
                             {order.status === 'ready' && order.delivery_method === 'delivery' && (
-                              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'delivered')}>
-                                <Truck className="mr-2 h-4 w-4 text-indigo-600" /> Mark Delivered
-                              </DropdownMenuItem>
+                              <>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'delivered')}>
+                                  <Truck className="mr-2 h-4 w-4 text-green-600" /> Mark Delivered
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'shipped')}>
+                                  <Truck className="mr-2 h-4 w-4 text-amber-600" /> Mark In Transit
+                                </DropdownMenuItem>
+                              </>
                             )}
                             {order.status === 'ready' && order.delivery_method === 'pickup' && (
                               <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'picked_up')}>
                                 <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" /> Mark Picked Up
                               </DropdownMenuItem>
                             )}
+                            {order.status === 'shipped' && (
+                              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'delivered')}>
+                                <Truck className="mr-2 h-4 w-4 text-green-600" /> Mark Delivered
+                              </DropdownMenuItem>
+                            )}
+                            {['delivered', 'picked_up'].includes(order.status) && (
+                              <DropdownMenuItem onClick={() => handleStatusChange(order.id, 'completed')}>
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-purple-600" /> Complete Order
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuSeparator />
+
+                            {/* Contact links */}
+                            <DropdownMenuItem
+                              onClick={() => {
+                                const phone = order.customer_phone.replace(/\D/g, '').replace(/^0/, '92');
+                                const text = encodeURIComponent(
+                                  `Assalam-o-Alaikum ${order.customer_name}, update from Brimish Skin Care Clinic regarding your order #${order.order_number}.`
+                                );
+                                window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+                              }}
+                              className="text-emerald-700 font-medium"
+                            >
+                              <MessageCircle className="mr-2 h-4 w-4 text-emerald-600" /> WhatsApp Customer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                window.location.href = `tel:${order.customer_phone}`;
+                              }}
+                            >
+                              <Phone className="mr-2 h-4 w-4 text-blue-600" /> Call Customer
+                            </DropdownMenuItem>
+
                             {!['completed', 'cancelled'].includes(order.status) && (
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   variant="destructive"
-                                  onClick={() => handleStatusChange(order.id, 'cancelled')}
+                                  onClick={() => {
+                                    if (window.confirm(`Are you sure you want to cancel Order ${order.order_number}?`)) {
+                                      handleStatusChange(order.id, 'cancelled');
+                                    }
+                                  }}
                                 >
                                   <XCircle className="mr-2 h-4 w-4" /> Cancel Order
                                 </DropdownMenuItem>
@@ -404,6 +578,16 @@ export function OrdersList({
                       {ORDER_STATUS_LABELS[selectedOrder.status] || selectedOrder.status}
                     </Badge>
                   </DialogTitle>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.print()}
+                    className="h-7 text-xs gap-1.5 text-gray-700 hover:text-gray-900 border-gray-200"
+                    title="Print order slip"
+                  >
+                    <Printer className="h-3.5 w-3.5 text-gray-500" />
+                    <span>Print Slip</span>
+                  </Button>
                 </div>
                 <DialogDescription className="text-xs text-gray-500">
                   Placed on {formatDateTime(selectedOrder.created_at)}
@@ -417,7 +601,7 @@ export function OrdersList({
                   <p className="font-bold text-gray-900 text-sm">{selectedOrder.customer_name}</p>
                   <p className="text-gray-600 flex items-center gap-1.5">
                     <Phone className="h-3.5 w-3.5 text-gray-400" />
-                    <a href={`tel:${selectedOrder.customer_phone}`} className="hover:underline">
+                    <a href={`tel:${selectedOrder.customer_phone}`} className="hover:underline font-mono">
                       {formatPhone(selectedOrder.customer_phone)}
                     </a>
                   </p>
@@ -429,6 +613,25 @@ export function OrdersList({
                       </a>
                     </p>
                   )}
+                  {/* Quick Action Links for customer */}
+                  <div className="flex items-center gap-2 pt-1.5">
+                    <a
+                      href={`https://wa.me/${selectedOrder.customer_phone.replace(/\D/g, '').replace(/^0/, '92')}?text=${encodeURIComponent(`Assalam-o-Alaikum ${selectedOrder.customer_name}, update regarding your Brimish Skin Care order #${selectedOrder.order_number}.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-[11px] font-semibold text-emerald-800 hover:bg-emerald-100 transition shadow-2xs"
+                    >
+                      <MessageCircle className="h-3 w-3 text-emerald-600" />
+                      <span>WhatsApp</span>
+                    </a>
+                    <a
+                      href={`tel:${selectedOrder.customer_phone}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-100 transition shadow-2xs"
+                    >
+                      <Phone className="h-3 w-3 text-blue-600" />
+                      <span>Call</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
@@ -516,59 +719,173 @@ export function OrdersList({
 
               {/* Status Action Buttons */}
               <div className="pt-3 border-t">
-                <p className="text-xs font-medium text-gray-700 mb-2">Update Order Status:</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-xs font-semibold text-gray-700 mb-2">Available Status Actions:</p>
+                <div className="flex flex-wrap gap-2 items-center">
                   {selectedOrder.status === 'received' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStatusChange(selectedOrder.id, 'confirmed')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8"
-                    >
-                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Confirm Order
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleStatusChange(selectedOrder.id, 'confirmed')}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 font-semibold shadow-xs"
+                      >
+                        {isPending && loadingOrderId === selectedOrder.id ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        Confirm Order
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleStatusChange(selectedOrder.id, 'preparing')}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 font-semibold shadow-xs"
+                      >
+                        <Package className="mr-1.5 h-3.5 w-3.5" />
+                        Confirm & Prepare
+                      </Button>
+                    </>
                   )}
                   {selectedOrder.status === 'confirmed' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStatusChange(selectedOrder.id, 'preparing')}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8"
-                    >
-                      <Package className="mr-1.5 h-3.5 w-3.5" /> Start Preparing
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleStatusChange(selectedOrder.id, 'preparing')}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-8 font-semibold shadow-xs"
+                      >
+                        {isPending && loadingOrderId === selectedOrder.id ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Package className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        Start Preparing
+                      </Button>
+                      <Button
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleStatusChange(selectedOrder.id, 'ready')}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 font-semibold shadow-xs"
+                      >
+                        <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                        Mark as Ready
+                      </Button>
+                    </>
                   )}
                   {selectedOrder.status === 'preparing' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleStatusChange(selectedOrder.id, 'ready')}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8"
-                    >
-                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Ready for Pickup/Dispatch
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleStatusChange(selectedOrder.id, 'ready')}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 font-semibold shadow-xs"
+                      >
+                        {isPending && loadingOrderId === selectedOrder.id ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        Ready for Pickup/Dispatch
+                      </Button>
+                      {selectedOrder.delivery_method === 'delivery' && (
+                        <Button
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => handleStatusChange(selectedOrder.id, 'shipped')}
+                          className="bg-amber-600 hover:bg-amber-700 text-white text-xs h-8 font-semibold shadow-xs"
+                        >
+                          <Truck className="mr-1.5 h-3.5 w-3.5" />
+                          Dispatch (In Transit)
+                        </Button>
+                      )}
+                    </>
                   )}
-                  {selectedOrder.status === 'ready' && selectedOrder.delivery_method === 'delivery' && (
+                  {selectedOrder.status === 'ready' && (
+                    <>
+                      {selectedOrder.delivery_method === 'delivery' ? (
+                        <>
+                          <Button
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => handleStatusChange(selectedOrder.id, 'delivered')}
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs h-8 font-semibold shadow-xs"
+                          >
+                            {isPending && loadingOrderId === selectedOrder.id ? (
+                              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Truck className="mr-1.5 h-3.5 w-3.5" />
+                            )}
+                            Mark Delivered
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => handleStatusChange(selectedOrder.id, 'shipped')}
+                            className="bg-amber-600 hover:bg-amber-700 text-white text-xs h-8 font-semibold shadow-xs"
+                          >
+                            <Truck className="mr-1.5 h-3.5 w-3.5" />
+                            Mark In Transit
+                          </Button>
+                        </>
+                      ) : (
+                        <Button
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => handleStatusChange(selectedOrder.id, 'picked_up')}
+                          className="bg-green-600 hover:bg-green-700 text-white text-xs h-8 font-semibold shadow-xs"
+                        >
+                          {isPending && loadingOrderId === selectedOrder.id ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          Mark Picked Up
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  {selectedOrder.status === 'shipped' && (
                     <Button
                       size="sm"
+                      disabled={isPending}
                       onClick={() => handleStatusChange(selectedOrder.id, 'delivered')}
-                      className="bg-green-600 hover:bg-green-700 text-white text-xs h-8"
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs h-8 font-semibold shadow-xs"
                     >
-                      <Truck className="mr-1.5 h-3.5 w-3.5" /> Mark Delivered
+                      {isPending && loadingOrderId === selectedOrder.id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Truck className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Mark Delivered
                     </Button>
                   )}
-                  {selectedOrder.status === 'ready' && selectedOrder.delivery_method === 'pickup' && (
+                  {['delivered', 'picked_up'].includes(selectedOrder.status) && (
                     <Button
                       size="sm"
-                      onClick={() => handleStatusChange(selectedOrder.id, 'picked_up')}
-                      className="bg-green-600 hover:bg-green-700 text-white text-xs h-8"
+                      disabled={isPending}
+                      onClick={() => handleStatusChange(selectedOrder.id, 'completed')}
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-8 font-semibold shadow-xs"
                     >
-                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" /> Mark Picked Up
+                      {isPending && loadingOrderId === selectedOrder.id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Complete Order
                     </Button>
                   )}
                   {!['completed', 'cancelled'].includes(selectedOrder.status) && (
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleStatusChange(selectedOrder.id, 'cancelled')}
-                      className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8 ml-auto"
+                      disabled={isPending}
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to cancel Order ${selectedOrder.order_number}? Reserved stock will be returned.`)) {
+                          handleStatusChange(selectedOrder.id, 'cancelled');
+                        }
+                      }}
+                      className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8 ml-auto font-medium"
                     >
                       <XCircle className="mr-1.5 h-3.5 w-3.5" /> Cancel Order
                     </Button>

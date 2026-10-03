@@ -564,11 +564,11 @@ export interface ApiError {
 
 /** Order status transition map */
 export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  received: ['confirmed', 'cancelled'],
-  confirmed: ['preparing', 'cancelled'],
+  received: ['confirmed', 'preparing', 'cancelled'],
+  confirmed: ['preparing', 'ready', 'cancelled'],
   preparing: ['ready', 'shipped', 'cancelled'],
   ready: ['picked_up', 'delivered', 'shipped', 'cancelled'],
-  shipped: ['delivered'],
+  shipped: ['delivered', 'cancelled'],
   delivered: ['completed'],
   picked_up: ['completed'],
   completed: [],

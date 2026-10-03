@@ -220,6 +220,7 @@ const saleItemSchema = z.object({
 export const saleSchema = z.object({
   patient_id: z.string().uuid().optional().nullable(),
   customer_name: z.string().max(100).optional().or(z.literal('')),
+  customer_phone: z.string().max(30).optional().nullable().or(z.literal('')),
   items: z.array(saleItemSchema).min(1, 'Add at least one item'),
   discount_type: z.enum(['percentage', 'fixed']).optional().nullable(),
   discount_value: z.number().nonnegative().default(0),

@@ -129,6 +129,7 @@ export function POSTerminal({
   const [discountValue, setDiscountValue] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [posFormError, setPosFormError] = useState<string | null>(null);
 
   // Quick Add Product Modal State
   const [showAddProductModal, setShowAddProductModal] = useState(false);
@@ -344,8 +345,26 @@ export function POSTerminal({
 
   // Complete Sale
   const handleCompleteSale = async () => {
+    setPosFormError(null);
+
     if (items.length === 0) {
       toast.error('Add products or treatments to cart first');
+      return;
+    }
+
+    // Validate patient name and phone are provided
+    const trimmedName = customerName.trim();
+    const trimmedPhone = customerPhone.trim();
+
+    if (!trimmedName || trimmedName.length < 2) {
+      setPosFormError('Patient name is required (at least 2 characters)');
+      toast.error('Patient name is required');
+      return;
+    }
+
+    if (!trimmedPhone || trimmedPhone.length < 7) {
+      setPosFormError('Patient phone number is required');
+      toast.error('Patient phone number is required');
       return;
     }
 
@@ -361,7 +380,8 @@ export function POSTerminal({
         discount_type: i.discount_type,
         discount_value: i.discount_value,
       })),
-      customer_name: customerName || undefined,
+      customer_name: customerName.trim() || undefined,
+      customer_phone: customerPhone.trim() || undefined,
       payment_method: paymentMethod,
       amount_received: amountReceived ? parseFloat(amountReceived) : undefined,
       discount_type: discountType,
@@ -766,25 +786,41 @@ export function POSTerminal({
             )}
           </div>
 
-          {/* Customer Details Inputs */}
-          <div className="grid grid-cols-2 gap-2 pt-2.5 pb-2 shrink-0">
-            <div className="relative">
-              <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <Input
-                placeholder="Patient Name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="h-8 text-xs pl-8 bg-gray-50/70 border-gray-200 rounded-lg"
-              />
-            </div>
-            <div className="relative">
-              <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <Input
-                placeholder="Phone (0300-1234567)"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(normalizePakistaniPhone(e.target.value))}
-                className="h-8 text-xs pl-8 bg-gray-50/70 border-gray-200 rounded-lg font-mono sm:font-sans"
-              />
+          {/* Customer Details Inputs (REQUIRED) */}
+          <div className="space-y-1.5 pt-2.5 pb-2 shrink-0">
+            {posFormError && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 font-medium">
+                <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+                <span>{posFormError}</span>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <Input
+                  placeholder="Patient Name *"
+                  value={customerName}
+                  onChange={(e) => { setCustomerName(e.target.value); setPosFormError(null); }}
+                  className={cn(
+                    'h-8 text-xs pl-8 bg-gray-50/70 rounded-lg',
+                    posFormError && !customerName.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : 'border-gray-200'
+                  )}
+                  required
+                />
+              </div>
+              <div className="relative">
+                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <Input
+                  placeholder="Phone * (0300-1234567)"
+                  value={customerPhone}
+                  onChange={(e) => { setCustomerPhone(normalizePakistaniPhone(e.target.value)); setPosFormError(null); }}
+                  className={cn(
+                    'h-8 text-xs pl-8 bg-gray-50/70 rounded-lg font-mono sm:font-sans',
+                    posFormError && !customerPhone.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : 'border-gray-200'
+                  )}
+                  required
+                />
+              </div>
             </div>
           </div>
 

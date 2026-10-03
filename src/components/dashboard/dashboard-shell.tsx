@@ -9,6 +9,7 @@ import {
   FileText, Warehouse, Stethoscope, Box, Image, Star,
   BarChart3, Settings, LogOut, Menu, ChevronDown, Bell,
   PanelLeftClose, PanelLeft, AlertTriangle, CheckCircle2, ArrowRight,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -60,13 +61,22 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
     treatments?: { name: string } | null;
   }>>([]);
   const [pendingReviewsCount, setPendingReviewsCount] = useState<number>(0);
-  const [notifTab, setNotifTab] = useState<'bookings' | 'stock'>('bookings');
+  const [pendingOrders, setPendingOrders] = useState<Array<{
+    id: string;
+    order_number: string;
+    customer_name: string;
+    customer_phone: string;
+    total: number;
+    status: string;
+    created_at: string;
+  }>>([]);
+  const [notifTab, setNotifTab] = useState<'bookings' | 'orders' | 'stock' | 'reviews'>('bookings');
 
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
         const supabase = createClient();
-        const [{ data: products }, { data: bookings }, { count: revCount }] = await Promise.all([
+        const [{ data: products }, { data: bookings }, { count: revCount }, { data: orders }] = await Promise.all([
           supabase
             .from('products')
             .select('id, name, stock_quantity, sku')
@@ -86,10 +96,18 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             .select('id', { count: 'exact', head: true })
             .eq('status', 'pending')
             .is('deleted_at', null),
+          supabase
+            .from('orders')
+            .select('id, order_number, customer_name, customer_phone, total, status, created_at')
+            .in('status', ['received', 'confirmed', 'preparing'])
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(8),
         ]);
         if (products) setLowStockItems(products);
         if (bookings) setPendingBookings(bookings as any);
         if (typeof revCount === 'number') setPendingReviewsCount(revCount);
+        if (orders) setPendingOrders(orders as any);
       } catch {
         // silent fallback
       }
@@ -286,7 +304,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
 
             {/* Notifications: Online Bookings & Low Stock Alerts */}
             {(() => {
-              const totalAlerts = pendingBookings.length + lowStockItems.length;
+              const totalAlerts = pendingBookings.length + pendingOrders.length + lowStockItems.length + pendingReviewsCount;
               return (
                 <DropdownMenu>
                   <DropdownMenuTrigger
@@ -303,46 +321,86 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                       </span>
                     )}
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-84 sm:w-96 p-0 shadow-xl rounded-2xl border-rose-100 bg-white">
-                    {/* Header Tabs */}
-                    <div className="p-2.5 bg-gradient-to-r from-rose-50/90 to-pink-50/90 border-b border-rose-100 flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setNotifTab('bookings')}
-                        className={cn(
-                          'flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5',
-                          notifTab === 'bookings'
-                            ? 'bg-white text-rose-900 shadow-xs'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                        )}
-                      >
-                        <Calendar className="h-3.5 w-3.5 text-rose-600" />
-                        <span>Online Bookings</span>
-                        {pendingBookings.length > 0 && (
-                          <span className="h-4 min-w-4 px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
-                            {pendingBookings.length}
-                          </span>
-                        )}
-                      </button>
+                  <DropdownMenuContent align="end" className="w-[340px] sm:w-[420px] p-0 shadow-xl rounded-2xl border-rose-100 bg-white">
+                    {/* Header Tabs — 4 notification categories */}
+                    <div className="p-2 bg-gradient-to-r from-rose-50/90 to-pink-50/90 border-b border-rose-100">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setNotifTab('bookings')}
+                          className={cn(
+                            'flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1',
+                            notifTab === 'bookings'
+                              ? 'bg-white text-rose-900 shadow-xs'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                          )}
+                        >
+                          <Calendar className="h-3 w-3 text-rose-600" />
+                          <span className="hidden sm:inline">Bookings</span>
+                          {pendingBookings.length > 0 && (
+                            <span className="h-4 min-w-4 px-1 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">
+                              {pendingBookings.length}
+                            </span>
+                          )}
+                        </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setNotifTab('stock')}
-                        className={cn(
-                          'flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5',
-                          notifTab === 'stock'
-                            ? 'bg-white text-amber-900 shadow-xs'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
-                        )}
-                      >
-                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-                        <span>Stock Alerts</span>
-                        {lowStockItems.length > 0 && (
-                          <span className="h-4 min-w-4 px-1 rounded-full bg-amber-600 text-white text-[10px] font-bold flex items-center justify-center">
-                            {lowStockItems.length}
-                          </span>
-                        )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => setNotifTab('orders')}
+                          className={cn(
+                            'flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1',
+                            notifTab === 'orders'
+                              ? 'bg-white text-blue-900 shadow-xs'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                          )}
+                        >
+                          <ShoppingCart className="h-3 w-3 text-blue-600" />
+                          <span className="hidden sm:inline">Orders</span>
+                          {pendingOrders.length > 0 && (
+                            <span className="h-4 min-w-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center">
+                              {pendingOrders.length}
+                            </span>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setNotifTab('stock')}
+                          className={cn(
+                            'flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1',
+                            notifTab === 'stock'
+                              ? 'bg-white text-amber-900 shadow-xs'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                          )}
+                        >
+                          <AlertTriangle className="h-3 w-3 text-amber-600" />
+                          <span className="hidden sm:inline">Stock</span>
+                          {lowStockItems.length > 0 && (
+                            <span className="h-4 min-w-4 px-1 rounded-full bg-amber-600 text-white text-[9px] font-bold flex items-center justify-center">
+                              {lowStockItems.length}
+                            </span>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setNotifTab('reviews')}
+                          className={cn(
+                            'flex-1 py-1.5 px-2 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1',
+                            notifTab === 'reviews'
+                              ? 'bg-white text-purple-900 shadow-xs'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                          )}
+                        >
+                          <MessageSquare className="h-3 w-3 text-purple-600" />
+                          <span className="hidden sm:inline">Reviews</span>
+                          {pendingReviewsCount > 0 && (
+                            <span className="h-4 min-w-4 px-1 rounded-full bg-purple-600 text-white text-[9px] font-bold flex items-center justify-center">
+                              {pendingReviewsCount}
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {/* Tab 1: Online Bookings Queue */}
@@ -431,6 +489,99 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                             <span>Open Inventory Restock</span>
                             <ArrowRight className="h-3 w-3" />
                           </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 3: Pending Orders */}
+                    {notifTab === 'orders' && (
+                      <div>
+                        <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 p-1">
+                          {pendingOrders.length === 0 ? (
+                            <div className="p-6 text-center text-xs text-gray-500 flex flex-col items-center gap-2">
+                              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                              <span className="font-medium text-gray-700">No pending orders</span>
+                              <span className="text-[11px] text-gray-400">All customer orders have been processed</span>
+                            </div>
+                          ) : (
+                            pendingOrders.map((order) => (
+                              <div
+                                key={order.id}
+                                className="p-3 hover:bg-blue-50/50 flex items-start justify-between gap-3 text-xs transition-colors rounded-xl"
+                              >
+                                <div className="min-w-0 flex-1 space-y-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <p className="font-bold text-gray-950 truncate">{order.customer_name}</p>
+                                    <span className={cn(
+                                      'text-[9px] px-1.5 py-0.2 rounded-full font-bold uppercase',
+                                      order.status === 'received' ? 'bg-amber-100 text-amber-800' :
+                                      order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                                      'bg-indigo-100 text-indigo-800'
+                                    )}>
+                                      {order.status}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-gray-700 font-mono font-semibold">
+                                    {order.order_number}
+                                  </p>
+                                  <p className="text-[10px] text-gray-500">
+                                    Total: PKR {(order.total || 0).toLocaleString()} · {formatDateTime(order.created_at)}
+                                  </p>
+                                </div>
+                                <Link
+                                  href={`/dashboard/orders?search=${encodeURIComponent(order.order_number)}`}
+                                  className="shrink-0 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold transition shadow-xs"
+                                >
+                                  Process
+                                </Link>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <div className="p-2.5 bg-gray-50/80 border-t border-gray-100 text-center">
+                          <Link
+                            href="/dashboard/orders"
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+                          >
+                            <span>Open All Orders</span>
+                            <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tab 4: Pending Reviews */}
+                    {notifTab === 'reviews' && (
+                      <div>
+                        <div className="p-6 text-center text-xs space-y-3">
+                          {pendingReviewsCount === 0 ? (
+                            <div className="flex flex-col items-center gap-2">
+                              <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                              <span className="font-medium text-gray-700">All reviews have been moderated</span>
+                              <span className="text-[11px] text-gray-400">No new patient reviews awaiting approval</span>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-center gap-3">
+                              <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                                <MessageSquare className="h-6 w-6" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-gray-950">
+                                  {pendingReviewsCount} Review{pendingReviewsCount > 1 ? 's' : ''} Awaiting Moderation
+                                </p>
+                                <p className="text-[11px] text-gray-500 mt-1">
+                                  Patient testimonials need your approval before they appear on the public website.
+                                </p>
+                              </div>
+                              <Link
+                                href="/dashboard/reviews"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold transition shadow-xs"
+                              >
+                                <span>Review & Approve</span>
+                                <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
