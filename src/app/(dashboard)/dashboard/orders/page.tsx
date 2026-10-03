@@ -58,13 +58,17 @@ export default async function OrdersPage({ searchParams }: PageProps) {
     .order('created_at', { ascending: false })
     .limit(300);
 
-  const [{ data: orders, count }, { count: activeCount }] = await Promise.all([
+  const [{ data: orders, count }, { count: activeCount }, { data: clinicSettings }] = await Promise.all([
     query,
     supabase
       .from('orders')
       .select('id', { count: 'exact', head: true })
       .in('status', ['received', 'confirmed', 'preparing', 'ready'])
       .is('deleted_at', null),
+    supabase
+      .from('clinic_settings')
+      .select('*')
+      .single(),
   ]);
 
   return (
@@ -81,6 +85,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
         filters={{ status, search }}
         activeCount={activeCount || 0}
         isAdmin={staff.role === 'super_admin'}
+        clinicSettings={clinicSettings || null}
       />
     </div>
   );

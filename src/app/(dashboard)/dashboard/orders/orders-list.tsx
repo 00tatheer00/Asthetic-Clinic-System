@@ -2,7 +2,9 @@
 
 import { useState, useTransition, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { updateOrderStatus } from '@/actions/orders';
+import { printReceipt } from '@/lib/print-receipt';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -91,6 +93,13 @@ interface OrdersListProps {
   filters: { status: string; search: string };
   activeCount: number;
   isAdmin: boolean;
+  clinicSettings?: {
+    clinic_name?: string | null;
+    clinic_address?: string | null;
+    clinic_phone?: string | null;
+    clinic_email?: string | null;
+    doctor_name?: string | null;
+  } | null;
 }
 
 const STATUS_FILTERS = [
@@ -113,6 +122,7 @@ export function OrdersList({
   filters,
   activeCount,
   isAdmin,
+  clinicSettings,
 }: OrdersListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -122,6 +132,19 @@ export function OrdersList({
   const [currentPageState, setCurrentPageState] = useState<number>(initialPage || 1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [loadingOrderId, setLoadingOrderId] = useState<string | null>(null);
+  const [slipOrder, setSlipOrder] = useState<Order | null>(null);
+  const [showSlipModal, setShowSlipModal] = useState(false);
+
+  // Directly prints professional POS receipt slip using isolated iframe printing
+  const handlePrintSlip = (orderToPrint: Order) => {
+    setSlipOrder(orderToPrint);
+    setShowSlipModal(true);
+    setTimeout(() => {
+      printReceipt('printable-order-slip', {
+        title: `Order-${orderToPrint.order_number}`,
+      });
+    }, 150);
+  };
 
   // Instant in-memory filtering (0ms latency!)
   const filteredOrders = useMemo(() => {
@@ -504,6 +527,15 @@ export function OrdersList({
                               <Phone className="mr-2 h-4 w-4 text-blue-600" /> Call Customer
                             </DropdownMenuItem>
 
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                              onClick={() => handlePrintSlip(order)}
+                              className="font-medium text-gray-900"
+                            >
+                              <Printer className="mr-2 h-4 w-4 text-gray-700" /> Print POS Slip
+                            </DropdownMenuItem>
+
                             {!['completed', 'cancelled'].includes(order.status) && (
                               <>
                                 <DropdownMenuSeparator />
@@ -581,12 +613,12 @@ export function OrdersList({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.print()}
-                    className="h-7 text-xs gap-1.5 text-gray-700 hover:text-gray-900 border-gray-200"
-                    title="Print order slip"
+                    onClick={() => handlePrintSlip(selectedOrder)}
+                    className="h-7 text-xs gap-1.5 text-gray-700 hover:text-gray-900 border-gray-200 cursor-pointer"
+                    title="Print POS thermal receipt slip"
                   >
                     <Printer className="h-3.5 w-3.5 text-gray-500" />
-                    <span>Print Slip</span>
+                    <span>Print POS Slip</span>
                   </Button>
                 </div>
                 <DialogDescription className="text-xs text-gray-500">
@@ -903,6 +935,233 @@ export function OrdersList({
                   Close
                 </Button>
               </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ========================================================================= */}
+      {/* DEDICATED POS THERMAL ORDER RECEIPT MODAL (IDENTICAL TO POS TERMINAL)    */}
+      {/* ========================================================================= */}
+      <Dialog open={showSlipModal} onOpenChange={setShowSlipModal}>
+        <DialogContent className="max-w-md p-0 overflow-hidden bg-white max-h-[95vh] flex flex-col">
+          {slipOrder && (
+            <div className="flex flex-col h-full overflow-y-auto">
+              {/* Header Action Bar (Hidden in Print) */}
+              <div className="print:hidden p-3.5 border-b bg-gray-50 flex items-center justify-between gap-2 sticky top-0 z-10 backdrop-blur-sm bg-gray-50/95">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xs text-gray-900 leading-tight">Order Receipt Slip</h3>
+                    <p className="text-[10px] text-gray-500 font-mono">{slipOrder.order_number}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      printReceipt('printable-order-slip', {
+                        title: `Order-Slip-${slipOrder.order_number}`,
+                      })
+                    }
+                    className="h-8 px-3 text-xs bg-[#2D1226] hover:bg-[#431b39] text-white font-semibold shadow-xs gap-1.5 cursor-pointer"
+                    title="Print receipt or export / save as PDF"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    <span>Print Slip</span>
+                  </Button>
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowSlipModal(false)}
+                    className="h-8 px-2.5 text-xs text-gray-600 hover:text-gray-900 cursor-pointer"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+
+              {/* Printable Container */}
+              <div className="bg-stone-100/70 p-4 sm:p-6 print:p-0 print:bg-white flex justify-center">
+                {/* ========================================================== */}
+                {/* 80MM THERMAL RECEIPT SLIP (PURE CLINICAL POS FORMAT)       */}
+                {/* ========================================================== */}
+                <div
+                  id="printable-order-slip"
+                  className="w-full max-w-[340px] bg-white border border-stone-200 print:border-0 shadow-sm p-4 font-mono text-[11px] text-black leading-tight"
+                >
+                  {/* Clinic Header */}
+                  <div className="text-center pb-2.5 border-b border-dashed border-black">
+                    <div className="flex justify-center mb-1.5">
+                      <Image
+                        src="/images/logo.png"
+                        alt="Brimish Skin Care Logo"
+                        width={46}
+                        height={46}
+                        className="w-11 h-11 object-contain"
+                        priority
+                      />
+                    </div>
+                    <h2 className="text-sm font-black tracking-tight text-black uppercase">
+                      {clinicSettings?.clinic_name || 'BRIMISH SKIN CARE & LASER CLINIC'}
+                    </h2>
+                    <p className="text-[10px] font-bold text-black mt-0.5">
+                      {clinicSettings?.doctor_name || 'DR. BILAL AHMAD (MD Aesthetic Medicine)'}
+                    </p>
+                    <p className="text-[9px] text-gray-700 mt-0.5">
+                      Medical Aesthetics, Dermatology & Laser Center
+                    </p>
+                    <p className="text-[9px] text-gray-700 mt-0.5">
+                      {clinicSettings?.clinic_address || 'Sami Tower, Ring Road, Peshawar'}
+                    </p>
+                    <p className="text-[9px] font-semibold text-black mt-0.5">
+                      {clinicSettings?.clinic_phone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959'}
+                    </p>
+                  </div>
+
+                  {/* Order Metadata */}
+                  <div className="py-2 border-b border-dashed border-black text-[10px] space-y-0.5">
+                    <div className="flex justify-between">
+                      <span>Order #:</span>
+                      <strong className="font-bold">{slipOrder.order_number}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Date:</span>
+                      <span>{new Date(slipOrder.created_at).toLocaleDateString('en-GB')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Time:</span>
+                      <span>
+                        {new Date(slipOrder.created_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Customer:</span>
+                      <strong className="font-bold">{slipOrder.customer_name}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Phone:</span>
+                      <span>{formatPhone(slipOrder.customer_phone)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Fulfillment:</span>
+                      <span className="uppercase font-bold">
+                        {slipOrder.delivery_method === 'delivery' ? 'Home Delivery' : 'Clinic Pickup'}
+                      </span>
+                    </div>
+                    {slipOrder.delivery_method === 'delivery' &&
+                      (slipOrder.delivery_address || slipOrder.delivery_city) && (
+                        <div className="pt-0.5 text-[9px] text-gray-800">
+                          <span className="font-bold block">Delivery Address:</span>
+                          <span className="block leading-tight">
+                            {slipOrder.delivery_address}
+                            {slipOrder.delivery_city ? `, ${slipOrder.delivery_city}` : ''}
+                          </span>
+                        </div>
+                      )}
+                    {slipOrder.delivery_notes && (
+                      <div className="pt-0.5 text-[9px] text-gray-700 italic">
+                        Note: {slipOrder.delivery_notes}
+                      </div>
+                    )}
+                    <div className="flex justify-between pt-0.5">
+                      <span>Payment:</span>
+                      <span className="uppercase font-bold">
+                        {slipOrder.payment_method || 'Cash on Delivery'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-0.5">
+                      <span>Order Status:</span>
+                      <span className="font-bold uppercase text-[9px] px-1 py-0.2 rounded bg-black text-white">
+                        {ORDER_STATUS_LABELS[slipOrder.status] || slipOrder.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Itemized Table */}
+                  <div className="py-2 border-b border-dashed border-black">
+                    <div className="flex justify-between font-bold pb-1 text-[9px] border-b border-black uppercase tracking-wider">
+                      <span className="w-1/2">Product Item</span>
+                      <span className="w-1/4 text-center">Qty x Rate</span>
+                      <span className="w-1/4 text-right">Total</span>
+                    </div>
+                    <div className="space-y-1.5 pt-1.5">
+                      {slipOrder.order_items && slipOrder.order_items.length > 0 ? (
+                        slipOrder.order_items.map((item, idx) => (
+                          <div key={idx}>
+                            <p className="font-bold text-[10px] text-black leading-tight">
+                              {item.name}
+                            </p>
+                            <div className="flex justify-between text-[9px] text-gray-800">
+                              <span>
+                                {item.quantity} x {formatCurrency(item.unit_price)}
+                              </span>
+                              <span className="font-bold text-black">
+                                {formatCurrency(item.line_total)}
+                              </span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="flex justify-between text-[10px]">
+                          <span>Skincare Order</span>
+                          <span className="font-bold">{formatCurrency(slipOrder.total)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Totals Summary */}
+                  <div className="py-2 border-b border-dashed border-black space-y-1 text-[10px]">
+                    {slipOrder.subtotal !== undefined && (
+                      <div className="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>{formatCurrency(slipOrder.subtotal)}</span>
+                      </div>
+                    )}
+                    {slipOrder.delivery_fee ? (
+                      <div className="flex justify-between">
+                        <span>Delivery Fee:</span>
+                        <span>{formatCurrency(slipOrder.delivery_fee)}</span>
+                      </div>
+                    ) : null}
+                    {slipOrder.discount_amount ? (
+                      <div className="flex justify-between text-black font-semibold">
+                        <span>Discount:</span>
+                        <span>-{formatCurrency(slipOrder.discount_amount)}</span>
+                      </div>
+                    ) : null}
+                    <div className="flex justify-between text-xs sm:text-sm font-black pt-1.5 border-t border-black text-black">
+                      <span className="uppercase">NET AMOUNT:</span>
+                      <span>{formatCurrency(slipOrder.total)}</span>
+                    </div>
+                    <div className="flex justify-between text-[9px] text-gray-700 pt-0.5">
+                      <span>Payment Status:</span>
+                      <span className="uppercase font-bold text-black">{slipOrder.payment_status}</span>
+                    </div>
+                  </div>
+
+                  {/* Receipt Footer */}
+                  <div className="text-center pt-2 text-[9px] text-gray-800 space-y-0.5">
+                    <p className="font-bold text-black">
+                      Thank you for choosing Brimish Skin Care!
+                    </p>
+                    <p className="text-[8px] text-gray-600">
+                      WhatsApp Customer Care: 0335-6400959
+                    </p>
+                    <p className="text-[8px] text-gray-500">
+                      Official E-Commerce Order Fulfillment Slip
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
