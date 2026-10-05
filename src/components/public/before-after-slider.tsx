@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
-import { Sparkles, MoveHorizontal } from 'lucide-react';
+import { CheckCircle2, MoveHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BeforeAfterSliderProps {
@@ -169,7 +169,7 @@ export function BeforeAfterSlider({
           </span>
           {sessions && (
             <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-amber-500" />
+              <CheckCircle2 className="h-3 w-3 text-rose-500" />
               {sessions}
             </span>
           )}

@@ -5,7 +5,7 @@ import {
   X,
   User,
   Phone,
-  Sparkles,
+  Stethoscope,
   Mail,
   Send,
   ShieldCheck,
@@ -178,7 +178,7 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
 
               <div className="pr-10 relative z-10 space-y-1">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-rose-200 text-[10px] font-semibold uppercase tracking-wider border border-white/10">
-                  <Sparkles className="h-2.5 w-2.5 text-amber-300" />
+                  <ShieldCheck className="h-3 w-3 text-rose-300" />
                   <span>Brimish Skin Care Clinic</span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight font-serif text-white">
@@ -246,7 +246,7 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                   {/* 3. Select Consultation Mode */}
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-rose-600" />
+                      <Stethoscope className="h-3.5 w-3.5 text-rose-600" />
                       <span>Select Consultation Mode</span>
                     </label>
 

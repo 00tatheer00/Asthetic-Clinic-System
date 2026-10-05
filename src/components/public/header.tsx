@@ -162,20 +162,6 @@ export function PublicHeader() {
                 </Button>
               </Link>
 
-              {/* Quick Online Consultation Button */}
-              <button
-                type="button"
-                onClick={() => openConsultation('online')}
-                className="hidden xl:inline-flex items-center gap-1.5 text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200/80 rounded-full px-3.5 py-2 transition-all cursor-pointer shadow-2xs hover:scale-102"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-sm">💻</span>
-                <span>Online Consultation</span>
-              </button>
-
               {/* Book Consultation Trigger */}
               <button
                 type="button"
@@ -243,25 +229,17 @@ export function PublicHeader() {
 
                   {/* Drawer Footer Actions */}
                   <div className="p-5 border-t border-gray-100 bg-gray-50/60 space-y-2.5">
-                    {/* Quick Online Consultation Button */}
                     <button
                       type="button"
                       onClick={() => {
                         setMobileOpen(false);
                         openConsultation('online');
                       }}
-                      className="w-full bg-gradient-to-r from-[#2D1226] via-[#3B1530] to-[#1E0B19] hover:from-[#3B1530] hover:to-[#2D1226] text-white rounded-xl py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 border border-rose-300/20 shadow-md shadow-rose-950/20 cursor-pointer transition-all"
+                      className="w-full bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-xl py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-rose-200 cursor-pointer transition-all"
                     >
-                      <span className="text-sm">💻</span>
-                      <span>Book Online Consultation</span>
+                      <Calendar className="h-4 w-4" />
+                      <span>Book Consultation</span>
                     </button>
-
-                    <Link href="/book" prefetch={true} onClick={() => setMobileOpen(false)} className="block">
-                      <Button className="w-full bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-xl py-3 shadow-md shadow-rose-200">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Explore Full Treatments
-                      </Button>
-                    </Link>
 
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <a

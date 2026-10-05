@@ -3,7 +3,6 @@ import { PublicHeader } from '@/components/public/header';
 import { PublicFooter } from '@/components/public/footer';
 import { BookingModalProvider } from '@/components/public/booking-modal';
 import { OnlineConsultationModalProvider } from '@/components/public/online-consultation-modal';
-import { FloatingConsultationButton } from '@/components/public/floating-consultation-button';
 import { PremiumLoader } from '@/components/public/premium-loader';
 import { RouteProgressBar } from '@/components/public/route-progress-bar';
 
@@ -23,7 +22,6 @@ export default function PublicLayout({
           <PublicHeader />
           <main className="flex-1">{children}</main>
           <PublicFooter />
-          <FloatingConsultationButton />
         </div>
       </OnlineConsultationModalProvider>
     </BookingModalProvider>

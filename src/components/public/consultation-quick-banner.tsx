@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useConsultationModal } from './online-consultation-modal';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 
 export function ConsultationQuickBanner() {
   const { openConsultation } = useConsultationModal();
@@ -16,7 +16,7 @@ export function ConsultationQuickBanner() {
       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
         <div className="space-y-1.5 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-rose-200 text-[11px] font-semibold tracking-wider uppercase backdrop-blur-xs border border-white/10">
-            <Sparkles className="h-3 w-3 text-amber-300" />
+            <Clock className="h-3 w-3 text-rose-300" />
             <span>Fast 30-Second Booking</span>
           </div>
           <h2 className="text-lg sm:text-xl font-bold font-serif text-white tracking-tight">

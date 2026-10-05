@@ -18,7 +18,6 @@ import {
   ArrowRight,
   ExternalLink,
   Printer,
-  Sparkles,
 } from 'lucide-react';
 import { formatCurrency, formatDate, formatDateTime, formatPhone } from '@/lib/utils/helpers';
 import { Badge } from '@/components/ui/badge';
@@ -547,7 +546,7 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
                       href="/book"
                       className="inline-flex items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs h-9 px-3.5 font-medium transition-all shadow-xs"
                     >
-                      <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                      <Calendar className="h-3.5 w-3.5 mr-1.5" />
                       Book Next Follow-up
                     </Link>
                   </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, Sparkles, Home } from 'lucide-react';
+import { Calendar, Stethoscope, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
@@ -42,7 +42,7 @@ export default function NotFound() {
         </Link>
         <Link href="/treatments">
           <Button variant="outline" className="rounded-xl border-rose-200 bg-rose-50/50 text-rose-700 hover:bg-rose-100/60 text-xs font-semibold gap-1.5 px-4 py-2.5">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Stethoscope className="h-3.5 w-3.5" />
             <span>Explore Treatments</span>
           </Button>
         </Link>
