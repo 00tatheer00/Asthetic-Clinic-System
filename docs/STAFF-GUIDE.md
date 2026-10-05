@@ -7,8 +7,8 @@ Welcome to the Brimish Skin Care Clinic Operating Platform! This guide explains 
 ## 1. Quick Start & Logging In
 
 1. Open your web browser (Chrome, Edge, or Safari) and go to:  
-   **`https://brimishskincare.com/auth/login`**
-2. Enter your clinic email address and your password.
+   **`https://brimishskincare.com/auth/login`** (or `http://localhost:3000/auth/login` locally)
+2. Enter your clinic email address (e.g. `bilal@admin.com` for Dr. Bilal / Super Admin) and your password.
 3. Click **Sign In**.
 4. You will automatically land on the **Clinic Dashboard**.
 

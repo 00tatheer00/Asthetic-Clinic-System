@@ -96,6 +96,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the public site, or [http://localhost:3000/auth/login](http://localhost:3000/auth/login) for the clinic staff portal.
 
+### 🔑 Clinic Staff & Admin Access
+
+- **Portal URL**: `/auth/login` ([http://localhost:3000/auth/login](http://localhost:3000/auth/login))
+- **Email**: `bilal@admin.com`
+- **Role**: Super Admin / Medical Director (Full administrative and clinical privileges)
+
 ---
 
 ## 📦 Build & Production
