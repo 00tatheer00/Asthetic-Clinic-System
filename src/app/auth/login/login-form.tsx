@@ -40,12 +40,13 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'bilal@admin.com',
+      password: 'Brimish@2026!',
     },
   });
 
@@ -71,15 +72,13 @@ export function LoginForm() {
         const supabase = createClient();
         await supabase.auth.signInWithPassword({
           email: data.email.trim().toLowerCase(),
-          password: data.password,
+          password: data.password.trim(),
         });
       } catch {
         // Non-fatal if browser client sync fails since server-side session cookies are already written
       }
 
       // 3. HARD NAVIGATION to dashboard:
-      // Using window.location.href ensures cookies are cleanly attached to HTTP request headers
-      // and bypasses stale Next.js in-memory client router prefetch caches.
       const targetUrl = actionResult.redirectTo || redirect || '/dashboard';
       window.location.href = targetUrl;
     } catch (err: unknown) {
@@ -92,6 +91,12 @@ export function LoginForm() {
       toast.error(errorMsg);
       setIsNavigating(false);
     }
+  };
+
+  const handleQuickAdminLogin = async () => {
+    setValue('email', 'bilal@admin.com');
+    setValue('password', 'Brimish@2026!');
+    await onSubmit({ email: 'bilal@admin.com', password: 'Brimish@2026!' });
   };
 
   const isLoading = isSubmitting || isNavigating;
@@ -118,11 +123,33 @@ export function LoginForm() {
         </div>
 
         <Card className="shadow-xl border-0 shadow-gray-200/50">
-          <CardHeader className="text-center pb-4">
+          <CardHeader className="text-center pb-3">
             <CardTitle className="text-xl">Welcome back</CardTitle>
             <CardDescription>Sign in to access the clinic dashboard</CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Quick 1-Click Login Card for Dr. Bilal / Super Admin */}
+            <div className="mb-5 p-3.5 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200/80 flex items-center justify-between gap-3 shadow-2xs">
+              <div className="min-w-0">
+                <div className="font-semibold text-rose-950 text-xs flex items-center gap-1.5">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Dr. Bilal (Super Admin)
+                </div>
+                <div className="text-[11px] text-gray-600 font-mono mt-0.5 truncate">
+                  bilal@admin.com • Brimish@2026!
+                </div>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleQuickAdminLogin}
+                disabled={isLoading}
+                className="shrink-0 h-8 px-3 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-xs cursor-pointer"
+              >
+                ⚡ 1-Click Login
+              </Button>
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {serverError && (
                 <div className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
@@ -132,10 +159,22 @@ export function LoginForm() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="email">Email or Username</Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue('email', 'bilal@admin.com');
+                      setValue('password', 'Brimish@2026!');
+                    }}
+                    className="text-[11px] text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   placeholder="bilal@admin.com"
                   autoComplete="email"
                   disabled={isLoading}
@@ -148,7 +187,10 @@ export function LoginForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <span className="text-[11px] text-gray-400 font-mono">Brimish@2026!</span>
+                </div>
                 <div className="relative">
                   <Input
                     id="password"

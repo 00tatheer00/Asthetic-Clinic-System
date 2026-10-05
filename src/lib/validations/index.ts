@@ -432,7 +432,7 @@ export type InvoiceVoidInput = z.infer<typeof invoiceVoidSchema>;
 // ============================================================
 
 export const loginSchema = z.object({
-  email: emailSchema,
+  email: z.string().min(1, 'Email or username is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
