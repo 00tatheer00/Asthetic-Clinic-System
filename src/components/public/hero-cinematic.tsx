@@ -115,40 +115,43 @@ export function HeroCinematic() {
             Get clear, healthy skin with Dr. Bilal. We provide HydraFacial, laser hair removal, acne treatments, and chemical peels with complete safety.
           </p>
 
-          {/* High-Impact Hero Action Buttons with Best Hover Effects & Padding */}
-          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3.5">
+          {/* High-Impact Hero Action Buttons (Sleek & Compact on Mobile) */}
+          <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
             {/* 1. Book Appointment */}
             <Link href="/book" prefetch={true} className="w-full sm:w-auto">
               <Button
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-7 py-3.5 h-12 text-sm font-semibold shadow-lg shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-5 sm:px-7 h-10 sm:h-12 text-xs sm:text-sm font-semibold shadow-md shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
               >
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span>Book Appointment</span>
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </Link>
 
-            {/* 2. Straightforward WhatsApp Button */}
-            <a
-              href="https://wa.me/923356400959"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 h-12 rounded-full text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-lg shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-              title="Chat with clinic on WhatsApp"
-            >
-              <MessageCircle className="h-4 w-4 fill-white text-white" />
-              <span>WhatsApp</span>
-            </a>
-
-            {/* 3. View Treatments */}
-            <Link href="/treatments" prefetch={true} className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto rounded-full px-6 py-3.5 h-12 text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+            {/* Row 2 on mobile: WhatsApp & View Treatments side-by-side */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3.5 w-full sm:w-auto">
+              {/* 2. Straightforward WhatsApp Button */}
+              <a
+                href="https://wa.me/923356400959"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 h-9 sm:h-12 rounded-full text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                title="Chat with clinic on WhatsApp"
               >
-                View Treatments
-              </Button>
-            </Link>
+                <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white text-white" />
+                <span>WhatsApp</span>
+              </a>
+
+              {/* 3. View Treatments */}
+              <Link href="/treatments" prefetch={true} className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto rounded-full px-3 sm:px-6 h-9 sm:h-12 text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                >
+                  View Treatments
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
 
