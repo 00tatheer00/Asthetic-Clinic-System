@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X, ShoppingBag, Phone, MapPin, Clock, MessageCircle, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetClose } from '@/components/ui/sheet';
@@ -22,6 +22,75 @@ export function PublicHeader() {
   const [mounted, setMounted] = useState(false);
   const cartItemsCount = useCartStore((s) => s.getItemCount());
   const { openConsultation } = useConsultationModal();
+
+  // Active Capsule Sliding Animation for Desktop Navbar
+  const navContainerRef = useRef<HTMLDivElement | null>(null);
+  const navRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const [activeHref, setActiveHref] = useState<string>(pathname);
+  const [pillReady, setPillReady] = useState(false);
+  const [pillStyle, setPillStyle] = useState<{
+    left: number;
+    width: number;
+    opacity: number;
+  }>({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+
+  // Keep activeHref in sync with pathname changes
+  useEffect(() => {
+    setActiveHref(pathname);
+  }, [pathname]);
+
+  // Measure and update sliding pill position
+  const updatePillPosition = useCallback((targetKey?: string) => {
+    const currentKey = targetKey || activeHref;
+    const matchedItem = PUBLIC_NAV_ITEMS.find((item) =>
+      item.href === '/'
+        ? currentKey === '/'
+        : currentKey === item.href || currentKey.startsWith(`${item.href}/`)
+    );
+
+    const activeEl = matchedItem ? navRefs.current[matchedItem.href] : null;
+    const containerEl = navContainerRef.current;
+
+    if (activeEl && containerEl) {
+      const containerRect = containerEl.getBoundingClientRect();
+      const activeRect = activeEl.getBoundingClientRect();
+      const left = activeRect.left - containerRect.left;
+      const width = activeRect.width;
+
+      setPillStyle({
+        left,
+        width,
+        opacity: 1,
+      });
+
+      // Enable smooth transition once initial position is measured
+      requestAnimationFrame(() => {
+        setPillReady(true);
+      });
+    } else {
+      setPillStyle((prev) => ({
+        ...prev,
+        opacity: 0,
+      }));
+    }
+  }, [activeHref]);
+
+  useEffect(() => {
+    updatePillPosition();
+    const timer = setTimeout(() => {
+      updatePillPosition();
+    }, 60);
+    const handleResize = () => updatePillPosition();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updatePillPosition]);
 
   useEffect(() => {
     setMounted(true);
@@ -111,20 +180,49 @@ export function PublicHeader() {
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1 bg-gray-50/80 p-1.5 rounded-full border border-gray-200/60 shadow-inner">
+            {/* Desktop Navigation with Animated Sliding Capsule */}
+            <nav
+              ref={navContainerRef}
+              className="hidden lg:flex items-center gap-1 bg-gray-50/80 p-1.5 rounded-full border border-gray-200/60 shadow-inner relative"
+            >
+              {/* Sliding Active Pill Background */}
+              <div
+                className={cn(
+                  'absolute top-1.5 bottom-1.5 rounded-full bg-white shadow-sm shadow-gray-200/80 pointer-events-none z-0',
+                  pillReady
+                    ? 'transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]'
+                    : 'transition-none'
+                )}
+                style={{
+                  left: `${pillStyle.left}px`,
+                  width: `${pillStyle.width}px`,
+                  opacity: pillStyle.opacity,
+                }}
+              />
+
               {PUBLIC_NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href;
+                const isCurrentActive =
+                  item.href === '/'
+                    ? activeHref === '/'
+                    : activeHref === item.href || activeHref.startsWith(`${item.href}/`);
+
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     prefetch={true}
+                    ref={(el) => {
+                      navRefs.current[item.href] = el;
+                    }}
+                    onClick={() => {
+                      setActiveHref(item.href);
+                      updatePillPosition(item.href);
+                    }}
                     className={cn(
-                      'px-4 py-1.5 text-xs font-semibold rounded-full transition-all duration-200',
-                      isActive
-                        ? 'bg-white text-rose-600 shadow-sm shadow-gray-200 font-bold'
-                        : 'text-gray-600 hover:text-gray-950 hover:bg-white/60'
+                      'relative z-10 px-4 py-1.5 text-xs font-semibold rounded-full select-none cursor-pointer transition-colors duration-150',
+                      isCurrentActive
+                        ? 'text-rose-600 font-bold'
+                        : 'text-gray-600 hover:text-gray-950 hover:bg-white/40'
                     )}
                   >
                     {item.label}
