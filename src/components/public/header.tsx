@@ -250,7 +250,7 @@ export function PublicHeader() {
                         setMobileOpen(false);
                         openConsultation('online');
                       }}
-                      className="w-full bg-[#121927] hover:bg-[#1a2438] text-white rounded-xl py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 shadow-md cursor-pointer transition-colors"
+                      className="w-full bg-gradient-to-r from-[#2D1226] via-[#3B1530] to-[#1E0B19] hover:from-[#3B1530] hover:to-[#2D1226] text-white rounded-xl py-3 px-4 text-xs font-bold flex items-center justify-center gap-2 border border-rose-300/20 shadow-md shadow-rose-950/20 cursor-pointer transition-all"
                     >
                       <span className="text-sm">💻</span>
                       <span>Book Online Consultation</span>

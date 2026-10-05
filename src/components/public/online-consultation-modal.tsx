@@ -15,6 +15,7 @@ import {
   Loader2,
   MessageCircle,
   ExternalLink,
+  Check,
 } from 'lucide-react';
 import { createConsultationBooking } from '@/actions/appointments';
 import { toast } from 'sonner';
@@ -163,22 +164,30 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeConsultation();
           }}
         >
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
-            {/* Header: Dark Navy / Clinic Deep Palette */}
-            <div className="bg-[#121927] text-white p-5 sm:p-6 relative shrink-0">
-              <div className="pr-10">
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-rose-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
+            {/* Header: Brimish Signature Deep Plum/Wine Palette */}
+            <div className="bg-gradient-to-r from-[#2D1226] via-[#3B1530] to-[#1E0B19] text-white p-5 sm:p-6 relative shrink-0 overflow-hidden">
+              {/* Subtle Ambient Glow */}
+              <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-rose-500/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-pink-500/20 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="pr-10 relative z-10 space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-rose-200 text-[10px] font-semibold uppercase tracking-wider border border-white/10">
+                  <Sparkles className="h-2.5 w-2.5 text-amber-300" />
+                  <span>Brimish Skin Care Clinic</span>
+                </div>
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight font-serif text-white">
                   Book Consultation
                 </h3>
-                <p className="text-xs sm:text-[13px] text-gray-300 mt-1 flex items-center gap-1.5 flex-wrap font-sans">
-                  <span>Dr. Bilal Ahmad</span>
-                  <span className="text-gray-500">•</span>
-                  <span className="text-gray-300">Specialist Aesthetic Dermatologist</span>
+                <p className="text-xs sm:text-[13px] text-rose-100/90 flex items-center gap-1.5 flex-wrap font-sans">
+                  <span className="font-semibold text-white">Dr. Bilal Ahmad</span>
+                  <span className="text-rose-300/60">•</span>
+                  <span>Specialist Aesthetic Dermatologist</span>
                 </p>
               </div>
 
@@ -186,7 +195,7 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                 type="button"
                 onClick={closeConsultation}
                 aria-label="Close modal"
-                className="absolute top-5 right-5 h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-colors"
+                className="absolute top-5 right-5 h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-rose-200 hover:text-white flex items-center justify-center transition-colors z-10 cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -204,8 +213,8 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
 
                   {/* 1. Full Name */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5 text-gray-500" />
+                    <label className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-rose-600" />
                       <span>Full Name</span>
                     </label>
                     <input
@@ -214,30 +223,30 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                       placeholder="Your name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all bg-white"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 bg-rose-50/20 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all"
                     />
                   </div>
 
                   {/* 2. Phone */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-                      <Phone className="h-3.5 w-3.5 text-gray-500" />
+                    <label className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-rose-600" />
                       <span>Phone</span>
                     </label>
                     <input
                       type="tel"
                       required
-                      placeholder="03715279498"
+                      placeholder="0300 1234567"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all bg-white font-mono text-[13px]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 bg-rose-50/20 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all font-mono text-[13px]"
                     />
                   </div>
 
                   {/* 3. Select Consultation Mode */}
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-rose-500" />
+                    <label className="text-xs font-semibold text-gray-800 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-rose-600" />
                       <span>Select Consultation Mode</span>
                     </label>
 
@@ -246,14 +255,19 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                       <button
                         type="button"
                         onClick={() => setMode('online')}
-                        className={`p-3.5 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+                        className={`p-3.5 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
                           mode === 'online'
-                            ? 'border-gray-900 bg-gray-50/70 ring-1 ring-gray-900 shadow-sm'
-                            : 'border-gray-200 bg-white hover:border-gray-300 text-gray-600'
+                            ? 'border-rose-600 bg-rose-50/70 ring-2 ring-rose-500/20 shadow-xs'
+                            : 'border-gray-200 bg-white hover:border-rose-200 text-gray-600'
                         }`}
                       >
+                        {mode === 'online' && (
+                          <span className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-rose-600 text-white flex items-center justify-center">
+                            <Check className="h-2.5 w-2.5" />
+                          </span>
+                        )}
                         <div className="flex items-center gap-2">
-                          <span className="text-base">💻</span>
+                          <span className="text-lg">💻</span>
                           <span className="text-xs font-bold text-gray-900 leading-tight">
                             Online Consultation
                           </span>
@@ -267,14 +281,19 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                       <button
                         type="button"
                         onClick={() => setMode('onsite')}
-                        className={`p-3.5 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+                        className={`p-3.5 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
                           mode === 'onsite'
-                            ? 'border-gray-900 bg-gray-50/70 ring-1 ring-gray-900 shadow-sm'
-                            : 'border-gray-200 bg-white hover:border-gray-300 text-gray-600'
+                            ? 'border-rose-600 bg-rose-50/70 ring-2 ring-rose-500/20 shadow-xs'
+                            : 'border-gray-200 bg-white hover:border-rose-200 text-gray-600'
                         }`}
                       >
+                        {mode === 'onsite' && (
+                          <span className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-rose-600 text-white flex items-center justify-center">
+                            <Check className="h-2.5 w-2.5" />
+                          </span>
+                        )}
                         <div className="flex items-center gap-2">
-                          <span className="text-base">🏥</span>
+                          <span className="text-lg">🏥</span>
                           <span className="text-xs font-bold text-gray-900 leading-tight">
                             On-Site Consultation
                           </span>
@@ -289,11 +308,11 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                   {/* 4. Concern (Optional) */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <label className="font-semibold text-gray-700 flex items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5 text-gray-500" />
+                      <label className="font-semibold text-gray-800 flex items-center gap-1.5">
+                        <Mail className="h-3.5 w-3.5 text-rose-600" />
                         <span>Concern (Optional)</span>
                       </label>
-                      <span className="text-gray-400 font-mono text-[11px]">
+                      <span className={`font-mono text-[11px] ${concern.length > 0 ? 'text-rose-600 font-semibold' : 'text-gray-400'}`}>
                         {concern.length}/100
                       </span>
                     </div>
@@ -303,30 +322,30 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                       placeholder="Brief description of your concern..."
                       value={concern}
                       onChange={(e) => setConcern(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all resize-none bg-white"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-900 placeholder-gray-400 bg-rose-50/20 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-600 transition-all resize-none"
                     />
                   </div>
 
                   {/* Mode Info Pill */}
-                  <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-150 text-[11px] text-gray-600 flex items-center gap-2">
+                  <div className="p-2.5 rounded-xl bg-rose-50/60 border border-rose-200/60 text-[11px] text-rose-950 flex items-center gap-2">
                     {mode === 'online' ? (
                       <>
-                        <Laptop className="h-4 w-4 text-indigo-600 shrink-0" />
+                        <Laptop className="h-4 w-4 text-rose-600 shrink-0" />
                         <span>Dr. Bilal will connect with you via WhatsApp Video / Google Meet.</span>
                       </>
                     ) : (
                       <>
-                        <Building2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                        <Building2 className="h-4 w-4 text-rose-600 shrink-0" />
                         <span>In-person checkup at Brimish Clinic (Sami Tower, Ring Road, Peshawar).</span>
                       </>
                     )}
                   </div>
 
-                  {/* Submit Button */}
+                  {/* Submit Button in Brimish Rose/Pink Gradient Theme */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 px-4 rounded-xl bg-[#121927] hover:bg-[#1a2438] active:bg-[#0c111a] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-gray-900/10 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-600 hover:from-rose-700 hover:to-pink-700 text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 active:scale-[0.99] transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
@@ -343,8 +362,8 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
 
                   {/* Footer Badge */}
                   <div className="pt-2 text-center">
-                    <p className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase flex items-center justify-center gap-1.5">
-                      <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
+                    <p className="text-[11px] font-semibold tracking-wider text-rose-950/70 uppercase flex items-center justify-center gap-1.5">
+                      <ShieldCheck className="h-3.5 w-3.5 text-rose-600" />
                       <span>Secure & Confidential</span>
                     </p>
                   </div>
@@ -366,10 +385,10 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                   </div>
 
                   {/* Reference Ticket Card */}
-                  <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-left space-y-2 text-xs">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-200/80">
+                  <div className="p-4 rounded-2xl bg-rose-50/40 border border-rose-100 text-left space-y-2 text-xs">
+                    <div className="flex justify-between items-center pb-2 border-b border-rose-100">
                       <span className="text-gray-500">Booking Reference</span>
-                      <span className="font-mono font-bold text-gray-900 bg-white px-2 py-0.5 rounded border border-gray-200">
+                      <span className="font-mono font-bold text-gray-900 bg-white px-2 py-0.5 rounded border border-rose-200">
                         {bookingSuccess.refNumber}
                       </span>
                     </div>
@@ -404,7 +423,7 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                     <button
                       type="button"
                       onClick={closeConsultation}
-                      className="w-full py-2.5 text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors"
+                      className="w-full py-2.5 text-xs font-semibold text-gray-500 hover:text-rose-600 transition-colors cursor-pointer"
                     >
                       Close Window
                     </button>

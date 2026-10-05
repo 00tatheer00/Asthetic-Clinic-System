@@ -12,7 +12,7 @@ export function FloatingConsultationButton() {
       <button
         type="button"
         onClick={() => openConsultation('online')}
-        className="group relative flex items-center gap-2.5 bg-gradient-to-r from-[#121927] to-[#1E293B] hover:from-[#1E293B] hover:to-[#0F172A] text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-full shadow-xl hover:shadow-2xl border border-white/20 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+        className="group relative flex items-center gap-2.5 bg-gradient-to-r from-[#2D1226] via-[#3B1530] to-[#1E0B19] hover:from-[#3B1530] hover:to-[#2D1226] text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-full shadow-xl hover:shadow-2xl shadow-rose-950/25 border border-rose-400/30 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
         aria-label="Book Online Doctor Consultation"
       >
         {/* Pulsing Green Doctor Status Indicator */}
