@@ -210,16 +210,26 @@ export function AppointmentsList({
     }
     const treatmentName = apt.treatments?.name || 'Aesthetic Consultation / Treatment';
     const appointmentDateFormatted = formatDateTime(apt.scheduled_at);
+    const isOnline = apt.message?.includes('[ONLINE CONSULTATION]');
+    const isOnSite = apt.message?.includes('[ON-SITE CLINIC VISIT]');
 
     let statusNote = 'Your appointment is confirmed. Please arrive 10 minutes prior to your time.';
-    if (apt.status === 'pending') {
+    if (isOnline) {
+      statusNote = 'Your Online Video Consultation with Dr. Bilal is confirmed. Our doctor will initiate the video/audio call with you at your scheduled time.';
+    } else if (apt.status === 'pending') {
       statusNote = 'We have received your appointment request and our clinical coordinator is ready to confirm your schedule.';
     } else if (apt.status === 'checked_in') {
       statusNote = 'You have checked in at reception. The aesthetic doctor will see you shortly.';
     }
 
+    const modeLine = isOnline
+      ? '• Mode: Online Consultation (Video / Audio Call)\n'
+      : isOnSite
+      ? '• Mode: On-Site Consultation (In-Clinic Visit)\n'
+      : '';
+
     const statusLabel = APPOINTMENT_STATUS_LABELS[apt.status] || apt.status.replace(/_/g, ' ');
-    const text = `Assalam-o-Alaikum ${apt.customer_name},\n\nBrimish Skin Care & Laser Clinic:\n• Treatment: ${treatmentName}\n• Scheduled Time: ${appointmentDateFormatted}\n• Status: ${statusLabel.toUpperCase()}\n\n${statusNote}\n\nClinic Address: Sami Tower, Ring Road, Peshawar\nDoctor / WhatsApp: 0335-6400959`;
+    const text = `Assalam-o-Alaikum ${apt.customer_name},\n\nBrimish Skin Care & Laser Clinic:\n• Treatment: ${treatmentName}\n${modeLine}• Scheduled Time: ${appointmentDateFormatted}\n• Status: ${statusLabel.toUpperCase()}\n\n${statusNote}\n\nClinic Address: Sami Tower, Ring Road, Peshawar\nDoctor / WhatsApp: 0335-6400959`;
 
     const link = buildWhatsAppLink(apt.customer_phone, text);
     window.open(link, '_blank');
@@ -683,9 +693,25 @@ export function AppointmentsList({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-gray-700">
-                        {apt.treatments?.name || '—'}
-                      </span>
+                      <div>
+                        <span className="text-sm font-medium text-gray-800">
+                          {apt.treatments?.name || 'Doctor Consultation'}
+                        </span>
+                        {apt.message?.includes('[ONLINE CONSULTATION]') && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full">
+                              💻 Online Video Call
+                            </span>
+                          </div>
+                        )}
+                        {apt.message?.includes('[ON-SITE CLINIC VISIT]') && (
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                              🏥 In-Clinic Visit
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-gray-700">
@@ -1253,6 +1279,20 @@ export function AppointmentsList({
                           {apt.treatments?.name || 'Aesthetic Treatment'}
                           {apt.treatments?.price ? ` • PKR ${apt.treatments.price.toLocaleString()}` : ''}
                         </div>
+                        {apt.message?.includes('[ONLINE CONSULTATION]') && (
+                          <div className="mt-1 flex sm:justify-end">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300 px-2 py-0.5 rounded-md">
+                              💻 Online Video Call Requested
+                            </span>
+                          </div>
+                        )}
+                        {apt.message?.includes('[ON-SITE CLINIC VISIT]') && (
+                          <div className="mt-1 flex sm:justify-end">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-md">
+                              🏥 In-Clinic Visit Requested
+                            </span>
+                          </div>
+                        )}
                         <p className="text-xs text-amber-900 font-semibold flex items-center sm:justify-end gap-1 mt-1">
                           <Clock className="h-3 w-3 text-amber-600" />
                           {formatDateTime(apt.scheduled_at)}

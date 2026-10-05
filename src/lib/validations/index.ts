@@ -67,6 +67,25 @@ export const appointmentBookingSchema = z.object({
 
 export type AppointmentBookingInput = z.infer<typeof appointmentBookingSchema>;
 
+// Quick Consultation (Online Video/Audio vs On-Site In-Clinic)
+export const consultationBookingSchema = z.object({
+  customer_name: z
+    .string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be at most 100 characters')
+    .trim(),
+  customer_phone: phoneSchema,
+  consultation_mode: z.enum(['online', 'onsite']).default('online'),
+  concern: z
+    .string()
+    .max(100, 'Concern must be at most 100 characters')
+    .optional()
+    .or(z.literal('')),
+  scheduled_at: z.string().optional(),
+});
+
+export type ConsultationBookingInput = z.infer<typeof consultationBookingSchema>;
+
 // ============================================================
 // Appointment Management (Dashboard)
 // ============================================================

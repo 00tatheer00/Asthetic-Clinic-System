@@ -2,7 +2,11 @@
 
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { appointmentBookingSchema, appointmentUpdateSchema } from '@/lib/validations';
+import {
+  appointmentBookingSchema,
+  appointmentUpdateSchema,
+  consultationBookingSchema,
+} from '@/lib/validations';
 import { sendAppointmentReceivedEmail, sendAppointmentConfirmedEmail } from '@/lib/email';
 import { formatDateTime } from '@/lib/utils/helpers';
 import { revalidatePath } from 'next/cache';
@@ -146,6 +150,188 @@ export async function createPublicAppointment(formData: unknown) {
         err?.message && !err.message.includes('Minified React error')
           ? err.message
           : 'Unable to submit booking right now. Please call or WhatsApp our clinic at 0335-6400959.',
+    };
+  }
+}
+
+// ============================================================
+// Public: Quick Doctor Consultation Booking (Online Video vs On-Site In-Clinic)
+// ============================================================
+
+export async function createConsultationBooking(formData: unknown) {
+  try {
+    const ip = await getClientIp();
+    const { limited } = checkRateLimit(
+      `consultation:${ip}`,
+      RATE_LIMITS.booking.requests,
+      RATE_LIMITS.booking.windowMs
+    );
+    if (limited) {
+      return {
+        success: false,
+        error: 'Too many booking requests. Please wait a moment and try again.',
+      };
+    }
+
+    const parsed = consultationBookingSchema.safeParse(formData);
+
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      const friendlyError = firstIssue
+        ? firstIssue.message
+        : 'Please check your details and try again.';
+      return {
+        success: false,
+        error: friendlyError,
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      };
+    }
+
+    const data = parsed.data;
+    const isOnline = data.consultation_mode === 'online';
+    const modeLabel = isOnline
+      ? 'Online Consultation (Video / Audio Call)'
+      : 'On-Site Consultation (In-Clinic Visit)';
+    const modeTag = isOnline ? '[ONLINE CONSULTATION]' : '[ON-SITE CLINIC VISIT]';
+
+    // Parse scheduled date/time if provided, otherwise default to earliest slot
+    let scheduledDate = new Date();
+    if (data.scheduled_at) {
+      const parsedTime = new Date(data.scheduled_at).getTime();
+      if (!isNaN(parsedTime)) {
+        scheduledDate = new Date(data.scheduled_at);
+      }
+    } else {
+      // Default to next daytime operating slot
+      const currentHour = scheduledDate.getHours();
+      if (currentHour >= 19 || currentHour < 10) {
+        scheduledDate.setDate(scheduledDate.getDate() + 1);
+        scheduledDate.setHours(11, 0, 0, 0);
+      } else {
+        scheduledDate.setHours(currentHour + 2, 0, 0, 0);
+      }
+    }
+
+    const supabase = createAdminClient();
+
+    // Treatment fallback
+    let validTreatmentId = '9803b3c3-2e1d-44dd-b684-3782c0c90a9b';
+    const treatmentName = isOnline
+      ? 'Doctor Consultation (Online Video Call)'
+      : 'Doctor Consultation (In-Clinic Visit)';
+
+    try {
+      const { data: treatment } = await supabase
+        .from('treatments')
+        .select('id, name')
+        .ilike('name', '%consultation%')
+        .limit(1)
+        .maybeSingle();
+
+      if (treatment) {
+        validTreatmentId = treatment.id;
+      } else {
+        const { data: firstTreatment } = await supabase
+          .from('treatments')
+          .select('id, name')
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+        if (firstTreatment) {
+          validTreatmentId = firstTreatment.id;
+        }
+      }
+    } catch (tErr) {
+      console.warn('Consultation treatment lookup warning:', tErr);
+    }
+
+    const normalizePhone = (phone: string) =>
+      phone.replace(/[\s\-()]/g, '').replace(/^\+92/, '0');
+    const normalizedPhone = normalizePhone(data.customer_phone);
+
+    const messageLines = [
+      `CONSULTATION MODE: ${modeTag} - ${modeLabel}`,
+      data.concern?.trim()
+        ? `PATIENT CONCERN: ${data.concern.trim()}`
+        : 'PATIENT CONCERN: Doctor skin consultation requested',
+      `SUBMITTED VIA: Quick Doctor Consultation Modal`,
+    ];
+    const finalMessage = messageLines.join('\n\n');
+
+    const { data: appointment, error } = await supabase
+      .from('appointments')
+      .insert({
+        customer_name: data.customer_name,
+        customer_phone: normalizedPhone,
+        treatment_id: validTreatmentId,
+        scheduled_at: scheduledDate.toISOString(),
+        message: finalMessage,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (error || !appointment) {
+      console.error('[Consultation] Create failed:', error);
+      return {
+        success: false,
+        error: error?.message || 'Failed to submit consultation request. Please try again.',
+      };
+    }
+
+    // Send email alert to clinic administration
+    try {
+      sendAppointmentReceivedEmail({
+        customerName: data.customer_name,
+        customerPhone: normalizedPhone,
+        treatmentName: treatmentName,
+        scheduledAt: formatDateTime(scheduledDate.toISOString()),
+        message: finalMessage,
+      }).catch(console.error);
+    } catch (emailErr) {
+      console.warn('Consultation email trigger warning:', emailErr);
+    }
+
+    // Revalidate dashboard
+    try {
+      revalidatePath('/dashboard');
+      revalidatePath('/dashboard/appointments');
+    } catch (revalErr) {
+      console.warn('Consultation revalidation warning:', revalErr);
+    }
+
+    const refNumber = `BSC-CON-${appointment.id.slice(0, 6).toUpperCase()}`;
+
+    // WhatsApp Direct Confirmation Link
+    const clinicNumber = '923356400959';
+    const waText =
+      `Assalam-o-Alaikum Dr. Bilal Clinic,\n\nI have requested a ${modeLabel}.\n` +
+      `• Patient Name: ${data.customer_name}\n` +
+      `• Phone: ${normalizedPhone}\n` +
+      `• Ref: ${refNumber}\n` +
+      (data.concern?.trim() ? `• Concern: ${data.concern.trim()}\n` : '') +
+      `\nPlease confirm the available time slot with Dr. Bilal.`;
+
+    const whatsappUrl = `https://wa.me/${clinicNumber}?text=${encodeURIComponent(waText)}`;
+
+    return {
+      success: true,
+      appointmentId: appointment.id,
+      refNumber,
+      whatsappUrl,
+      customerName: data.customer_name,
+      customerPhone: normalizedPhone,
+      mode: data.consultation_mode,
+      modeLabel,
+    };
+  } catch (err: any) {
+    console.error('[createConsultationBooking] Fatal error:', err);
+    return {
+      success: false,
+      error:
+        err?.message && !err.message.includes('Minified React error')
+          ? err.message
+          : 'Unable to submit booking right now. Please WhatsApp Dr. Bilal Clinic directly at 0335-6400959.',
     };
   }
 }

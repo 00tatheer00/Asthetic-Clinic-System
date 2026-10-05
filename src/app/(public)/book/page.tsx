@@ -1,4 +1,5 @@
 import { BookingFlow } from './booking-flow';
+import { ConsultationQuickBanner } from '@/components/public/consultation-quick-banner';
 import type { Metadata } from 'next';
 import { Shield, Clock, Phone, MapPin, CheckCircle, Heart } from 'lucide-react';
 import Link from 'next/link';
@@ -50,6 +51,9 @@ export default async function BookPage({ searchParams }: BookPageProps) {
             Book your skin consultation with Dr. Bilal at Sami Tower, Ring Road, Peshawar. No advance payment required.
           </p>
         </div>
+
+        {/* 1-Tap Quick Doctor Consultation Banner */}
+        <ConsultationQuickBanner />
 
         {/* Full-Width Booking Flow Container */}
         <div className="w-full max-w-7xl mx-auto mb-16">
