@@ -144,11 +144,10 @@ export default async function DashboardPage() {
       .order('price', { ascending: false })
       .limit(4),
 
-    // 7-day rolling invoices for revenue line chart & payment tender breakdown
+    // All non-voided invoices for all-time revenue & payment tender breakdown
     supabase
       .from('invoices')
       .select('total, created_at, payment_method')
-      .gte('created_at', sevenDaysAgoISO)
       .neq('status', 'voided'),
 
     // 7-day rolling appointments for volume bar chart
@@ -175,12 +174,16 @@ export default async function DashboardPage() {
       .limit(6),
   ]);
 
-  // Aggregate today's and monthly revenue
+  // Aggregate today's, monthly, and all-time revenue
   const todayRevenue = (todayInvoicesRes.data || []).reduce(
     (sum, inv) => sum + (Number(inv.total) || 0),
     0
   );
   const monthRevenue = (monthInvoicesRes.data || []).reduce(
+    (sum, inv) => sum + (Number(inv.total) || 0),
+    0
+  );
+  const allTimeRevenue = (sevenDaysInvoicesRes.data || []).reduce(
     (sum, inv) => sum + (Number(inv.total) || 0),
     0
   );
@@ -370,6 +373,7 @@ export default async function DashboardPage() {
         todayCompletedVisits: completedVisitsRes.count ?? 0,
         todayRevenue,
         monthRevenue,
+        allTimeRevenue,
         pendingOrders: pendingOrdersCount,
         lowStockCount,
         pendingReviewsCount,

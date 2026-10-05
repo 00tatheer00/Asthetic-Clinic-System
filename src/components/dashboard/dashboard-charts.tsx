@@ -72,6 +72,8 @@ export interface DashboardChartsProps {
   statusData: ChartStatusData;
   paymentData: ChartPaymentData;
   isAdmin: boolean;
+  allTimeRevenue?: number;
+  allTimeAppointments?: number;
 }
 
 export function DashboardCharts({
@@ -79,6 +81,8 @@ export function DashboardCharts({
   statusData,
   paymentData,
   isAdmin,
+  allTimeRevenue,
+  allTimeAppointments,
 }: DashboardChartsProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -87,15 +91,19 @@ export function DashboardCharts({
   }, []);
 
   // Aggregate stats
-  const total7DayRevenue = useMemo(
+  const calculated7DayRevenue = useMemo(
     () => dailyData.reduce((acc, curr) => acc + curr.revenue, 0),
     [dailyData]
   );
 
-  const total7DayAppointments = useMemo(
+  const displayRevenue = allTimeRevenue !== undefined ? allTimeRevenue : calculated7DayRevenue;
+
+  const calculated7DayAppointments = useMemo(
     () => dailyData.reduce((acc, curr) => acc + curr.appointments, 0),
     [dailyData]
   );
+
+  const displayAppointments = allTimeAppointments !== undefined ? allTimeAppointments : calculated7DayAppointments;
 
   const totalStatusAppointments =
     statusData.completed + statusData.confirmed + statusData.pending + statusData.cancelled;
@@ -343,35 +351,35 @@ export function DashboardCharts({
 
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-medium text-gray-500 bg-white border border-gray-200/80 px-3 py-1 rounded-full shadow-xs">
-            7-Day Rolling Trend · PKR
+            All-Time Performance · PKR
           </span>
         </div>
       </div>
 
       {/* 4 Quick Analytics Mini-KPI Badges */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* 7-Day Revenue (Rose) */}
+        {/* All-Time Revenue (Rose) */}
         <div className="p-4 rounded-2xl bg-gradient-to-br from-white via-white to-rose-50/25 border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 shadow-xs flex items-center gap-3 cursor-pointer group">
           <div className="h-10 w-10 rounded-xl bg-rose-100/70 text-rose-600 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
             <DollarSign className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700/80">7-Day Revenue</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-rose-700/80">All-Time Revenue</p>
             <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif group-hover:text-rose-950 transition-colors">
-              {formatCurrency(total7DayRevenue)}
+              {formatCurrency(displayRevenue)}
             </p>
           </div>
         </div>
 
-        {/* 7-Day Patients (Blue) */}
+        {/* All-Time Patients (Blue) */}
         <div className="p-4 rounded-2xl bg-gradient-to-br from-white via-white to-blue-50/25 border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 shadow-xs flex items-center gap-3 cursor-pointer group">
           <div className="h-10 w-10 rounded-xl bg-blue-100/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
             <Calendar className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/80">7-Day Patients</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700/80">All-Time Patients</p>
             <p className="text-base sm:text-lg font-bold text-gray-950 truncate font-serif group-hover:text-blue-950 transition-colors">
-              {total7DayAppointments} Visits
+              {displayAppointments} Visits
             </p>
           </div>
         </div>
@@ -405,7 +413,7 @@ export function DashboardCharts({
 
       {/* Row 1: Line Chart (Revenue Velocity) + Bar Chart (Patient Inflow) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: 7-Day Revenue Velocity (7 cols - Rose) */}
+        {/* Left: Revenue Velocity (7 cols - Rose) */}
         <Card className="lg:col-span-7 border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
           <CardHeader className="p-5 pb-3 border-b border-gray-100 bg-gray-50/40 flex flex-row items-center justify-between">
             <div>
@@ -416,11 +424,11 @@ export function DashboardCharts({
                 </CardTitle>
               </div>
               <CardDescription className="text-xs text-gray-500">
-                7-day rolling revenue trend (PKR) across clinic services & retail products
+                Revenue velocity & trends (PKR) across clinic services & retail products
               </CardDescription>
             </div>
             <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
-              {formatCurrency(total7DayRevenue)} total
+              {formatCurrency(displayRevenue)} total
             </span>
           </CardHeader>
           <CardContent className="p-5">
@@ -445,7 +453,7 @@ export function DashboardCharts({
               </CardDescription>
             </div>
             <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-              {total7DayAppointments} visits
+              {displayAppointments} visits
             </span>
           </CardHeader>
           <CardContent className="p-5">

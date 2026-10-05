@@ -65,6 +65,7 @@ interface DashboardIntelligenceProps {
     todayCompletedVisits: number;
     todayRevenue: number;
     monthRevenue: number;
+    allTimeRevenue?: number;
     pendingOrders: number;
     lowStockCount: number;
     pendingReviewsCount: number;
@@ -320,7 +321,7 @@ export function DashboardIntelligence({
                     </p>
                     <p className="text-xs text-emerald-700 mt-1.5 flex items-center gap-1 font-medium">
                       <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-                      <span>Month: {formatCurrency(stats.monthRevenue)}</span>
+                      <span>All-Time: {formatCurrency(stats.allTimeRevenue || stats.monthRevenue)}</span>
                     </p>
                   </div>
                   <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
@@ -428,6 +429,8 @@ export function DashboardIntelligence({
         statusData={statusData}
         paymentData={paymentData}
         isAdmin={isAdmin}
+        allTimeRevenue={stats.allTimeRevenue}
+        allTimeAppointments={stats.totalPatients}
       />
 
       {/* NEW ONLINE WEBSITE BOOKINGS QUEUE */}
