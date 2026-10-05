@@ -165,6 +165,7 @@ function wrapEmailTemplate(title: string, bodyContent: string): string {
 export async function sendAppointmentReceivedEmail(data: {
   customerName: string;
   customerPhone: string;
+  customerEmail?: string;
   treatmentName: string;
   scheduledAt: string;
   message?: string;
@@ -180,6 +181,7 @@ export async function sendAppointmentReceivedEmail(data: {
       <table class="table-data">
         <tr><td style="font-weight: 600; width: 140px;">Patient Name:</td><td>${data.customerName}</td></tr>
         <tr><td style="font-weight: 600;">Contact Phone:</td><td>${data.customerPhone}</td></tr>
+        ${data.customerEmail ? `<tr><td style="font-weight: 600;">Email:</td><td>${data.customerEmail}</td></tr>` : ''}
         <tr><td style="font-weight: 600;">Procedure:</td><td>${data.treatmentName}</td></tr>
         <tr><td style="font-weight: 600;">Preferred Slot:</td><td>${data.scheduledAt}</td></tr>
         ${data.message ? `<tr><td style="font-weight: 600;">Notes:</td><td>${data.message}</td></tr>` : ''}

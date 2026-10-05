@@ -75,6 +75,7 @@ export const consultationBookingSchema = z.object({
     .max(100, 'Name must be at most 100 characters')
     .trim(),
   customer_phone: phoneSchema,
+  customer_email: optionalEmailSchema,
   consultation_mode: z.enum(['online', 'onsite']).default('online'),
   concern: z
     .string()

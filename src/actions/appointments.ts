@@ -125,6 +125,7 @@ export async function createPublicAppointment(formData: unknown) {
       sendAppointmentReceivedEmail({
         customerName: data.customer_name,
         customerPhone: data.customer_phone,
+        customerEmail: data.customer_email || undefined,
         treatmentName: treatmentName,
         scheduledAt: formatDateTime(data.scheduled_at),
         message: finalMessage || undefined,
@@ -263,6 +264,7 @@ export async function createConsultationBooking(formData: unknown) {
       .insert({
         customer_name: data.customer_name,
         customer_phone: normalizedPhone,
+        customer_email: data.customer_email || null,
         treatment_id: validTreatmentId,
         scheduled_at: scheduledDate.toISOString(),
         message: finalMessage,
@@ -284,6 +286,7 @@ export async function createConsultationBooking(formData: unknown) {
       sendAppointmentReceivedEmail({
         customerName: data.customer_name,
         customerPhone: normalizedPhone,
+        customerEmail: data.customer_email || undefined,
         treatmentName: treatmentName,
         scheduledAt: formatDateTime(scheduledDate.toISOString()),
         message: finalMessage,
