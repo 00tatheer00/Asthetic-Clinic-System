@@ -536,10 +536,28 @@ export function PatientDetail({
               {beforeAfterCases.length === 0 ? (
                 <div className="text-center py-8">
                   <ImageIcon className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">No before & after cases.</p>
+                  <p className="text-sm text-gray-500 mb-3">No before & after cases recorded for this patient.</p>
+                  <Link
+                    href="/dashboard/gallery"
+                    className="inline-flex items-center justify-center gap-1 h-8 px-3 text-xs font-semibold rounded-lg border border-dashed border-gray-300 hover:border-rose-400 hover:bg-rose-50/50 text-gray-700 transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Upload B&A Photos in Cases
+                  </Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-gray-700">Clinical Before & After Photos</p>
+                    <Link
+                      href="/dashboard/gallery"
+                      className="inline-flex items-center justify-center gap-1 h-7 px-2.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Upload New Case
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {beforeAfterCases.map(ba => (
                     <div key={ba.id} className="rounded-xl border border-gray-100 overflow-hidden">
                       <div className="grid grid-cols-2 gap-px bg-gray-200">
@@ -564,7 +582,8 @@ export function PatientDetail({
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
+            )}
             </CardContent>
           </Card>
         </TabsContent>

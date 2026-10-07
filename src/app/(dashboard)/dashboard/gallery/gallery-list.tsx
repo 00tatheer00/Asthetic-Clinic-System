@@ -18,6 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -140,7 +141,7 @@ export function GalleryList({ cases, treatments, patients, isAdmin }: GalleryLis
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!beforeUrl.trim() || !afterUrl.trim()) {
-      toast.error('Both Before and After image URLs are required.');
+      toast.error('Both Before and After images are required.');
       return;
     }
 
@@ -392,27 +393,19 @@ export function GalleryList({ cases, treatments, patients, isAdmin }: GalleryLis
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Before Image URL *</Label>
-                <Input
-                  required
-                  placeholder="https://images.unsplash.com/..."
-                  value={beforeUrl}
-                  onChange={(e) => setBeforeUrl(e.target.value)}
-                  className="text-xs"
-                />
-              </div>
+              <ImageUpload
+                label="Before Treatment Image *"
+                value={beforeUrl}
+                onChange={setBeforeUrl}
+                category="before-after"
+              />
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">After Image URL *</Label>
-                <Input
-                  required
-                  placeholder="https://images.unsplash.com/..."
-                  value={afterUrl}
-                  onChange={(e) => setAfterUrl(e.target.value)}
-                  className="text-xs"
-                />
-              </div>
+              <ImageUpload
+                label="After Treatment Image *"
+                value={afterUrl}
+                onChange={setAfterUrl}
+                category="before-after"
+              />
             </div>
 
             <div className="space-y-1.5">

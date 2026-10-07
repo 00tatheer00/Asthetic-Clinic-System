@@ -421,8 +421,8 @@ export const beforeAfterSchema = z.object({
   visit_id: z.string().uuid().optional().nullable(),
   title: z.string().max(200).optional().or(z.literal('')),
   description: z.string().max(1000).optional().or(z.literal('')),
-  before_image_url: z.string().url('Before image is required'),
-  after_image_url: z.string().url('After image is required'),
+  before_image_url: z.string().min(1, 'Before image is required'),
+  after_image_url: z.string().min(1, 'After image is required'),
   is_public: z.boolean().default(false),
 });
 
