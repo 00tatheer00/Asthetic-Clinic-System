@@ -20,6 +20,7 @@ export default function robots(): MetadataRoute.Robots {
           '/terms',
           '/images/',
           '/icons/',
+          '/llms.txt',
         ],
         disallow: [
           '/dashboard/',
@@ -30,21 +31,44 @@ export default function robots(): MetadataRoute.Robots {
           '/api/*',
           '/_next/',
           '/_next/*',
-          '/*.json$',
         ],
       },
       {
-        userAgent: 'Googlebot',
+        userAgent: [
+          'Googlebot',
+          'Bingbot',
+          'Applebot',
+          'DuckDuckBot',
+          'Yandex',
+          'Baiduspider',
+        ],
         allow: '/',
         disallow: ['/dashboard/', '/auth/', '/api/'],
       },
+      // Generative Engine Optimization (GEO) & AI Search Agents
       {
-        userAgent: 'Bingbot',
-        allow: '/',
+        userAgent: [
+          'GPTBot',
+          'ChatGPT-User',
+          'PerplexityBot',
+          'ClaudeBot',
+          'anthropic-ai',
+          'Google-Extended',
+          'Bytespider',
+          'cohere-ai',
+        ],
+        allow: ['/', '/treatments', '/products', '/about', '/reviews', '/contact', '/llms.txt'],
         disallow: ['/dashboard/', '/auth/', '/api/'],
       },
+      // Social crawlers for rich preview cards
       {
-        userAgent: 'Applebot',
+        userAgent: [
+          'facebookexternalhit',
+          'Twitterbot',
+          'LinkedInBot',
+          'WhatsApp',
+          'TelegramBot',
+        ],
         allow: '/',
         disallow: ['/dashboard/', '/auth/', '/api/'],
       },

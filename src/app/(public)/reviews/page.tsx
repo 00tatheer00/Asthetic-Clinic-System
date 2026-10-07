@@ -6,22 +6,24 @@ import type { Metadata } from 'next';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Patient Reviews & Testimonials | Brimish Skin Care Clinic Peshawar',
+  title: 'Patient Reviews & Testimonials | Dr. Bilal Khan | Brimish Skin Care Clinic',
   description:
-    'Read real, verified patient testimonials for Dr. Bilal Ahmad and Brimish Skin Care Clinic. Rated 4.9/5 for HydraFacial, acne treatments, and gentle clinical care at Sami Tower, Ring Road, Peshawar.',
+    'Read real, verified patient testimonials for Dr. Bilal Khan (Dermatologist & Cosmetologist) and Brimish Skin Care Clinic. Rated 4.9/5 for HydraFacial, acne treatments, and gentle clinical care at Sami Tower, Ring Road, Peshawar.',
   keywords: [
-    'Dr Bilal reviews Peshawar',
+    'Dr Bilal Khan reviews Peshawar',
+    'Dr Bilal Ahmad feedback',
     'Brimish skin care clinic reviews',
-    'best skin clinic patient feedback',
+    'best skin clinic patient feedback Peshawar',
     'hydrafacial review Peshawar',
+    'dermatologist reviews Ring Road',
   ],
   alternates: {
     canonical: '/reviews',
   },
   openGraph: {
-    title: 'Patient Reviews & Clinical Testimonials | Brimish Skin Care Clinic',
+    title: 'Patient Reviews & Clinical Testimonials | Dr. Bilal Khan | Brimish Skin Care',
     description:
-      'Discover why over 150+ patients rate Brimish Skin Care 4.9/5 for medical aesthetic treatments in Peshawar.',
+      'Discover why over 160+ patients rate Dr. Bilal Khan & Brimish Skin Care 4.9/5 for medical aesthetic treatments in Peshawar.',
     url: '/reviews',
   },
 };

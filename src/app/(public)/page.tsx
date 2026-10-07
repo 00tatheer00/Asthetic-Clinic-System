@@ -20,25 +20,30 @@ import { BeforeAfterSlider } from '@/components/public/before-after-slider';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Brimish Skin Care & Laser Clinic — Best Aesthetic Clinic in Peshawar | Dr. Bilal Ahmad',
+  title: 'Brimish Skin Care & Laser Clinic — Dr. Bilal Khan (Dermatologist & Cosmetologist) | Peshawar',
   description:
-    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Specialized in Medical HydraFacial MD, Chemical Peels, Microneedling, and Laser Skin Rejuvenation at Sami Tower, Ring Road, Peshawar. Book without advance payment.',
+    'Peshawar’s top-rated medical dermatology & laser clinic by Dr. Bilal Khan (Dermatologist & Cosmetologist). Specialized in authentic HydraFacial MD, Chemical Peels, Microneedling, PRP, and Laser Hair Removal at Sami Tower, Ring Road, Peshawar. Zero-deposit instant booking.',
   keywords: [
     'Brimish Skin Care',
-    'Dr Bilal Ahmad dermatologist',
+    'Dr Bilal khan',
+    'Dr Bilal khan Dermatologist & Cosmetologist',
+    'Dr Bilal Ahmad dermatologist Peshawar',
     'best skin clinic Peshawar',
-    'skin specialist Peshawar',
+    'skin specialist Ring Road Peshawar',
     'HydraFacial Peshawar price',
-    'laser clinic Ring Road Peshawar',
+    'laser hair removal Peshawar',
     'acne scar treatment Peshawar',
     'chemical peel Peshawar',
-    'skin doctor Peshawar KP',
+    'PRP hair loss Peshawar',
+    'carbon laser peel Peshawar',
+    'Sami Tower Peshawar skin doctor',
+    'brimishskincare.com',
   ],
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Brimish Skin Care & Laser Clinic — Top Aesthetic Clinic in Peshawar',
+    title: 'Brimish Skin Care & Laser Clinic — Dr. Bilal Khan | Peshawar',
     description:
       'Physician-led clinical skincare, HydraFacial, laser therapy, and personalized acne solutions at Sami Tower, Ring Road, Peshawar.',
     url: '/',
@@ -54,9 +59,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Brimish Skin Care & Laser Clinic Peshawar',
+    title: 'Brimish Skin Care & Laser Clinic — Dr. Bilal Khan',
     description:
-      'Best aesthetic dermatology and laser skin rejuvenation clinic in Peshawar by Dr. Bilal Ahmad.',
+      'Best aesthetic dermatology and laser skin rejuvenation clinic in Peshawar led by Dr. Bilal Khan (Dermatologist & Cosmetologist).',
     images: ['/images/hero-clinic.jpg'],
   },
 };

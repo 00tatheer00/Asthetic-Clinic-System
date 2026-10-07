@@ -14,24 +14,27 @@ import {
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'About Dr. Bilal Ahmad & Brimish Skin Care Clinic | Peshawar Aesthetic Center',
+  title: 'About Dr. Bilal Khan & Brimish Skin Care Clinic | Peshawar Aesthetic Center',
   description:
-    'Learn about Brimish Skin Care & Laser Clinic at Sami Tower, Ring Road, Peshawar. Led by Dr. Bilal Ahmad (MD Aesthetic Medicine). Discover our clinical sterile protocols, physician-guided dermatology, and genuine patient care.',
+    'Learn about Brimish Skin Care & Laser Clinic at Sami Tower, Ring Road, Peshawar. Led by Dr. Bilal Khan (Dermatologist & Cosmetologist, also known as Dr. Bilal Ahmad). Discover our clinical sterile protocols, physician-guided dermatology, and genuine patient care.',
   keywords: [
+    'Dr Bilal Khan',
+    'Dr Bilal khan Dermatologist & Cosmetologist',
     'Dr Bilal Ahmad',
     'Dr Bilal dermatologist Peshawar',
     'about Brimish skin clinic',
     'aesthetic doctor Peshawar',
     'Sami Tower skin clinic',
-    'skin doctor Ring Road',
+    'skin doctor Ring Road Peshawar',
+    'Brimish Skin Care Dr Bilal',
   ],
   alternates: {
     canonical: '/about',
   },
   openGraph: {
-    title: 'About Dr. Bilal Ahmad & Brimish Clinic | Peshawar Aesthetic Center',
+    title: 'About Dr. Bilal Khan & Brimish Skin Care Clinic | Peshawar',
     description:
-      'Physician-led clinical excellence, sterile aesthetic treatments, and proven skincare solutions in Peshawar.',
+      'Physician-led clinical excellence, sterile aesthetic treatments, and proven skincare solutions in Peshawar by Dr. Bilal Khan.',
     url: '/about',
     images: ['/images/dr-bilal.jpg'],
   },

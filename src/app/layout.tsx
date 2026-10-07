@@ -19,17 +19,18 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://brimishskincare.com';
+const SITE_URL = 'https://brimishskincare.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Brimish Skin Care & Laser Clinic — Best Aesthetic Clinic in Peshawar',
+    default: 'Brimish Skin Care & Laser Clinic Peshawar | Dr. Bilal Khan (Dermatologist & Cosmetologist)',
     template: '%s | Brimish Skin Care Clinic Peshawar',
   },
   description:
-    'Peshawar’s premier medical aesthetics and dermatology clinic led by Dr. Bilal Ahmad. Authentic HydraFacial MD, medical chemical peels, microneedling, laser hair removal, and clinical skincare at Sami Tower, Ring Road, Peshawar.',
+    'Peshawar’s premier aesthetic dermatology & laser clinic by Dr. Bilal Khan (Dermatologist & Cosmetologist, MD Aesthetic Medicine). Authentic Medical HydraFacial MD, Chemical Peels, Collagen Microneedling, Laser Hair Removal, and clinical skincare at Sami Tower, Ring Road, Peshawar.',
   applicationName: 'Brimish Skin Care Clinic',
+  category: 'Medical Clinic, Aesthetic Dermatology, Laser Treatments, Skincare',
   generator: 'Next.js',
   manifest: '/manifest.webmanifest',
   icons: {
@@ -50,29 +51,41 @@ export const metadata: Metadata = {
   },
   keywords: [
     'Brimish Skin Care',
-    'Brimish Clinic Peshawar',
+    'brimishskincare.com',
+    'Dr Bilal Khan',
+    'Dr Bilal Khan Dermatologist',
+    'Dr Bilal Khan Cosmetologist',
     'Dr Bilal Ahmad',
-    'skin specialist Peshawar',
+    'Dr Bilal skin specialist Peshawar',
     'best dermatologist in Peshawar',
+    'skin specialist in Peshawar',
+    'aesthetic clinic Peshawar',
     'HydraFacial in Peshawar',
     'HydraFacial price Peshawar',
+    'medical HydraFacial MD',
     'laser hair removal Peshawar',
-    'aesthetic clinic Ring Road Peshawar',
-    'medical chemical peel Peshawar',
     'acne scar treatment Peshawar',
     'melasma treatment Peshawar',
     'collagen microneedling Peshawar',
     'carbon laser peel Peshawar',
     'PRP hair treatment Peshawar',
-    'skin whitening clinic Peshawar',
+    'PRP facial Peshawar',
+    'chemical peel Peshawar',
+    'aesthetic clinic Ring Road Peshawar',
+    'Sami Tower Peshawar skin doctor',
     'dermatology clinic Khyber Pakhtunkhwa',
     'clinical skincare products Pakistan',
+    'skin doctor near me Peshawar',
+    'whitening facial Peshawar',
+    'glass skin treatment Peshawar',
+    'skin pigmentation clinic KP',
   ],
   authors: [
+    { name: 'Dr. Bilal Khan (Dermatologist & Cosmetologist)', url: SITE_URL },
     { name: 'Dr. Bilal Ahmad (MD Aesthetic Medicine)', url: SITE_URL },
-    { name: 'Brimish Clinical Editorial Board' },
+    { name: 'Brimish Clinical Editorial Board', url: SITE_URL },
   ],
-  creator: 'Dr. Bilal Ahmad',
+  creator: 'Dr. Bilal Khan',
   publisher: 'Brimish Skin Care & Laser Clinic',
   formatDetection: {
     telephone: true,
@@ -81,7 +94,13 @@ export const metadata: Metadata = {
     email: true,
   },
   alternates: {
-    canonical: '/',
+    canonical: SITE_URL,
+    languages: {
+      'en-PK': SITE_URL,
+      'ur-PK': SITE_URL,
+      'en-US': SITE_URL,
+      'x-default': SITE_URL,
+    },
   },
   openGraph: {
     type: 'website',
@@ -89,30 +108,30 @@ export const metadata: Metadata = {
     alternateLocale: ['en_US', 'ur_PK'],
     url: SITE_URL,
     siteName: 'Brimish Skin Care & Laser Clinic',
-    title: 'Brimish Skin Care & Laser Clinic — Premier Aesthetic Dermatology in Peshawar',
+    title: 'Brimish Skin Care & Laser Clinic Peshawar | Dr. Bilal Khan',
     description:
-      'Experience physician-led clinical skincare & laser aesthetics in Peshawar, Pakistan. HydraFacial, medical peels, microneedling, and personalized acne solutions by Dr. Bilal.',
+      'Premier aesthetic dermatology & laser clinic in Peshawar by Dr. Bilal Khan (Dermatologist & Cosmetologist). HydraFacial MD, medical peels, microneedling, laser hair removal & clinical skincare at Sami Tower, Ring Road.',
     images: [
       {
-        url: '/images/hero-clinic.jpg',
+        url: `${SITE_URL}/images/hero-clinic.jpg`,
         width: 1200,
         height: 630,
         alt: 'Brimish Skin Care & Laser Clinic Consultation Lounge in Peshawar',
       },
       {
-        url: '/images/logo.png',
+        url: `${SITE_URL}/images/logo.png`,
         width: 1024,
         height: 1024,
-        alt: 'Brimish Official Gold Emblem',
+        alt: 'Brimish Official Gold Clinical Emblem',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Brimish Skin Care & Laser Clinic Peshawar',
+    title: 'Brimish Skin Care & Laser Clinic Peshawar | Dr. Bilal Khan',
     description:
-      'Leading aesthetic dermatology & laser clinic in Peshawar led by Dr. Bilal Ahmad. Book consultation with zero advance deposit.',
-    images: ['/images/hero-clinic.jpg'],
+      'Leading aesthetic dermatology & laser clinic in Peshawar led by Dr. Bilal Khan. Book doctor consultation with zero advance deposit.',
+    images: [`${SITE_URL}/images/hero-clinic.jpg`],
     creator: '@brimishclinic',
     site: '@brimishclinic',
   },
@@ -129,9 +148,12 @@ export const metadata: Metadata = {
   },
   other: {
     'geo.region': 'PK-KP',
-    'geo.placename': 'Peshawar',
+    'geo.placename': 'Peshawar, Khyber Pakhtunkhwa, Pakistan',
     'geo.position': '34.0047;71.5369',
     'ICBM': '34.0047, 71.5369',
+    'rating': 'general',
+    'distribution': 'global',
+    'revisit-after': '2 days',
   },
 };
 

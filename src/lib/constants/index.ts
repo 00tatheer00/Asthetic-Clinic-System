@@ -2,7 +2,7 @@
 
 export const APP_NAME = 'Brimish Skin Care';
 export const APP_DESCRIPTION = 'Premium aesthetic skincare clinic in Peshawar, Pakistan. Expert treatments, quality products, and compassionate care for all skin types.';
-export const APP_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+export const APP_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://brimishskincare.com';
 
 // Currency
 export const CURRENCY_CODE = 'PKR';

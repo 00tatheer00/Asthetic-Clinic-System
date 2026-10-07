@@ -9,16 +9,18 @@ import type { Metadata } from 'next';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Clinical Skin & Laser Treatments | Brimish Skin Care Clinic Peshawar',
+  title: 'Clinical Skin & Laser Treatments | Dr. Bilal Khan | Brimish Skin Care Peshawar',
   description:
-    'Explore physician-led treatments in Peshawar: Medical HydraFacial MD, Chemical Peels, Collagen Microneedling, Carbon Laser Peels, and Acne Rejuvenation protocols by Dr. Bilal Ahmad. Transparent PKR pricing.',
+    'Explore physician-led treatments in Peshawar: Medical HydraFacial MD, Chemical Peels, Collagen Microneedling, PRP Therapy, Carbon Laser, and Acne Clearance by Dr. Bilal Khan (Dermatologist & Cosmetologist). Transparent PKR pricing.',
   keywords: [
-    'HydraFacial Peshawar',
+    'HydraFacial Peshawar price',
     'chemical peel Peshawar',
-    'microneedling Peshawar',
+    'microneedling Peshawar Dermapen',
     'carbon laser peel Peshawar',
     'acne treatment Peshawar',
     'laser hair removal Peshawar',
+    'PRP hair loss Peshawar',
+    'Dr Bilal Khan treatments',
     'skin rejuvenation Peshawar KP',
     'Brimish treatments price',
   ],
@@ -26,9 +28,9 @@ export const metadata: Metadata = {
     canonical: '/treatments',
   },
   openGraph: {
-    title: 'Aesthetic & Laser Treatments | Brimish Skin Care Clinic Peshawar',
+    title: 'Aesthetic & Laser Treatments | Dr. Bilal Khan | Brimish Skin Care Peshawar',
     description:
-      'Physician-administered skin rejuvenation protocols in Peshawar. Safe for Pakistani skin tones, zero burning risk.',
+      'Physician-administered skin rejuvenation protocols in Peshawar by Dr. Bilal Khan. Safe for Pakistani skin tones, zero burning risk.',
     url: '/treatments',
     images: ['/images/treatment-hydrafacial.jpg'],
   },

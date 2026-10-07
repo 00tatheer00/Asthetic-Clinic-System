@@ -5,23 +5,24 @@ import type { Metadata } from 'next';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Before & After Clinical Results Gallery | Brimish Skin Care Clinic Peshawar',
+  title: 'Before & After Clinical Results Gallery | Dr. Bilal Khan | Brimish Skin Care',
   description:
-    'Verified before and after clinical transformations for acne scar reduction, melasma lightening, HydraFacial glow, and microneedling at Brimish Skin Care Clinic in Peshawar.',
+    'Verified before and after clinical transformations for acne scar reduction, melasma lightening, HydraFacial glow, and microneedling supervised by Dr. Bilal Khan (Dermatologist & Cosmetologist) in Peshawar.',
   keywords: [
     'acne before after Peshawar',
     'hydrafacial results Peshawar',
+    'Dr Bilal Khan before after',
     'skin clinic before and after',
     'melasma treatment results Pakistan',
-    'chemical peel before after',
+    'chemical peel before after Peshawar',
   ],
   alternates: {
     canonical: '/gallery',
   },
   openGraph: {
-    title: 'Before & After Clinical Results | Brimish Skin Care Clinic',
+    title: 'Before & After Clinical Results | Dr. Bilal Khan | Brimish Skin Care',
     description:
-      'Real patient clinical outcomes and skin transformations supervised by Dr. Bilal Ahmad in Peshawar.',
+      'Real patient clinical outcomes and skin transformations supervised by Dr. Bilal Khan in Peshawar.',
     url: '/gallery',
   },
 };

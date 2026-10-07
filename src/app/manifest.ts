@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Brimish Skin Care Clinic',
-    short_name: 'Brimish Skin',
-    description: 'Expert aesthetic dermatology & skin rejuvenation clinic in Peshawar, Pakistan.',
+    name: 'Brimish Skin Care Clinic | Dr. Bilal Khan',
+    short_name: 'Brimish Skin Care',
+    description: 'Premier medical aesthetics, dermatology & laser clinic by Dr. Bilal Khan in Peshawar, Pakistan.',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',

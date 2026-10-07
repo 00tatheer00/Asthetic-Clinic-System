@@ -6,15 +6,16 @@ import { Shield, Truck, RefreshCw } from 'lucide-react';
 export const revalidate = 120; // 2 minutes ISR cache for instant page load
 
 export const metadata: Metadata = {
-  title: 'Dermatologist-Recommended Skincare Products | Brimish Skin Care Peshawar',
+  title: 'Dermatologist-Recommended Skincare Products | Dr. Bilal Khan | Brimish Skin Care',
   description:
-    'Order authentic clinical skincare formulated for Pakistani skin. Ceramide cleansers, barrier repair moisturizers, broad-spectrum SPF 50+ sunscreens, and active serums. Fast Cash on Delivery across Pakistan.',
+    'Order authentic clinical skincare formulated for Pakistani skin by Dr. Bilal Khan (Dermatologist & Cosmetologist). Ceramide cleansers, barrier repair moisturizers, broad-spectrum SPF 50+ sunscreens, and active serums. Fast Cash on Delivery across Pakistan.',
   keywords: [
     'skincare products Peshawar',
     'medical skincare Pakistan',
     'sunscreen SPF 50 Peshawar',
     'ceramide cleanser Pakistan',
     'niacinamide serum Peshawar',
+    'Dr Bilal Khan skincare',
     'Dr Bilal skincare',
     'clinical acne face wash',
   ],
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     canonical: '/products',
   },
   openGraph: {
-    title: 'Clinical Skincare Products | Brimish Skin Care Clinic',
+    title: 'Clinical Skincare Products | Dr. Bilal Khan | Brimish Skin Care',
     description:
       'Physician-approved skincare products for radiant, clear skin. Authentic formulas with cash on delivery across Pakistan.',
     url: '/products',

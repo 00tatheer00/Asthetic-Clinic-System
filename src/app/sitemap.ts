@@ -78,12 +78,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .select('id, slug, updated_at')
       .eq('is_active', true);
 
-    const treatmentRoutes: MetadataRoute.Sitemap = (treatments || []).map((t) => ({
-      url: `${baseUrl}/treatments?treatment=${encodeURIComponent(t.slug || t.id)}`,
-      lastModified: t.updated_at ? new Date(t.updated_at) : currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.85,
-    }));
+    // Fallback standard treatment routes if DB is empty
+    const defaultTreatmentSlugs = [
+      'hydrafacial',
+      'chemical-peel',
+      'microneedling',
+      'carbon-laser-peel',
+      'acne-clear-program',
+      'prp-hair-treatment',
+      'laser-hair-removal',
+      'melasma-pigmentation-peel',
+    ];
+
+    const treatmentRoutes: MetadataRoute.Sitemap =
+      treatments && treatments.length > 0
+        ? treatments.map((t) => ({
+            url: `${baseUrl}/treatments?treatment=${encodeURIComponent(t.slug || t.id)}`,
+            lastModified: t.updated_at ? new Date(t.updated_at) : currentDate,
+            changeFrequency: 'weekly',
+            priority: 0.85,
+          }))
+        : defaultTreatmentSlugs.map((slug) => ({
+            url: `${baseUrl}/treatments?treatment=${slug}`,
+            lastModified: currentDate,
+            changeFrequency: 'weekly',
+            priority: 0.85,
+          }));
 
     // Query active published products
     const { data: products } = await supabase
@@ -93,12 +113,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq('is_published', true)
       .is('deleted_at', null);
 
-    const productRoutes: MetadataRoute.Sitemap = (products || []).map((p) => ({
-      url: `${baseUrl}/products?product=${encodeURIComponent(p.slug || p.id)}`,
-      lastModified: p.updated_at ? new Date(p.updated_at) : currentDate,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    }));
+    const defaultProductSlugs = [
+      'gentle-ceramide-cleanser',
+      'barrier-restorative-cream',
+      'mineral-shield-spf-50',
+      'clinical-niacinamide-serum',
+      'salicylic-clarifying-tonic',
+    ];
+
+    const productRoutes: MetadataRoute.Sitemap =
+      products && products.length > 0
+        ? products.map((p) => ({
+            url: `${baseUrl}/products?product=${encodeURIComponent(p.slug || p.id)}`,
+            lastModified: p.updated_at ? new Date(p.updated_at) : currentDate,
+            changeFrequency: 'weekly',
+            priority: 0.8,
+          }))
+        : defaultProductSlugs.map((slug) => ({
+            url: `${baseUrl}/products?product=${slug}`,
+            lastModified: currentDate,
+            changeFrequency: 'weekly',
+            priority: 0.8,
+          }));
 
     return [...staticRoutes, ...treatmentRoutes, ...productRoutes];
   } catch {

@@ -4,11 +4,12 @@ import type { Metadata } from 'next';
 import { CLINIC_WHATSAPP_NUMBER } from '@/lib/utils/helpers';
 
 export const metadata: Metadata = {
-  title: 'Contact & Clinic Location | Brimish Skin Care Clinic Peshawar',
+  title: 'Contact & Clinic Location | Dr. Bilal Khan | Brimish Skin Care Peshawar',
   description:
-    'Visit Brimish Skin Care Clinic at Sami Tower, Ring Road, Peshawar. Call or WhatsApp 0335-6400959 for appointments, timings, and directions.',
+    'Visit Brimish Skin Care Clinic at Sami Tower, Ring Road, Peshawar. Led by Dr. Bilal Khan (Dermatologist & Cosmetologist). Call or WhatsApp 0335-6400959 for directions, timings, and consultations.',
   keywords: [
     'Brimish clinic contact number',
+    'Dr Bilal Khan contact',
     'Dr Bilal phone number 03356400959',
     'skin clinic Ring Road Peshawar address',
     'Sami Tower Peshawar skin specialist',
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     canonical: '/contact',
   },
   openGraph: {
-    title: 'Contact Brimish Skin Care Clinic Peshawar',
+    title: 'Contact Dr. Bilal Khan | Brimish Skin Care Clinic Peshawar',
     description:
       'Sami Tower, Ring Road, Peshawar. Mon–Sat 10:00 AM – 7:00 PM. Call/WhatsApp 0335-6400959.',
     url: '/contact',

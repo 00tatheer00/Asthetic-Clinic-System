@@ -31,8 +31,7 @@ export function PublicFooter() {
               </div>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
-              Expert aesthetic skincare treatments and premium products in Peshawar, Pakistan.
-              Your journey to beautiful, healthy skin starts here.
+              Led by Dr. Bilal Khan (Dermatologist &amp; Cosmetologist). Expert medical aesthetics, HydraFacial MD, laser therapy, and clinical skincare in Peshawar, Pakistan.
             </p>
           </div>
 
