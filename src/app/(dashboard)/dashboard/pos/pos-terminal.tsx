@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { createSale } from '@/actions/pos';
-import { saveProduct } from '@/actions/content';
+import { saveProduct, createProductCategory } from '@/actions/content';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +37,9 @@ import {
   Phone,
   User,
   AlertTriangle,
+  Tag,
+  Percent,
+  FolderPlus,
 } from 'lucide-react';
 import {
   formatCurrency,
@@ -131,6 +134,26 @@ export function POSTerminal({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [posFormError, setPosFormError] = useState<string | null>(null);
 
+  // Categories State & Management
+  const [categoriesList, setCategoriesList] = useState<CategoryItem[]>(categories);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [isAddingCustomCategoryInProductModal, setIsAddingCustomCategoryInProductModal] = useState(false);
+  const [customCategoryInProductModalName, setCustomCategoryInProductModalName] = useState('');
+
+  // GST / Tax State (default to clinic setting taxRate, configurable live)
+  const [posTaxRate, setPosTaxRate] = useState<number>(taxRate || 0);
+  const [isCustomTax, setIsCustomTax] = useState(false);
+
+  // Synchronize categories when server revalidates
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      setCategoriesList(categories);
+    }
+  }, [categories]);
+
   // Quick Add Product Modal State
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [savingProduct, setSavingProduct] = useState(false);
@@ -223,6 +246,10 @@ export function POSTerminal({
   const filteredProducts = useMemo(() => {
     if (activeCatalogTab === 'treatments') return [];
     return products.filter((p) => {
+      // Category filter check
+      if (selectedCategoryFilter !== 'all' && p.category_id !== selectedCategoryFilter) {
+        return false;
+      }
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
       const matchName = p.name?.toLowerCase().includes(q);
@@ -230,10 +257,12 @@ export function POSTerminal({
       const matchCat = p.product_categories?.name?.toLowerCase().includes(q);
       return matchName || matchSku || matchCat;
     });
-  }, [products, searchQuery, activeCatalogTab]);
+  }, [products, searchQuery, activeCatalogTab, selectedCategoryFilter]);
 
   const filteredTreatments = useMemo(() => {
     if (activeCatalogTab === 'products') return [];
+    // If filtering by a specific product category, hide treatments
+    if (selectedCategoryFilter !== 'all') return [];
     return treatments.filter((t) => {
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
@@ -241,7 +270,7 @@ export function POSTerminal({
       const matchCat = t.treatment_categories?.name?.toLowerCase().includes(q);
       return matchName || matchCat;
     });
-  }, [treatments, searchQuery, activeCatalogTab]);
+  }, [treatments, searchQuery, activeCatalogTab, selectedCategoryFilter]);
 
   const handleManualRefresh = () => {
     setIsRefreshing(true);
@@ -336,7 +365,7 @@ export function POSTerminal({
   );
   const saleDiscount = calculateDiscount(subtotal, discountType, discountValue);
   const afterDiscount = subtotal - saleDiscount;
-  const tax = calculateTax(afterDiscount, taxRate);
+  const tax = calculateTax(afterDiscount, posTaxRate);
   const total = afterDiscount + tax;
   const change =
     paymentMethod === 'cash' && amountReceived
@@ -386,7 +415,7 @@ export function POSTerminal({
       amount_received: amountReceived ? parseFloat(amountReceived) : undefined,
       discount_type: discountType,
       discount_value: discountValue,
-      tax_rate: taxRate,
+      tax_rate: posTaxRate,
       idempotency_key: crypto.randomUUID(),
     });
     setProcessing(false);
@@ -403,7 +432,7 @@ export function POSTerminal({
         subtotal,
         discount: saleDiscount,
         tax,
-        taxRate,
+        taxRate: posTaxRate,
         customerName: customerName || 'Walk-in Customer',
         customerPhone: customerPhone || null,
         paymentMethod,
@@ -463,7 +492,72 @@ export function POSTerminal({
     setAmountReceived('');
     setDiscountType(null);
     setDiscountValue(0);
+    setPosTaxRate(taxRate || 0);
+    setIsCustomTax(false);
     router.refresh();
+  };
+
+  // Save custom category from standalone modal (catalog toolbar)
+  const handleCreateCategoryFromModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newCategoryName.trim();
+    if (!trimmed || trimmed.length < 2) {
+      toast.error('Category name must be at least 2 characters');
+      return;
+    }
+
+    setCreatingCategory(true);
+    try {
+      const res = await createProductCategory(trimmed);
+      if (res.success && res.category) {
+        const newCat = res.category as CategoryItem;
+        setCategoriesList((prev) => {
+          if (prev.some((c) => c.id === newCat.id)) return prev;
+          return [...prev, newCat].sort((a, b) => a.name.localeCompare(b.name));
+        });
+        setSelectedCategoryFilter(newCat.id);
+        setNewCategoryName('');
+        setShowAddCategoryModal(false);
+        toast.success(`Category "${newCat.name}" created and selected!`);
+      } else {
+        toast.error(res.error || 'Failed to create category');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error creating category');
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
+  // Save custom category from inside the Quick Add Product modal
+  const handleSaveCustomCategoryInModal = async () => {
+    const trimmed = customCategoryInProductModalName.trim();
+    if (!trimmed || trimmed.length < 2) {
+      toast.error('Category name must be at least 2 characters');
+      return;
+    }
+
+    setCreatingCategory(true);
+    try {
+      const res = await createProductCategory(trimmed);
+      if (res.success && res.category) {
+        const newCat = res.category as CategoryItem;
+        setCategoriesList((prev) => {
+          if (prev.some((c) => c.id === newCat.id)) return prev;
+          return [...prev, newCat].sort((a, b) => a.name.localeCompare(b.name));
+        });
+        setNewProductForm((prev) => ({ ...prev, category_id: newCat.id }));
+        setCustomCategoryInProductModalName('');
+        setIsAddingCustomCategoryInProductModal(false);
+        toast.success(`Category "${newCat.name}" created and selected!`);
+      } else {
+        toast.error(res.error || 'Failed to create category');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error creating category');
+    } finally {
+      setCreatingCategory(false);
+    }
   };
 
   // Quick Add Product to POS & Website
@@ -592,8 +686,44 @@ export function POSTerminal({
             <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">Esc</kbd> Close
           </div>
 
+          {/* Category Filter Dropdown with Inline Custom Option */}
+          <div className="flex items-center gap-1">
+            <select
+              value={selectedCategoryFilter}
+              onChange={(e) => {
+                if (e.target.value === '__add_new_category__') {
+                  setShowAddCategoryModal(true);
+                } else {
+                  setSelectedCategoryFilter(e.target.value);
+                }
+              }}
+              className="h-8 text-xs px-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-rose-500 font-medium max-w-[140px] sm:max-w-none truncate"
+            >
+              <option value="all">All Categories</option>
+              {categoriesList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+              <option value="__add_new_category__" className="text-rose-600 font-bold">
+                ➕ + Add Custom Category...
+              </option>
+            </select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAddCategoryModal(true)}
+              className="h-8 px-2 text-xs border-dashed border-gray-300 hover:border-rose-400 text-gray-600 hover:text-rose-600"
+              title="Add custom category"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span className="hidden md:inline text-[11px] font-medium">+ Category</span>
+            </Button>
+          </div>
+
           {/* Search Box */}
-          <div className="relative w-44 sm:w-56">
+          <div className="relative w-40 sm:w-52">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
             <Input
               ref={searchInputRef}
@@ -888,17 +1018,240 @@ export function POSTerminal({
           </div>
 
           {/* Fixed Checkout Summary (Always 100% visible at bottom) */}
-          <div className="pt-2.5 border-t border-gray-100 shrink-0 space-y-2">
+          <div className="pt-2 border-t border-gray-100 shrink-0 space-y-2">
+            {/* Billing Adjustments: Discount & GST Tax Controls */}
+            <div className="bg-stone-50/90 rounded-xl p-2 border border-stone-200/80 space-y-1.5 text-xs">
+              {/* Discount Selector */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-semibold text-gray-700">
+                    <Tag className="h-3.5 w-3.5 text-rose-500" />
+                    <span>Discount</span>
+                    {saleDiscount > 0 && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/90 px-1.5 py-0.2 rounded">
+                        -{formatCurrency(saleDiscount)}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Mode Selector */}
+                  <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDiscountType(null);
+                        setDiscountValue(0);
+                      }}
+                      className={cn(
+                        'px-2 py-0.5 text-[10px] font-semibold rounded transition-colors',
+                        !discountType ? 'bg-gray-100 text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-900'
+                      )}
+                    >
+                      None
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDiscountType('percentage');
+                        if (discountValue <= 0) setDiscountValue(10);
+                      }}
+                      className={cn(
+                        'px-2 py-0.5 text-[10px] font-semibold rounded transition-colors flex items-center gap-0.5',
+                        discountType === 'percentage' ? 'bg-rose-500 text-white font-bold' : 'text-gray-500 hover:text-gray-900'
+                      )}
+                    >
+                      <Percent className="h-2.5 w-2.5" />
+                      <span>%</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDiscountType('fixed');
+                        if (discountValue <= 0) setDiscountValue(500);
+                      }}
+                      className={cn(
+                        'px-2 py-0.5 text-[10px] font-semibold rounded transition-colors',
+                        discountType === 'fixed' ? 'bg-rose-500 text-white font-bold' : 'text-gray-500 hover:text-gray-900'
+                      )}
+                    >
+                      PKR
+                    </button>
+                  </div>
+                </div>
+
+                {/* Percentage Quick Chips & Input */}
+                {discountType === 'percentage' && (
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                        placeholder="Discount %"
+                        value={discountValue || ''}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setDiscountValue(Math.min(100, Math.max(0, val)));
+                        }}
+                        className="h-7 text-xs bg-white pr-6"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold">%</span>
+                    </div>
+                    {[5, 10, 15, 20].map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setDiscountValue(p)}
+                        className={cn(
+                          'h-7 px-2 rounded border text-[10px] font-bold transition-all',
+                          discountValue === p
+                            ? 'border-rose-400 bg-rose-50 text-rose-700'
+                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
+                        )}
+                      >
+                        {p}%
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Fixed Amount Quick Chips & Input */}
+                {discountType === 'fixed' && (
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <div className="relative flex-1">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-semibold">Rs</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="50"
+                        placeholder="Amount"
+                        value={discountValue || ''}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setDiscountValue(Math.max(0, val));
+                        }}
+                        className="h-7 text-xs bg-white pl-6"
+                      />
+                    </div>
+                    {[200, 500, 1000, 2000].map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => setDiscountValue(amt)}
+                        className={cn(
+                          'h-7 px-1.5 rounded border text-[10px] font-bold transition-all',
+                          discountValue === amt
+                            ? 'border-rose-400 bg-rose-50 text-rose-700'
+                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
+                        )}
+                      >
+                        {amt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* GST / Sales Tax Controls */}
+              <div className="space-y-1 pt-1.5 border-t border-stone-200/70">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-semibold text-gray-700">
+                    <Receipt className="h-3.5 w-3.5 text-blue-500" />
+                    <span>GST / Sales Tax</span>
+                    {posTaxRate > 0 && (
+                      <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200/50">
+                        +{formatCurrency(tax)} ({posTaxRate}%)
+                      </span>
+                    )}
+                  </div>
+
+                  {/* GST Presets */}
+                  <div className="flex items-center gap-1">
+                    {[0, 5, 16, 18].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => {
+                          setPosTaxRate(rate);
+                          setIsCustomTax(false);
+                        }}
+                        className={cn(
+                          'px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors',
+                          !isCustomTax && posTaxRate === rate
+                            ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
+                        )}
+                      >
+                        {rate === 0 ? '0%' : `${rate}%`}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomTax(!isCustomTax)}
+                      className={cn(
+                        'px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors',
+                        isCustomTax
+                          ? 'bg-blue-600 border-blue-600 text-white'
+                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
+                      )}
+                    >
+                      Custom
+                    </button>
+                  </div>
+                </div>
+
+                {/* Custom GST Input Field */}
+                {isCustomTax && (
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        placeholder="Custom GST % (e.g. 13, 17)"
+                        value={posTaxRate || ''}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0;
+                          setPosTaxRate(Math.min(100, Math.max(0, val)));
+                        }}
+                        className="h-7 text-xs bg-white pr-7"
+                        autoFocus
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold">%</span>
+                    </div>
+                    <span className="text-[10px] text-gray-500">
+                      Applied: {posTaxRate}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Subtotal & Totals */}
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
                 <span className="font-medium text-gray-900">{formatCurrency(subtotal)}</span>
               </div>
-              {tax > 0 && (
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax ({taxRate}%)</span>
-                  <span className="font-medium text-gray-900">{formatCurrency(tax)}</span>
+              {saleDiscount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/50">
+                  <span>
+                    Privilege Discount {discountType === 'percentage' ? `(${discountValue}%)` : '(Fixed)'}
+                  </span>
+                  <span>-{formatCurrency(saleDiscount)}</span>
+                </div>
+              )}
+              {posTaxRate > 0 ? (
+                <div className="flex justify-between text-blue-700 font-medium">
+                  <span>GST / Tax ({posTaxRate}%)</span>
+                  <span className="font-semibold text-gray-900">+{formatCurrency(tax)}</span>
+                </div>
+              ) : (
+                <div className="flex justify-between text-gray-400 text-[11px]">
+                  <span>GST / Tax</span>
+                  <span>0% (Exempt)</span>
                 </div>
               )}
               <div className="flex justify-between items-baseline pt-1 border-t border-gray-200 font-bold">
@@ -1140,13 +1493,13 @@ export function POSTerminal({
                     </div>
                     {lastSaleInfo.discount > 0 && (
                       <div className="flex justify-between text-black font-semibold">
-                        <span>Privilege Discount:</span>
+                        <span>Privilege / Concession Discount:</span>
                         <span>-{formatCurrency(lastSaleInfo.discount)}</span>
                       </div>
                     )}
                     {lastSaleInfo.tax > 0 && (
                       <div className="flex justify-between">
-                        <span>Services Tax ({lastSaleInfo.taxRate}%):</span>
+                        <span>GST / Sales Tax ({lastSaleInfo.taxRate}%):</span>
                         <span>{formatCurrency(lastSaleInfo.tax)}</span>
                       </div>
                     )}
@@ -1237,24 +1590,79 @@ export function POSTerminal({
               />
             </div>
 
-            {categories.length > 0 && (
-              <div className="space-y-1">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
                 <Label className="text-xs font-semibold text-gray-700">Category</Label>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingCustomCategoryInProductModal(!isAddingCustomCategoryInProductModal)}
+                  className="text-[11px] text-rose-600 hover:text-rose-700 font-semibold cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>
+                    {isAddingCustomCategoryInProductModal ? 'Select Existing' : '+ Add Custom Category'}
+                  </span>
+                </button>
+              </div>
+
+              {isAddingCustomCategoryInProductModal ? (
+                <div className="flex items-center gap-1.5 p-2 rounded-xl bg-rose-50/70 border border-rose-200">
+                  <Input
+                    placeholder="New category name (e.g. Toners, Sunscreens)..."
+                    value={customCategoryInProductModalName}
+                    onChange={(e) => setCustomCategoryInProductModalName(e.target.value)}
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        await handleSaveCustomCategoryInModal();
+                      }
+                    }}
+                    className="h-8 text-xs bg-white border-rose-200"
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSaveCustomCategoryInModal}
+                    disabled={creatingCategory || !customCategoryInProductModalName.trim()}
+                    className="h-8 px-3 text-xs bg-rose-600 hover:bg-rose-700 text-white shrink-0 font-medium"
+                  >
+                    {creatingCategory ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsAddingCustomCategoryInProductModal(false)}
+                    className="h-8 px-2 text-xs text-gray-500"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
                 <select
                   value={newProductForm.category_id}
-                  onChange={(e) =>
-                    setNewProductForm({ ...newProductForm, category_id: e.target.value })
-                  }
+                  onChange={(e) => {
+                    if (e.target.value === '__add_custom_in_modal__') {
+                      setIsAddingCustomCategoryInProductModal(true);
+                    } else {
+                      setNewProductForm({ ...newProductForm, category_id: e.target.value });
+                    }
+                  }}
                   className="w-full text-xs h-9 px-3 rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-rose-500"
                 >
-                  {categories.map((c) => (
+                  <option value="">Select Category (optional)</option>
+                  {categoriesList.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
                   ))}
+                  <option value="__add_custom_in_modal__" className="text-rose-600 font-bold">
+                    ➕ + Add Custom Category...
+                  </option>
                 </select>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-1">
@@ -1323,6 +1731,70 @@ export function POSTerminal({
                   <>
                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                     Add Product & Publish
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================ */}
+      {/* ADD CUSTOM CATEGORY MODAL                                    */}
+      {/* ============================================================ */}
+      <Dialog open={showAddCategoryModal} onOpenChange={setShowAddCategoryModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <FolderPlus className="h-4 w-4 text-rose-600" />
+              <span>Add Custom Product Category</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Create a new category for products in POS. It will immediately appear in all dropdowns and filters.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateCategoryFromModal} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700">Category Name *</Label>
+              <Input
+                required
+                placeholder="e.g. Cleansers, Chemical Peels, Sun Protection..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="text-xs h-9"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowAddCategoryModal(false);
+                  setNewCategoryName('');
+                }}
+                className="text-xs h-9"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={creatingCategory || !newCategoryName.trim()}
+                size="sm"
+                className="text-xs h-9 bg-rose-600 hover:bg-rose-700 text-white font-semibold"
+              >
+                {creatingCategory ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
+                    Create Category
                   </>
                 )}
               </Button>
