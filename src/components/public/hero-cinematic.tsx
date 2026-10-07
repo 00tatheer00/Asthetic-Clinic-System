@@ -21,7 +21,7 @@ export function HeroCinematic() {
   const [mood, setMood] = useState<'twilight' | 'daylight'>('daylight');
 
   return (
-    <section className="relative w-full flex items-center justify-center overflow-hidden bg-black text-white py-12 sm:py-16 lg:py-20">
+    <section className="relative w-full flex flex-col justify-between overflow-hidden bg-black text-white min-h-[calc(100vh-69px)] md:min-h-[calc(100vh-106px)]">
       {/* 1. Real Clinic Background Images (Day & Night) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Night Layer */}
@@ -61,7 +61,7 @@ export function HeroCinematic() {
 
         {/* Top & Bottom Soft Fades */}
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/90 to-transparent" />
       </div>
 
       {/* 2. Simple Day / Night Switcher */}
@@ -96,8 +96,8 @@ export function HeroCinematic() {
       </div>
 
       {/* 3. Hero Content Container */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
-        <div className="max-w-2xl space-y-4 text-center sm:text-left">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-1 py-8 sm:py-10 lg:py-12">
+        <div className="max-w-2xl lg:max-w-3xl space-y-4 sm:space-y-5 text-center sm:text-left my-auto pt-3 sm:pt-6">
           
           {/* Clinic Badge */}
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-medium text-rose-200 border border-white/15">
@@ -112,16 +112,16 @@ export function HeroCinematic() {
 
           {/* Doctor Subtitle & Credentials */}
           <div className="space-y-1 sm:space-y-1.5 pt-1">
-            <p className="text-lg sm:text-2xl font-serif font-medium text-rose-100 tracking-wide">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-serif font-medium text-rose-100 tracking-wide">
               By <span className="font-bold text-white underline decoration-rose-400/50 decoration-2 underline-offset-4">Dr. Bilal Khan</span>
             </p>
             <p className="text-xs sm:text-sm font-semibold tracking-widest text-rose-200/90 uppercase font-sans">
-              Dermatologist & Cosmetologist
+              Dermatologist &amp; Cosmetologist
             </p>
           </div>
 
           {/* High-Impact Hero Action Buttons (Sleek & Compact on Mobile) */}
-          <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
+          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2.5 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
             {/* 1. Book Appointment */}
             <Link href="/book" prefetch={true} className="w-full sm:w-auto">
               <Button
@@ -160,10 +160,10 @@ export function HeroCinematic() {
           </div>
         </div>
 
-        {/* 4. Bottom Credibility Badges (Clean & Simple) */}
-        <div className="mt-8 pt-6 border-t border-white/15 grid grid-cols-2 lg:grid-cols-4 gap-3 text-white/90">
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
-            <div className="h-8 w-8 rounded-lg bg-amber-400/20 flex items-center justify-center text-amber-300 shrink-0">
+        {/* 4. Bottom Credibility Badges (Clean, Glassmorphic & Non-overlapping) */}
+        <div className="mt-8 pt-5 border-t border-white/15 grid grid-cols-2 lg:grid-cols-4 gap-3 text-white/90 max-w-5xl">
+          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-9 w-9 rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-300 shrink-0">
               <Star className="h-4 w-4 fill-amber-300 text-amber-300" />
             </div>
             <div>
@@ -172,8 +172,8 @@ export function HeroCinematic() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
-            <div className="h-8 w-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-300 shrink-0">
+          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-9 w-9 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-300 shrink-0">
               <Stethoscope className="h-4 w-4" />
             </div>
             <div>
@@ -182,8 +182,8 @@ export function HeroCinematic() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
-            <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-300 shrink-0">
+          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-9 w-9 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-300 shrink-0">
               <Shield className="h-4 w-4" />
             </div>
             <div>
@@ -192,8 +192,8 @@ export function HeroCinematic() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
-            <div className="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
+          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-9 w-9 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
               <MapPin className="h-4 w-4" />
             </div>
             <div>
