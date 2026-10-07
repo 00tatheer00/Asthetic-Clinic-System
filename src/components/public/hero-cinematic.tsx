@@ -105,15 +105,20 @@ export function HeroCinematic() {
             <span>Dr. Bilal Skin Care Clinic • Sami Tower, Ring Road, Peshawar</span>
           </div>
 
-          {/* Short, Clear Headline in Easy Pakistani English */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight drop-shadow-md">
-            Best Skin Care & Laser Clinic in Peshawar
+          {/* Headline provided by Doctor */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] drop-shadow-md">
+            Brimish Skin Care
           </h1>
 
-          {/* Short, Clear Subtitle */}
-          <p className="text-sm sm:text-base text-gray-200 leading-relaxed max-w-xl">
-            Get clear, healthy skin with Dr. Bilal. We provide HydraFacial, laser hair removal, acne treatments, and chemical peels with complete safety.
-          </p>
+          {/* Doctor Subtitle & Credentials */}
+          <div className="space-y-1 sm:space-y-1.5 pt-1">
+            <p className="text-lg sm:text-2xl font-serif font-medium text-rose-100 tracking-wide">
+              By <span className="font-bold text-white underline decoration-rose-400/50 decoration-2 underline-offset-4">Dr. Bilal Khan</span>
+            </p>
+            <p className="text-xs sm:text-sm font-semibold tracking-widest text-rose-200/90 uppercase font-sans">
+              Dermatologist & Cosmetologist
+            </p>
+          </div>
 
           {/* High-Impact Hero Action Buttons (Sleek & Compact on Mobile) */}
           <div className="pt-2 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
