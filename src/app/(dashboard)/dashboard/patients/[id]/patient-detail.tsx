@@ -773,10 +773,10 @@ export function PatientDetail({
                   Brimish Skin Care & Laser Clinic
                 </h2>
                 <p className="text-xs font-bold text-rose-600">
-                  DR. BILAL AHMAD (MBBS, R.M.P, Aesthetic Physician)
+                  DR. BILAL KHAN (Dermatologist &amp; Cosmetologist)
                 </p>
                 <p className="text-[11px] text-gray-500 font-medium">
-                  PMDC Reg # 98214-P • Certified Aesthetic Dermatologist
+                  Consultant Dermatologist &amp; Cosmetologist
                 </p>
                 <p className="text-[10px] text-gray-500 mt-1">
                   Sami Tower, Ring Road, Peshawar | Doctor: 0335-6400959

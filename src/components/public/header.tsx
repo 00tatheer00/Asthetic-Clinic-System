@@ -122,12 +122,12 @@ export function PublicHeader() {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
-              <ShieldCheck className="h-3 w-3 text-emerald-400" />
-              PMDC Reg # 98214-P Verified
+            <span className="inline-flex items-center gap-1 bg-rose-500/15 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
+              <ShieldCheck className="h-3 w-3 text-rose-400" />
+              Verified Clinic
             </span>
             <span className="text-rose-300 font-medium text-xs hidden lg:inline">
-              Dr. Bilal Ahmad (MD Aesthetic) • Sami Tower, Ring Road, Peshawar
+              Dr. Bilal Khan (Dermatologist & Cosmetologist) • Sami Tower, Ring Road, Peshawar
             </span>
             <a
               href={`https://wa.me/${CLINIC_WHATSAPP_NUMBER}`}

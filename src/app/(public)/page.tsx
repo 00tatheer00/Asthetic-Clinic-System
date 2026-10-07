@@ -264,8 +264,8 @@ export default function HomePage() {
                   <div className="p-5 bg-white border-t border-gray-100 space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-serif font-bold text-lg text-gray-900">Dr. Bilal Ahmad</div>
-                        <div className="text-xs text-rose-600 font-medium">MBBS, R.M.P, Aesthetic Physician</div>
+                        <div className="font-serif font-bold text-lg text-gray-900">Dr. Bilal Khan</div>
+                        <div className="text-xs text-rose-600 font-medium">Dermatologist & Cosmetologist</div>
                       </div>
                       <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
                         <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
@@ -274,7 +274,7 @@ export default function HomePage() {
                     </div>
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
                       <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      <span>PMDC Reg # 98214-P Verified Practitioner</span>
+                      <span>Certified Dermatologist & Cosmetologist</span>
                     </div>
                   </div>
                 </div>
