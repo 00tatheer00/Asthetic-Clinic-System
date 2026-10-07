@@ -104,6 +104,71 @@ export default async function PatientDetailPage({ params }: PageProps) {
     .is('deleted_at', null)
     .order('name');
 
+  // Fetch procedures, sessions, payments, and active staff
+  const [
+    { data: rawProcedures },
+    { data: rawSessions },
+    { data: rawPayments },
+    { data: staffList },
+  ] = await Promise.all([
+    supabase
+      .from('patient_procedures')
+      .select('*, treatments(id, name, price)')
+      .eq('patient_id', id)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('procedure_sessions')
+      .select('*')
+      .eq('patient_id', id)
+      .order('session_date', { ascending: false }),
+    supabase
+      .from('procedure_payments')
+      .select('*')
+      .eq('patient_id', id)
+      .order('payment_date', { ascending: false }),
+    supabase
+      .from('staff')
+      .select('id, name, role')
+      .eq('is_active', true)
+      .order('name'),
+  ]);
+
+  // Map sessions and payments to their parent procedures
+  const sessionsByProc = new Map<string, any[]>();
+  (rawSessions || []).forEach((s) => {
+    const list = sessionsByProc.get(s.procedure_id) || [];
+    list.push(s);
+    sessionsByProc.set(s.procedure_id, list);
+  });
+
+  const paymentsByProc = new Map<string, any[]>();
+  (rawPayments || []).forEach((p) => {
+    const list = paymentsByProc.get(p.procedure_id) || [];
+    list.push(p);
+    paymentsByProc.set(p.procedure_id, list);
+  });
+
+  const procedures = (rawProcedures || []).map((proc) => ({
+    ...proc,
+    sessions: (sessionsByProc.get(proc.id) || []).sort(
+      (a, b) => a.session_number - b.session_number
+    ),
+    payments: paymentsByProc.get(proc.id) || [],
+  }));
+
+  const totalProcedureCost = procedures.reduce(
+    (sum, p) => sum + (Number(p.total_cost) || 0),
+    0
+  );
+  const totalProcedurePaid = (rawPayments || []).reduce(
+    (sum, p) => sum + (Number(p.amount) || 0),
+    0
+  );
+  const totalOutstandingBalance = procedures
+    .filter((p) => p.status === 'active')
+    .reduce((sum, p) => sum + (Number(p.balance_amount) || 0), 0);
+
   return (
     <PatientDetail
       patient={patient}
@@ -114,8 +179,19 @@ export default async function PatientDetailPage({ params }: PageProps) {
       clinicalNotes={clinicalNotes}
       beforeAfterCases={beforeAfterCases || []}
       treatments={treatments || []}
-      stats={{ totalVisits, totalSpending, lastVisit }}
+      procedures={procedures}
+      allProcedurePayments={rawPayments || []}
+      staffList={staffList || []}
+      stats={{
+        totalVisits,
+        totalSpending,
+        lastVisit,
+        totalProcedureCost,
+        totalProcedurePaid,
+        totalOutstandingBalance,
+      }}
       isAdmin={isAdmin}
     />
   );
 }
+

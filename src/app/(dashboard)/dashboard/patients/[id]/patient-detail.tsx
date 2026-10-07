@@ -22,7 +22,7 @@ import {
 import {
   ArrowLeft, Phone, Mail, Calendar, Clock, User, CreditCard,
   FileText, Stethoscope, Plus, Loader2, Eye, EyeOff, Image as ImageIcon,
-  Edit, Trash2, Printer, MessageCircle, ShieldCheck, Share2,
+  Edit, Trash2, Printer, MessageCircle, ShieldCheck, Share2, Activity, Layers,
 } from 'lucide-react';
 import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from '@/lib/constants';
@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { printReceipt } from '@/lib/print-receipt';
 import Link from 'next/link';
+import { PatientProceduresManager } from './patient-procedures-manager';
 
 interface PatientDetailProps {
   patient: {
@@ -62,13 +63,24 @@ interface PatientDetailProps {
     is_public: boolean; created_at: string; treatments: { name: string }[] | null;
   }>;
   treatments: Array<{ id: string; name: string; price: number | null }>;
-  stats: { totalVisits: number; totalSpending: number; lastVisit: string | null };
+  procedures?: Array<any>;
+  allProcedurePayments?: Array<any>;
+  staffList?: Array<{ id: string; name: string; role: string }>;
+  stats: {
+    totalVisits: number;
+    totalSpending: number;
+    lastVisit: string | null;
+    totalProcedureCost?: number;
+    totalProcedurePaid?: number;
+    totalOutstandingBalance?: number;
+  };
   isAdmin: boolean;
 }
 
 export function PatientDetail({
   patient, appointments, visits, sales, invoices, clinicalNotes,
-  beforeAfterCases, treatments, stats, isAdmin,
+  beforeAfterCases, treatments, procedures = [], allProcedurePayments = [],
+  staffList = [], stats, isAdmin,
 }: PatientDetailProps) {
   const router = useRouter();
   const [showVisitDialog, setShowVisitDialog] = useState(false);
@@ -181,12 +193,26 @@ export function PatientDetail({
       status: null,
       id: v.id,
     })),
+    ...procedures.flatMap(p => (p.sessions || []).map((sess: any) => ({
+      type: 'procedure_session' as const,
+      date: sess.session_date,
+      label: `Procedure Session #${sess.session_number}: ${p.plan_name}`,
+      status: sess.status,
+      id: sess.id,
+    }))),
     ...sales.map(s => ({
       type: 'payment' as const,
       date: s.created_at,
-      label: `Payment: ${formatCurrency(s.total)}`,
+      label: `POS Sale: ${formatCurrency(s.total)}`,
       status: s.voided_at ? 'voided' : s.payment_status,
       id: s.id,
+    })),
+    ...allProcedurePayments.map(p => ({
+      type: 'procedure_payment' as const,
+      date: p.payment_date,
+      label: `Procedure Payment: ${formatCurrency(p.amount)} (${p.receipt_number})`,
+      status: 'paid',
+      id: p.id,
     })),
     ...invoices.map(i => ({
       type: 'invoice' as const,
@@ -251,36 +277,55 @@ export function PatientDetail({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <Card className={cn("border shadow-xs", (stats.totalOutstandingBalance || 0) > 0 ? "border-rose-200 bg-rose-50/40" : "border-gray-200")}>
+          <CardContent className="pt-4 pb-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500 font-medium">Pending Baqaya</p>
+              {(stats.totalOutstandingBalance || 0) > 0 && <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />}
+            </div>
+            <p className={cn("text-xl font-bold font-serif mt-0.5", (stats.totalOutstandingBalance || 0) > 0 ? "text-rose-700" : "text-gray-900")}>
+              {formatCurrency(stats.totalOutstandingBalance || 0)}
+            </p>
+          </CardContent>
+        </Card>
         <Card className="border border-gray-200 shadow-xs">
           <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Total Visits</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalVisits}</p>
+            <p className="text-xs text-gray-500">Procedures</p>
+            <p className="text-xl font-bold text-gray-900 mt-0.5">
+              {procedures.length} <span className="text-xs font-normal text-gray-400">({procedures.filter(p => p.status === 'active').length} active)</span>
+            </p>
           </CardContent>
         </Card>
         <Card className="border border-gray-200 shadow-xs">
           <CardContent className="pt-4 pb-3">
             <p className="text-xs text-gray-500">Total Spending</p>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalSpending)}</p>
+            <p className="text-xl font-bold text-gray-900 mt-0.5">{formatCurrency(stats.totalSpending + (stats.totalProcedurePaid || 0))}</p>
           </CardContent>
         </Card>
         <Card className="border border-gray-200 shadow-xs">
+          <CardContent className="pt-4 pb-3">
+            <p className="text-xs text-gray-500">Visits & Sessions</p>
+            <p className="text-xl font-bold text-gray-900 mt-0.5">
+              {stats.totalVisits + procedures.reduce((acc, p) => acc + (p.completed_sessions || 0), 0)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="border border-gray-200 shadow-xs col-span-2 sm:col-span-1">
           <CardContent className="pt-4 pb-3">
             <p className="text-xs text-gray-500">Last Visit</p>
-            <p className="text-sm font-bold text-gray-900">{stats.lastVisit ? formatDate(stats.lastVisit) : 'Never'}</p>
-          </CardContent>
-        </Card>
-        <Card className="border border-gray-200 shadow-xs">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-xs text-gray-500">Registered</p>
-            <p className="text-sm font-bold text-gray-900">{formatDate(patient.created_at)}</p>
+            <p className="text-sm font-bold text-gray-900 mt-1">{stats.lastVisit ? formatDate(stats.lastVisit) : 'Never'}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList className="bg-gray-100/80 p-1 rounded-xl">
+      <Tabs defaultValue="procedures" className="space-y-4">
+        <TabsList className="bg-gray-100/80 p-1 rounded-xl flex-wrap h-auto gap-1">
+          <TabsTrigger value="procedures" className="rounded-lg text-xs font-semibold data-[state=active]:bg-rose-600 data-[state=active]:text-white">
+            <Layers className="h-3.5 w-3.5 mr-1" />
+            Procedures & Sessions ({procedures.length})
+          </TabsTrigger>
           <TabsTrigger value="timeline" className="rounded-lg text-xs">Timeline</TabsTrigger>
           <TabsTrigger value="appointments" className="rounded-lg text-xs">Appointments ({appointments.length})</TabsTrigger>
           <TabsTrigger value="visits" className="rounded-lg text-xs">Visits ({visits.length})</TabsTrigger>
@@ -288,6 +333,19 @@ export function PatientDetail({
           {isAdmin && <TabsTrigger value="notes" className="rounded-lg text-xs">Notes ({clinicalNotes.length})</TabsTrigger>}
           <TabsTrigger value="gallery" className="rounded-lg text-xs">B&A ({beforeAfterCases.length})</TabsTrigger>
         </TabsList>
+
+        {/* Procedures & Multi-Session Plans Tab */}
+        <TabsContent value="procedures">
+          <PatientProceduresManager
+            patient={patient}
+            procedures={procedures}
+            allProcedurePayments={allProcedurePayments}
+            treatments={treatments}
+            staffList={staffList}
+            stats={stats}
+            isAdmin={isAdmin}
+          />
+        </TabsContent>
 
         {/* Timeline Tab */}
         <TabsContent value="timeline">
@@ -305,6 +363,8 @@ export function PatientDetail({
                           'bg-green-400': event.type === 'visit',
                           'bg-amber-400': event.type === 'payment',
                           'bg-purple-400': event.type === 'invoice',
+                          'bg-rose-500': event.type === 'procedure_session',
+                          'bg-emerald-500': event.type === 'procedure_payment',
                         })} />
                         {idx < timeline.length - 1 && <div className="w-px flex-1 bg-gray-200 mt-1" />}
                       </div>

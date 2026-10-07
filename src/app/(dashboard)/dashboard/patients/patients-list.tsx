@@ -18,7 +18,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search, Plus, Users, ChevronLeft, ChevronRight, Loader2, Phone, Edit3, Trash2 } from 'lucide-react';
+import { Search, Plus, Users, ChevronLeft, ChevronRight, Loader2, Phone, Edit3, Trash2, Layers } from 'lucide-react';
 import { formatPhone, formatDate } from '@/lib/utils/helpers';
 import { toast } from 'sonner';
 
@@ -235,6 +235,19 @@ export function PatientsList({
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dashboard/patients/${patient.id}`);
+                          }}
+                          className="h-7 px-2 text-xs border-rose-200 hover:border-rose-400 hover:bg-rose-50 text-rose-700 rounded-lg flex items-center gap-1 shadow-2xs font-medium"
+                          title="View Procedures & Multi-Session Plan"
+                        >
+                          <Layers className="h-3.5 w-3.5 text-rose-600" />
+                          <span>Procedures</span>
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"

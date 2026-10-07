@@ -457,3 +457,59 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+// ============================================================
+// Patient Procedures & Multi-Session Tracking
+// ============================================================
+
+export const patientProcedureSchema = z.object({
+  patient_id: z.string().uuid('Valid patient ID is required'),
+  treatment_id: z.string().uuid().optional().nullable(),
+  plan_name: z.string().min(2, 'Plan name is required').max(200),
+  total_sessions: z.coerce.number().int().min(1, 'Minimum 1 session required').default(1),
+  total_cost: z.coerce.number().nonnegative('Total cost must be 0 or greater'),
+  advance_payment: z.coerce.number().nonnegative('Advance payment must be 0 or greater').default(0),
+  payment_method: z.enum(['cash', 'card', 'bank_transfer']).default('cash'),
+  interval_days: z.coerce.number().int().min(0).default(30),
+  next_session_due_date: z.string().optional().nullable(),
+  doctor_id: z.string().uuid().optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  log_first_session: z.boolean().default(false),
+  first_session_area: z.string().optional().nullable(),
+  first_session_settings: z.string().optional().nullable(),
+  first_session_notes: z.string().optional().nullable(),
+});
+
+export type PatientProcedureInput = z.infer<typeof patientProcedureSchema>;
+
+export const procedureSessionSchema = z.object({
+  procedure_id: z.string().uuid('Valid procedure ID is required'),
+  patient_id: z.string().uuid('Valid patient ID is required'),
+  session_number: z.coerce.number().int().min(1),
+  session_date: z.string().min(1, 'Session date is required'),
+  status: z.enum(['scheduled', 'completed', 'cancelled', 'no_show']).default('completed'),
+  doctor_id: z.string().uuid().optional().nullable(),
+  treatment_area: z.string().max(200).optional().nullable(),
+  settings_used: z.string().max(1000).optional().nullable(),
+  observations_notes: z.string().max(2000).optional().nullable(),
+  aftercare_instructions: z.string().max(2000).optional().nullable(),
+  next_recommended_date: z.string().optional().nullable(),
+  payment_amount: z.coerce.number().nonnegative().optional().default(0),
+  payment_method: z.enum(['cash', 'card', 'bank_transfer']).optional().default('cash'),
+  payment_notes: z.string().max(500).optional().nullable(),
+});
+
+export type ProcedureSessionInput = z.infer<typeof procedureSessionSchema>;
+
+export const procedurePaymentSchema = z.object({
+  procedure_id: z.string().uuid('Valid procedure ID is required'),
+  patient_id: z.string().uuid('Valid patient ID is required'),
+  session_id: z.string().uuid().optional().nullable(),
+  amount: z.coerce.number().positive('Payment amount must be greater than 0'),
+  payment_method: z.enum(['cash', 'card', 'bank_transfer']).default('cash'),
+  payment_date: z.string().optional().nullable(),
+  notes: z.string().max(500).optional().nullable(),
+});
+
+export type ProcedurePaymentInput = z.infer<typeof procedurePaymentSchema>;
+

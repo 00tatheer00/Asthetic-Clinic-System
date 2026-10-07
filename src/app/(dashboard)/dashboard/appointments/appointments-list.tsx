@@ -27,7 +27,7 @@ import {
 import {
   Search, MoreVertical, CheckCircle2, XCircle, Clock, UserCheck,
   ChevronLeft, ChevronRight, Loader2, Phone, Calendar, Plus, Edit3, Trash2,
-  Eye, Sparkles, MessageCircle, AlertCircle,
+  Eye, Sparkles, MessageCircle, AlertCircle, Layers,
 } from 'lucide-react';
 import { formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS } from '@/lib/constants';
@@ -686,9 +686,13 @@ export function AppointmentsList({
                           )}
                         </p>
                         {apt.patients && (
-                          <span className="inline-flex mt-1 text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full">
-                            Linked: {apt.patients.name}
-                          </span>
+                          <Link
+                            href={`/dashboard/patients/${apt.patients.id}`}
+                            className="inline-flex mt-1 text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium transition-colors border border-blue-200/60"
+                            title="Open Patient Profile & Procedures"
+                          >
+                            👤 {apt.patients.name} (Procedures) →
+                          </Link>
                         )}
                       </div>
                     </TableCell>
@@ -830,6 +834,15 @@ export function AppointmentsList({
                                   <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
                                   Mark Completed
                                 </DropdownMenuItem>
+                              )}
+                              {apt.patients && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => router.push(`/dashboard/patients/${apt.patients?.id}`)}>
+                                    <Layers className="mr-2 h-4 w-4 text-rose-600" />
+                                    <span className="text-rose-600 font-medium">Patient Procedures</span>
+                                  </DropdownMenuItem>
+                                </>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -585,3 +585,78 @@ export const DAYS_OF_WEEK = [
   'Friday',
   'Saturday',
 ] as const;
+
+// ============================================================
+// Patient Procedures & Multi-Session Tracking
+// ============================================================
+
+export type ProcedureStatus = 'active' | 'completed' | 'paused' | 'cancelled';
+export type SessionStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+export type ProcedurePaymentStatus = 'pending' | 'partial' | 'paid' | 'refunded';
+
+export interface PatientProcedure {
+  id: string;
+  patient_id: string;
+  treatment_id: string | null;
+  plan_name: string;
+  total_sessions: number;
+  completed_sessions: number;
+  status: ProcedureStatus;
+  total_cost: number;
+  paid_amount: number;
+  balance_amount: number;
+  payment_status: ProcedurePaymentStatus;
+  interval_days: number | null;
+  next_session_due_date: string | null;
+  doctor_id: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+  deleted_at: string | null;
+  // Joined
+  treatment?: Treatment;
+  doctor?: Staff;
+  sessions?: ProcedureSession[];
+  payments?: ProcedurePayment[];
+}
+
+export interface ProcedureSession {
+  id: string;
+  procedure_id: string;
+  patient_id: string;
+  session_number: number;
+  session_date: string;
+  status: SessionStatus;
+  doctor_id: string | null;
+  treatment_area: string | null;
+  settings_used: string | null;
+  observations_notes: string | null;
+  aftercare_instructions: string | null;
+  next_recommended_date: string | null;
+  appointment_id: string | null;
+  visit_id: string | null;
+  created_at: string;
+  created_by: string | null;
+  // Joined
+  doctor?: Staff;
+  procedure?: PatientProcedure;
+}
+
+export interface ProcedurePayment {
+  id: string;
+  procedure_id: string;
+  patient_id: string;
+  session_id: string | null;
+  receipt_number: string;
+  amount: number;
+  payment_method: PaymentMethod;
+  payment_date: string;
+  notes: string | null;
+  created_at: string;
+  received_by: string | null;
+  // Joined
+  procedure?: PatientProcedure;
+  receiver?: Staff;
+}
+
