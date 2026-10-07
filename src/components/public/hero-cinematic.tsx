@@ -21,7 +21,7 @@ export function HeroCinematic() {
   const [mood, setMood] = useState<'twilight' | 'daylight'>('daylight');
 
   return (
-    <section className="relative w-full flex flex-col justify-between overflow-hidden bg-black text-white min-h-[calc(100vh-69px)] md:min-h-[calc(100vh-106px)]">
+    <section className="relative w-full flex flex-col justify-between overflow-hidden bg-black text-white min-h-[calc(100dvh-68px)] md:min-h-[calc(100vh-106px)]">
       {/* 1. Real Clinic Background Images (Day & Night) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Night Layer */}
@@ -60,16 +60,16 @@ export function HeroCinematic() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/35" />
 
         {/* Top & Bottom Soft Fades */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/90 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-20 sm:h-24 bg-gradient-to-b from-black/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-20 sm:h-24 bg-gradient-to-t from-black/90 to-transparent" />
       </div>
 
       {/* 2. Simple Day / Night Switcher */}
-      <div className="absolute top-4 right-4 sm:top-5 sm:right-6 z-20 flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-xs">
+      <div className="absolute top-3 right-3 sm:top-5 sm:right-6 z-20 flex items-center gap-1 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-xs">
         <button
           type="button"
           onClick={() => setMood('twilight')}
-          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${
+          className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs transition-colors ${
             mood === 'twilight'
               ? 'bg-rose-950 text-rose-200 border border-rose-500/40 font-medium'
               : 'text-gray-300 hover:text-white'
@@ -83,7 +83,7 @@ export function HeroCinematic() {
         <button
           type="button"
           onClick={() => setMood('daylight')}
-          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors ${
+          className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs transition-colors ${
             mood === 'daylight'
               ? 'bg-amber-600 text-white font-medium'
               : 'text-gray-300 hover:text-white'
@@ -96,36 +96,36 @@ export function HeroCinematic() {
       </div>
 
       {/* 3. Hero Content Container */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-1 py-8 sm:py-10 lg:py-12">
-        <div className="max-w-2xl lg:max-w-3xl space-y-4 sm:space-y-5 text-center sm:text-left my-auto pt-3 sm:pt-6">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-1 py-4 sm:py-10 lg:py-12">
+        <div className="max-w-2xl lg:max-w-3xl space-y-2.5 sm:space-y-5 text-center sm:text-left my-auto pt-2 sm:pt-6">
           
           {/* Clinic Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-medium text-rose-200 border border-white/15">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-            <span>Dr. Bilal Skin Care Clinic • Sami Tower, Ring Road, Peshawar</span>
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 px-3 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-medium text-rose-200 border border-white/15 max-w-[88%] sm:max-w-none mx-auto sm:mx-0">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400 shrink-0" />
+            <span className="truncate">Dr. Bilal Skin Care Clinic • Sami Tower, Ring Road, Peshawar</span>
           </div>
 
           {/* Headline provided by Doctor */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] drop-shadow-md">
+          <h1 className="text-3xl sm:text-6xl lg:text-7xl font-serif font-bold text-white tracking-tight leading-[1.1] drop-shadow-md">
             Brimish Skin Care
           </h1>
 
           {/* Doctor Subtitle & Credentials */}
-          <div className="space-y-1 sm:space-y-1.5 pt-1">
-            <p className="text-xl sm:text-2xl lg:text-3xl font-serif font-medium text-rose-100 tracking-wide">
+          <div className="space-y-0.5 sm:space-y-1.5 pt-0.5 sm:pt-1">
+            <p className="text-lg sm:text-2xl lg:text-3xl font-serif font-medium text-rose-100 tracking-wide">
               By <span className="font-bold text-white underline decoration-rose-400/50 decoration-2 underline-offset-4">Dr. Bilal Khan</span>
             </p>
-            <p className="text-xs sm:text-sm font-semibold tracking-widest text-rose-200/90 uppercase font-sans">
+            <p className="text-[10px] sm:text-sm font-semibold tracking-widest text-rose-200/90 uppercase font-sans">
               Dermatologist &amp; Cosmetologist
             </p>
           </div>
 
           {/* High-Impact Hero Action Buttons (Sleek & Compact on Mobile) */}
-          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2.5 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
+          <div className="pt-1.5 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
             {/* 1. Book Appointment */}
             <Link href="/book" prefetch={true} className="w-full sm:w-auto">
               <Button
-                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-5 sm:px-7 h-10 sm:h-12 text-xs sm:text-sm font-semibold shadow-md shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
+                className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-4 sm:px-7 h-9 sm:h-12 text-xs sm:text-sm font-semibold shadow-md shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
               >
                 <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span>Book Appointment</span>
@@ -140,7 +140,7 @@ export function HeroCinematic() {
                 href="https://wa.me/923356400959"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 h-9 sm:h-12 rounded-full text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 h-8.5 sm:h-12 rounded-full text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
                 title="Chat with clinic on WhatsApp"
               >
                 <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white text-white" />
@@ -151,7 +151,7 @@ export function HeroCinematic() {
               <Link href="/treatments" prefetch={true} className="w-full sm:w-auto">
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto rounded-full px-3 sm:px-6 h-9 sm:h-12 text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                  className="w-full sm:w-auto rounded-full px-3 sm:px-6 h-8.5 sm:h-12 text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
                 >
                   View Treatments
                 </Button>
@@ -161,44 +161,44 @@ export function HeroCinematic() {
         </div>
 
         {/* 4. Bottom Credibility Badges (Clean, Glassmorphic & Non-overlapping) */}
-        <div className="mt-8 pt-5 border-t border-white/15 grid grid-cols-2 lg:grid-cols-4 gap-3 text-white/90 max-w-5xl">
-          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
-            <div className="h-9 w-9 rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-300 shrink-0">
-              <Star className="h-4 w-4 fill-amber-300 text-amber-300" />
+        <div className="mt-3 sm:mt-8 pt-2.5 sm:pt-5 border-t border-white/15 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-white/90 max-w-5xl">
+          <div className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-300 shrink-0">
+              <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-amber-300 text-amber-300" />
             </div>
-            <div>
-              <div className="text-xs sm:text-sm font-bold text-white leading-tight">4.9 / 5.0 Rating</div>
-              <div className="text-[10px] sm:text-[11px] text-gray-300">1,200+ Happy Patients</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
-            <div className="h-9 w-9 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-300 shrink-0">
-              <Stethoscope className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-xs sm:text-sm font-bold text-white leading-tight">Doctor-Led Care</div>
-              <div className="text-[10px] sm:text-[11px] text-gray-300">Checked by Dr. Bilal</div>
+            <div className="min-w-0">
+              <div className="text-[11px] sm:text-sm font-bold text-white leading-tight truncate">4.9 / 5.0 Rating</div>
+              <div className="text-[9px] sm:text-[11px] text-gray-300 truncate">1,200+ Happy Patients</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
-            <div className="h-9 w-9 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-300 shrink-0">
-              <Shield className="h-4 w-4" />
+          <div className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-300 shrink-0">
+              <Stethoscope className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
-            <div>
-              <div className="text-xs sm:text-sm font-bold text-white leading-tight">No Advance Required</div>
-              <div className="text-[10px] sm:text-[11px] text-gray-300">Pay at the Clinic</div>
+            <div className="min-w-0">
+              <div className="text-[11px] sm:text-sm font-bold text-white leading-tight truncate">Doctor-Led Care</div>
+              <div className="text-[9px] sm:text-[11px] text-gray-300 truncate">Checked by Dr. Bilal</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
-            <div className="h-9 w-9 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
-              <MapPin className="h-4 w-4" />
+          <div className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-300 shrink-0">
+              <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
-            <div>
-              <div className="text-xs sm:text-sm font-bold text-white leading-tight">Sami Tower</div>
-              <div className="text-[10px] sm:text-[11px] text-gray-300">Ring Road, Peshawar</div>
+            <div className="min-w-0">
+              <div className="text-[11px] sm:text-sm font-bold text-white leading-tight truncate">No Advance Required</div>
+              <div className="text-[9px] sm:text-[11px] text-gray-300 truncate">Pay at the Clinic</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-2.5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-black/40 backdrop-blur-md border border-white/15 hover:bg-white/10 hover:border-white/25 transition-all">
+            <div className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-300 shrink-0">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[11px] sm:text-sm font-bold text-white leading-tight truncate">Sami Tower</div>
+              <div className="text-[9px] sm:text-[11px] text-gray-300 truncate">Ring Road, Peshawar</div>
             </div>
           </div>
         </div>
