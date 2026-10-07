@@ -40,6 +40,8 @@ import {
   Tag,
   Percent,
   FolderPlus,
+  Banknote,
+  CreditCard,
 } from 'lucide-react';
 import {
   formatCurrency,
@@ -896,16 +898,18 @@ export function POSTerminal({
         </div>
 
         {/* Right Side: Cart & Immediate Checkout (Pinned Totals, Never scrolls out of view) */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col h-full min-h-0 bg-white rounded-2xl border border-gray-200/90 shadow-sm p-3.5 overflow-hidden">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col h-full min-h-0 bg-white rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden">
           {/* Cart Header */}
-          <div className="flex items-center justify-between pb-2 border-b border-gray-100 shrink-0">
+          <div className="px-3.5 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50/80 via-white to-gray-50/50 shrink-0">
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                <ShoppingCart className="h-4 w-4" />
+              <div className="h-7 w-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100/80 shadow-2xs">
+                <ShoppingCart className="h-3.5 w-3.5" />
               </div>
-              <h2 className="text-sm font-bold text-gray-900">Current Sale</h2>
+              <div>
+                <h2 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">Current Sale</h2>
+              </div>
               {items.length > 0 && (
-                <Badge className="bg-rose-100 text-rose-700 text-[10px] font-bold border-0 px-2 py-0.2">
+                <Badge className="bg-rose-500 text-white text-[10px] font-bold border-0 px-2 py-0.2 rounded-full ml-1">
                   {items.reduce((s, i) => s + i.quantity, 0)} items
                 </Badge>
               )}
@@ -915,18 +919,19 @@ export function POSTerminal({
               <button
                 type="button"
                 onClick={clearCart}
-                className="text-[11px] text-gray-400 hover:text-red-600 font-medium transition-colors"
+                className="text-[11px] text-gray-400 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1 hover:bg-rose-50 px-2 py-0.5 rounded-md"
               >
-                Clear Cart
+                <Trash2 className="h-3 w-3" />
+                <span>Clear</span>
               </button>
             )}
           </div>
 
-          {/* Customer Details Inputs (REQUIRED) */}
-          <div className="space-y-1.5 pt-2.5 pb-2 shrink-0">
+          {/* Customer Details Inputs */}
+          <div className="p-3 pb-2 shrink-0 border-b border-gray-100/80 bg-gray-50/40">
             {posFormError && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 font-medium">
-                <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+              <div className="mb-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 font-medium">
+                <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />
                 <span>{posFormError}</span>
               </div>
             )}
@@ -938,8 +943,8 @@ export function POSTerminal({
                   value={customerName}
                   onChange={(e) => { setCustomerName(e.target.value); setPosFormError(null); }}
                   className={cn(
-                    'h-8 text-xs pl-8 bg-gray-50/70 rounded-lg',
-                    posFormError && !customerName.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : 'border-gray-200'
+                    'h-8 text-xs pl-8 bg-white rounded-lg border-gray-200 shadow-2xs focus-visible:ring-rose-500 font-medium',
+                    posFormError && !customerName.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : ''
                   )}
                   required
                 />
@@ -947,12 +952,12 @@ export function POSTerminal({
               <div className="relative">
                 <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                 <Input
-                  placeholder="Phone * (0300-1234567)"
+                  placeholder="Phone * (0300...)"
                   value={customerPhone}
                   onChange={(e) => { setCustomerPhone(normalizePakistaniPhone(e.target.value)); setPosFormError(null); }}
                   className={cn(
-                    'h-8 text-xs pl-8 bg-gray-50/70 rounded-lg font-mono sm:font-sans',
-                    posFormError && !customerPhone.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : 'border-gray-200'
+                    'h-8 text-xs pl-8 bg-white rounded-lg border-gray-200 shadow-2xs focus-visible:ring-rose-500 font-medium',
+                    posFormError && !customerPhone.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : ''
                   )}
                   required
                 />
@@ -961,12 +966,14 @@ export function POSTerminal({
           </div>
 
           {/* Cart Items List: Scrollable Internally */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 py-1 pr-1 overscroll-contain [scrollbar-width:thin]">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 p-2.5 pr-2 overscroll-contain [scrollbar-width:thin]">
             {items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center py-8 text-gray-400">
-                <ShoppingCart className="h-9 w-9 text-gray-300 stroke-1 mb-2" />
-                <p className="text-xs font-semibold text-gray-700">Cart is empty</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
+                <div className="h-12 w-12 rounded-2xl bg-rose-50/70 border border-rose-100 flex items-center justify-center mb-2.5 text-rose-400 shadow-2xs">
+                  <ShoppingCart className="h-6 w-6 stroke-1.5" />
+                </div>
+                <p className="text-xs font-bold text-gray-700">Cart is empty</p>
+                <p className="text-[11px] text-gray-400 mt-0.5 max-w-[200px]">
                   Click any product or procedure on the left to add
                 </p>
               </div>
@@ -984,7 +991,7 @@ export function POSTerminal({
                   </div>
 
                   {/* Quantity Stepper */}
-                  <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-0.5 shrink-0">
+                  <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-0.5 shrink-0 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -1024,24 +1031,24 @@ export function POSTerminal({
           </div>
 
           {/* Fixed Checkout Summary (Always 100% visible at bottom) */}
-          <div className="pt-2 border-t border-gray-100 shrink-0 space-y-2">
-            {/* Billing Adjustments: Discount & GST Tax Controls */}
-            <div className="bg-stone-50/90 rounded-xl p-2 border border-stone-200/80 space-y-1.5 text-xs">
-              {/* Discount Selector */}
-              <div className="space-y-1">
+          <div className="border-t border-gray-100 shrink-0">
+            {/* Discount & GST Controls Strip */}
+            <div className="p-2.5 bg-gray-50/70 border-b border-gray-100 space-y-2 text-xs">
+              {/* Discount Row */}
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-semibold text-gray-700">
                     <Tag className="h-3.5 w-3.5 text-rose-500" />
                     <span>Discount</span>
                     {saleDiscount > 0 && (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/90 px-1.5 py-0.2 rounded">
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-full">
                         -{formatCurrency(saleDiscount)}
                       </span>
                     )}
                   </div>
 
-                  {/* Mode Selector */}
-                  <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shadow-2xs">
+                  {/* Discount Segmented Switcher */}
+                  <div className="flex items-center bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => {
@@ -1049,8 +1056,8 @@ export function POSTerminal({
                         setDiscountValue(0);
                       }}
                       className={cn(
-                        'px-2 py-0.5 text-[10px] font-semibold rounded transition-colors',
-                        !discountType ? 'bg-gray-100 text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-900'
+                        'px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all',
+                        !discountType ? 'bg-gray-900 text-white shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-900'
                       )}
                     >
                       None
@@ -1062,12 +1069,11 @@ export function POSTerminal({
                         if (discountValue <= 0) setDiscountValue(10);
                       }}
                       className={cn(
-                        'px-2 py-0.5 text-[10px] font-semibold rounded transition-colors flex items-center gap-0.5',
-                        discountType === 'percentage' ? 'bg-rose-500 text-white font-bold' : 'text-gray-500 hover:text-gray-900'
+                        'px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all flex items-center gap-0.5',
+                        discountType === 'percentage' ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-900'
                       )}
                     >
-                      <Percent className="h-2.5 w-2.5" />
-                      <span>%</span>
+                      <span>% Off</span>
                     </button>
                     <button
                       type="button"
@@ -1076,18 +1082,18 @@ export function POSTerminal({
                         if (discountValue <= 0) setDiscountValue(500);
                       }}
                       className={cn(
-                        'px-2 py-0.5 text-[10px] font-semibold rounded transition-colors',
-                        discountType === 'fixed' ? 'bg-rose-500 text-white font-bold' : 'text-gray-500 hover:text-gray-900'
+                        'px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all',
+                        discountType === 'fixed' ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-900'
                       )}
                     >
-                      PKR
+                      Flat PKR
                     </button>
                   </div>
                 </div>
 
-                {/* Percentage Quick Chips & Input */}
+                {/* Percentage Presets & Input */}
                 {discountType === 'percentage' && (
-                  <div className="flex items-center gap-1.5 pt-0.5">
+                  <div className="flex items-center gap-1.5 pt-0.5 animate-in fade-in duration-200">
                     <div className="relative flex-1">
                       <Input
                         type="number"
@@ -1100,7 +1106,7 @@ export function POSTerminal({
                           const val = parseFloat(e.target.value) || 0;
                           setDiscountValue(Math.min(100, Math.max(0, val)));
                         }}
-                        className="h-7 text-xs bg-white pr-6"
+                        className="h-7 text-xs bg-white pr-6 rounded-lg"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold">%</span>
                     </div>
@@ -1110,9 +1116,9 @@ export function POSTerminal({
                         type="button"
                         onClick={() => setDiscountValue(p)}
                         className={cn(
-                          'h-7 px-2 rounded border text-[10px] font-bold transition-all',
+                          'h-7 px-2 rounded-lg border text-[10px] font-bold transition-all',
                           discountValue === p
-                            ? 'border-rose-400 bg-rose-50 text-rose-700'
+                            ? 'border-rose-400 bg-rose-50 text-rose-700 shadow-2xs'
                             : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
                         )}
                       >
@@ -1122,9 +1128,9 @@ export function POSTerminal({
                   </div>
                 )}
 
-                {/* Fixed Amount Quick Chips & Input */}
+                {/* Fixed Amount Presets & Input */}
                 {discountType === 'fixed' && (
-                  <div className="flex items-center gap-1.5 pt-0.5">
+                  <div className="flex items-center gap-1.5 pt-0.5 animate-in fade-in duration-200">
                     <div className="relative flex-1">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-semibold">Rs</span>
                       <Input
@@ -1137,7 +1143,7 @@ export function POSTerminal({
                           const val = parseFloat(e.target.value) || 0;
                           setDiscountValue(Math.max(0, val));
                         }}
-                        className="h-7 text-xs bg-white pl-6"
+                        className="h-7 text-xs bg-white pl-6 rounded-lg"
                       />
                     </div>
                     {[200, 500, 1000, 2000].map((amt) => (
@@ -1146,9 +1152,9 @@ export function POSTerminal({
                         type="button"
                         onClick={() => setDiscountValue(amt)}
                         className={cn(
-                          'h-7 px-1.5 rounded border text-[10px] font-bold transition-all',
+                          'h-7 px-1.5 rounded-lg border text-[10px] font-bold transition-all',
                           discountValue === amt
-                            ? 'border-rose-400 bg-rose-50 text-rose-700'
+                            ? 'border-rose-400 bg-rose-50 text-rose-700 shadow-2xs'
                             : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
                         )}
                       >
@@ -1160,16 +1166,11 @@ export function POSTerminal({
               </div>
 
               {/* GST / Sales Tax Controls */}
-              <div className="space-y-1 pt-1.5 border-t border-stone-200/70">
+              <div className="space-y-1.5 pt-1.5 border-t border-gray-200/70">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 font-semibold text-gray-700">
                     <Receipt className="h-3.5 w-3.5 text-blue-500" />
-                    <span>GST / Sales Tax</span>
-                    {posTaxRate > 0 && (
-                      <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200/50">
-                        +{formatCurrency(tax)} ({posTaxRate}%)
-                      </span>
-                    )}
+                    <span>Sales Tax (GST)</span>
                   </div>
 
                   {/* GST Presets */}
@@ -1183,7 +1184,7 @@ export function POSTerminal({
                           setIsCustomTax(false);
                         }}
                         className={cn(
-                          'px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors',
+                          'px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all',
                           !isCustomTax && posTaxRate === rate
                             ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
                             : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
@@ -1196,9 +1197,9 @@ export function POSTerminal({
                       type="button"
                       onClick={() => setIsCustomTax(!isCustomTax)}
                       className={cn(
-                        'px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors',
+                        'px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all',
                         isCustomTax
-                          ? 'bg-blue-600 border-blue-600 text-white'
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
                           : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
                       )}
                     >
@@ -1209,7 +1210,7 @@ export function POSTerminal({
 
                 {/* Custom GST Input Field */}
                 {isCustomTax && (
-                  <div className="flex items-center gap-2 pt-0.5">
+                  <div className="flex items-center gap-2 pt-0.5 animate-in fade-in duration-200">
                     <div className="relative flex-1">
                       <Input
                         type="number"
@@ -1222,12 +1223,12 @@ export function POSTerminal({
                           const val = parseFloat(e.target.value) || 0;
                           setPosTaxRate(Math.min(100, Math.max(0, val)));
                         }}
-                        className="h-7 text-xs bg-white pr-7"
+                        className="h-7 text-xs bg-white pr-7 rounded-lg"
                         autoFocus
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold">%</span>
                     </div>
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-[10px] font-medium text-gray-500">
                       Applied: {posTaxRate}%
                     </span>
                   </div>
@@ -1235,104 +1236,138 @@ export function POSTerminal({
               </div>
             </div>
 
-            {/* Subtotal & Totals */}
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span className="font-medium text-gray-900">{formatCurrency(subtotal)}</span>
-              </div>
-              {saleDiscount > 0 && (
-                <div className="flex justify-between text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/50">
-                  <span>
-                    Privilege Discount {discountType === 'percentage' ? `(${discountValue}%)` : '(Fixed)'}
-                  </span>
-                  <span>-{formatCurrency(saleDiscount)}</span>
+            {/* Subtotal, Net Payable & Checkout Box */}
+            <div className="p-3 bg-white space-y-2">
+              {/* Detailed Breakdown */}
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-gray-900">{formatCurrency(subtotal)}</span>
                 </div>
-              )}
-              {posTaxRate > 0 ? (
-                <div className="flex justify-between text-blue-700 font-medium">
-                  <span>GST / Tax ({posTaxRate}%)</span>
-                  <span className="font-semibold text-gray-900">+{formatCurrency(tax)}</span>
-                </div>
-              ) : (
-                <div className="flex justify-between text-gray-400 text-[11px]">
-                  <span>GST / Tax</span>
-                  <span>0% (Exempt)</span>
-                </div>
-              )}
-              <div className="flex justify-between items-baseline pt-1 border-t border-gray-200 font-bold">
-                <span className="text-gray-900 text-sm">Total Payable</span>
-                <span className="text-lg text-rose-600 font-serif">{formatCurrency(total)}</span>
-              </div>
-            </div>
-
-            {/* Payment Method Selector */}
-            <div className="grid grid-cols-2 gap-1.5 pt-1">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('cash')}
-                className={cn(
-                  'py-2 px-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5',
-                  paymentMethod === 'cash'
-                    ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-2xs'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                {saleDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                    <span>Discount {discountType === 'percentage' ? `(${discountValue}%)` : '(Flat)'}</span>
+                    <span>-{formatCurrency(saleDiscount)}</span>
+                  </div>
                 )}
-              >
-                <span>💵</span>
-                <span>Cash Payment</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('card')}
-                className={cn(
-                  'py-2 px-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5',
-                  paymentMethod === 'card'
-                    ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-2xs'
-                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
-                )}
-              >
-                <span>💳</span>
-                <span>Card / POS</span>
-              </button>
-            </div>
-
-            {/* Cash Tender & Change */}
-            {paymentMethod === 'cash' && (
-              <div className="flex items-center gap-2 pt-0.5">
-                <Input
-                  type="number"
-                  placeholder="Amount tender (e.g. 5000)"
-                  value={amountReceived}
-                  onChange={(e) => setAmountReceived(e.target.value)}
-                  className="h-8 text-xs bg-gray-50/70 border-gray-200 rounded-lg flex-1"
-                />
-                {change > 0 && (
-                  <div className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-1 rounded-lg shrink-0">
-                    Change: {formatCurrency(change)}
+                {posTaxRate > 0 ? (
+                  <div className="flex justify-between text-blue-700 font-semibold bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-200/50">
+                    <span>GST ({posTaxRate}%)</span>
+                    <span>+{formatCurrency(tax)}</span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between text-gray-400 text-[11px]">
+                    <span>GST / Tax</span>
+                    <span className="font-medium text-gray-500">0% (Exempt)</span>
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Complete Sale Button */}
-            <Button
-              type="button"
-              onClick={handleCompleteSale}
-              disabled={items.length === 0 || processing}
-              className="w-full h-11 text-xs sm:text-sm font-bold bg-gradient-to-r from-rose-600 via-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {processing ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Processing Payment...</span>
-                </>
-              ) : (
-                <>
-                  <Receipt className="h-4 w-4" />
-                  <span>Charge & Print Receipt — {formatCurrency(total)}</span>
-                </>
+              {/* High-Impact Total Payable Card */}
+              <div className="p-2.5 rounded-xl bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 text-white flex items-center justify-between shadow-xs border border-gray-800">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold block leading-none">
+                    Total Amount
+                  </span>
+                  <span className="text-xs text-rose-300 font-medium mt-0.5 inline-block">
+                    Net Payable
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                    {formatCurrency(total)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment Method Selector */}
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cash')}
+                  className={cn(
+                    'py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer',
+                    paymentMethod === 'cash'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs ring-1 ring-emerald-400/50'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                  )}
+                >
+                  <Banknote className="h-4 w-4 text-emerald-600" />
+                  <span>Cash</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('card')}
+                  className={cn(
+                    'py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer',
+                    paymentMethod === 'card'
+                      ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-2xs ring-1 ring-blue-400/50'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                  )}
+                >
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <span>Card / POS</span>
+                </button>
+              </div>
+
+              {/* Cash Tender & Change */}
+              {paymentMethod === 'cash' && (
+                <div className="space-y-1.5 pt-0.5 animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        placeholder="Amount received (e.g. 5000)"
+                        value={amountReceived}
+                        onChange={(e) => setAmountReceived(e.target.value)}
+                        className="h-8 text-xs bg-gray-50/80 border-gray-200 rounded-lg font-medium"
+                      />
+                    </div>
+                    {total > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setAmountReceived(String(total))}
+                        className="h-8 px-2.5 rounded-lg text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shrink-0"
+                      >
+                        Exact
+                      </button>
+                    )}
+                  </div>
+
+                  {change > 0 && (
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
+                      <span>Change to Return:</span>
+                      <span className="text-sm font-extrabold">{formatCurrency(change)}</span>
+                    </div>
+                  )}
+                </div>
               )}
-            </Button>
+
+              {/* Complete Sale Button */}
+              <Button
+                type="button"
+                onClick={handleCompleteSale}
+                disabled={items.length === 0 || processing}
+                className={cn(
+                  'w-full h-11 text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer',
+                  items.length === 0
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-rose-600 via-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white shadow-rose-900/20'
+                )}
+              >
+                {processing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Processing Payment...</span>
+                  </>
+                ) : (
+                  <>
+                    <Receipt className="h-4 w-4" />
+                    <span>Charge &amp; Print Receipt {total > 0 ? `— ${formatCurrency(total)}` : ''}</span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
