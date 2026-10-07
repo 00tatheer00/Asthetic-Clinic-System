@@ -612,15 +612,15 @@ export function POSTerminal({
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
-      {/* Top Header & Fast Action Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pb-2.5 shrink-0 border-b border-gray-100">
+      {/* 1. Top Header Row: Title, Sync, Shortcuts & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 shrink-0 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-none">
               Point of Sale
             </h1>
             <p className="text-[11px] text-gray-500 mt-1">
-              Walk-in checkout & thermal receipts
+              Walk-in checkout &amp; thermal receipts
             </p>
           </div>
 
@@ -637,16 +637,55 @@ export function POSTerminal({
           </Button>
         </div>
 
-        {/* Search, Filter Chips & Quick Add */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Filter Chips */}
-          <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-full">
+        {/* Right Actions: Keyboard Guide, Add Category, New Product */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* Keyboard Shortcuts Guide */}
+          <div className="hidden xl:flex items-center gap-1.5 text-[10px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200">
+            <span className="font-semibold text-gray-700">Keys:</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F2</kbd> Search
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F8</kbd> Cash
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F9</kbd> Card
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F10</kbd> Print
+            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">Esc</kbd> Close
+          </div>
+
+          {/* Add Category Button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAddCategoryModal(true)}
+            className="h-8 px-2.5 text-xs rounded-lg border-gray-200 hover:border-rose-300 text-gray-700 hover:text-rose-600 flex items-center gap-1 shadow-2xs"
+            title="Add custom category"
+          >
+            <Plus className="h-3.5 w-3.5 text-rose-500" />
+            <span>Category</span>
+          </Button>
+
+          {/* Quick Add Product Button */}
+          <Button
+            size="sm"
+            onClick={() => setShowAddProductModal(true)}
+            className="h-8 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 rounded-lg flex items-center gap-1.5 shadow-xs"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>New Product</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* 2. Filter & Search Toolbar Strip */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 py-2 shrink-0 border-b border-gray-100 bg-gray-50/60 rounded-xl px-2.5 mt-2">
+        {/* Left: Catalog Type Chips & Category Dropdown */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* Catalog Filter Chips */}
+          <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs">
             <button
               onClick={() => setActiveCatalogTab('all')}
               className={cn(
-                'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-150',
+                'px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150',
                 activeCatalogTab === 'all'
-                  ? 'bg-white text-gray-900 shadow-2xs'
+                  ? 'bg-gray-900 text-white shadow-2xs'
                   : 'text-gray-600 hover:text-gray-900'
               )}
             >
@@ -655,7 +694,7 @@ export function POSTerminal({
             <button
               onClick={() => setActiveCatalogTab('products')}
               className={cn(
-                'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-150',
+                'px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150',
                 activeCatalogTab === 'products'
                   ? 'bg-rose-500 text-white shadow-2xs font-bold'
                   : 'text-gray-600 hover:text-gray-900'
@@ -666,7 +705,7 @@ export function POSTerminal({
             <button
               onClick={() => setActiveCatalogTab('treatments')}
               className={cn(
-                'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-150',
+                'px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150',
                 activeCatalogTab === 'treatments'
                   ? 'bg-indigo-600 text-white shadow-2xs font-bold'
                   : 'text-gray-600 hover:text-gray-900'
@@ -676,81 +715,48 @@ export function POSTerminal({
             </button>
           </div>
 
-          {/* Keyboard Shortcuts Guide Ribbon */}
-          <div className="hidden xl:flex items-center gap-1.5 text-[10px] text-gray-500 bg-gray-100/90 px-2.5 py-1 rounded-full border border-gray-200">
-            <span className="font-semibold text-gray-700">Keys:</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F2</kbd> Search
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F8</kbd> Cash
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F9</kbd> Card
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F10</kbd> Print
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">Esc</kbd> Close
-          </div>
-
           {/* Category Filter Dropdown with Inline Custom Option */}
-          <div className="flex items-center gap-1">
-            <select
-              value={selectedCategoryFilter}
-              onChange={(e) => {
-                if (e.target.value === '__add_new_category__') {
-                  setShowAddCategoryModal(true);
-                } else {
-                  setSelectedCategoryFilter(e.target.value);
-                }
-              }}
-              className="h-8 text-xs px-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-rose-500 font-medium max-w-[140px] sm:max-w-none truncate"
-            >
-              <option value="all">All Categories</option>
-              {categoriesList.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-              <option value="__add_new_category__" className="text-rose-600 font-bold">
-                ➕ + Add Custom Category...
-              </option>
-            </select>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddCategoryModal(true)}
-              className="h-8 px-2 text-xs border-dashed border-gray-300 hover:border-rose-400 text-gray-600 hover:text-rose-600"
-              title="Add custom category"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span className="hidden md:inline text-[11px] font-medium">+ Category</span>
-            </Button>
-          </div>
-
-          {/* Search Box */}
-          <div className="relative w-40 sm:w-52">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-            <Input
-              ref={searchInputRef}
-              placeholder="Search items [F2]..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-xs bg-white rounded-lg border-gray-200"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
-          </div>
-
-          {/* Quick Add Product Button */}
-          <Button
-            size="sm"
-            onClick={() => setShowAddProductModal(true)}
-            className="h-8 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 rounded-lg flex items-center gap-1 shadow-xs"
+          <select
+            value={selectedCategoryFilter}
+            onChange={(e) => {
+              if (e.target.value === '__add_new_category__') {
+                setShowAddCategoryModal(true);
+              } else {
+                setSelectedCategoryFilter(e.target.value);
+              }
+            }}
+            className="h-8 text-xs px-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-rose-500 font-medium min-w-[130px]"
           >
-            <Plus className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">New Product</span>
-          </Button>
+            <option value="all">All Categories</option>
+            {categoriesList.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+            <option value="__add_new_category__" className="text-rose-600 font-bold">
+              + Add Custom Category...
+            </option>
+          </select>
+        </div>
+
+        {/* Right: Search Input */}
+        <div className="relative w-full sm:w-64 md:w-80">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+          <Input
+            ref={searchInputRef}
+            placeholder="Search items [F2]..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8 h-8 text-xs bg-white rounded-lg border-gray-200 focus-visible:ring-rose-500"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
 
