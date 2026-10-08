@@ -44,15 +44,15 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     existingFrame.remove();
   }
 
-  // Create an isolated hidden iframe
+  // Create an isolated hidden iframe rendered off-screen at 48mm thermal width
   const iframe = document.createElement('iframe');
   iframe.id = 'brimish-isolated-print-frame';
   iframe.setAttribute('aria-hidden', 'true');
   iframe.style.position = 'fixed';
-  iframe.style.right = '0';
-  iframe.style.bottom = '0';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
+  iframe.style.top = '-99999px';
+  iframe.style.left = '-99999px';
+  iframe.style.width = '48mm';
+  iframe.style.height = 'auto';
   iframe.style.border = '0';
   iframe.style.opacity = '0';
   iframe.style.pointerEvents = 'none';
@@ -68,83 +68,71 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     return false;
   }
 
-  // Collect all styles and stylesheets from the main document
-  let copiedStyles = '';
-  document.querySelectorAll('style, link[rel="stylesheet"]').forEach((node) => {
-    copiedStyles += node.outerHTML + '\n';
-  });
-
-  // Dynamically calculate receipt height in mm for Chrome's @page rule
-  const elementHeightPx = element.scrollHeight || element.offsetHeight || 500;
-  // Convert px to mm: 1px = 0.264583mm (at standard 96dpi). Add 12mm safety margin for tear-off
-  const heightMm = Math.max(90, Math.ceil((elementHeightPx / 96) * 25.4) + 12);
-
   // Extract clean HTML content and swap golden logo for crisp thermal silhouette
   const contentHtml = element.innerHTML.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png');
 
-  // Write standalone printable document
+  // Write standalone printable document — NO copiedStyles from main app (prevents flex centering and vertical gaps)
   iframeDoc.open();
   iframeDoc.write(`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title}</title>
-  ${copiedStyles}
   <style>
     /* ======================================================== */
-    /* STANDALONE 58MM THERMAL RECEIPT STYLES (SPEED X / POS-58)*/
+    /* STANDALONE 58MM THERMAL RECEIPT (ZERO TOP/BOTTOM GAPS)   */
     /* ======================================================== */
     @page {
-      size: 58mm ${heightMm}mm;
-      margin: 0 !important;
+      size: 58mm auto;
+      margin: 0mm !important;
     }
-    
-    * {
+
+    *, *::before, *::after {
+      box-sizing: border-box !important;
+      margin: 0 !important;
+      padding: 0 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
-      color-adjust: exact !important;
-      box-sizing: border-box !important;
     }
 
     html, body {
       margin: 0 !important;
       padding: 0 !important;
+      width: 48mm !important;
+      max-width: 48mm !important;
+      height: auto !important;
+      min-height: 0 !important;
       background: #ffffff !important;
       color: #000000 !important;
-      width: 100% !important;
-      box-sizing: border-box !important;
-      overflow: visible !important;
+      display: block !important;
+      position: static !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
       -webkit-font-smoothing: antialiased;
     }
 
     body {
-      display: flex !important;
-      justify-content: center !important;
-      align-items: flex-start !important;
-      padding: 0 !important;
       margin: 0 !important;
+      padding: 0 !important;
+      display: block !important;
     }
 
     .printable-receipt-wrapper {
       width: 48mm !important;
       max-width: 48mm !important;
       min-width: 48mm !important;
-      margin: 0 auto !important;
-      padding: 1.5mm 1mm !important;
-      box-sizing: border-box !important;
+      margin: 0 !important;
+      padding: 0 1mm 2mm 1mm !important;
+      display: block !important;
+      position: static !important;
       background: #ffffff !important;
       color: #000000 !important;
-      border: none !important;
-      box-shadow: none !important;
       font-size: 9.5px !important;
       line-height: 1.25 !important;
       word-break: break-word !important;
       overflow-wrap: break-word !important;
     }
 
-    /* Force any nested wrapper containers to strictly respect 48mm head width */
+    /* Force all nested wrapper containers to start immediately at top without any margins */
     .printable-receipt-wrapper #printable-invoice,
     .printable-receipt-wrapper [id*="printable"],
     .printable-receipt-wrapper > div {
@@ -155,14 +143,13 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       margin: 0 !important;
       border: none !important;
       box-shadow: none !important;
-      box-sizing: border-box !important;
+      background: transparent !important;
     }
 
-    /* Thermal receipt typography & utility fallbacks */
+    /* Typography & utility fallbacks */
     .printable-receipt-wrapper * {
       color: #000000 !important;
       text-shadow: none !important;
-      box-sizing: border-box !important;
     }
 
     /* Clinic Header & Headings */
@@ -182,11 +169,32 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       color: #000000 !important;
     }
 
+    /* Spacing utilities for compact thermal receipt */
+    .printable-receipt-wrapper .space-y-0\\.5 > * + * { margin-top: 1.5px !important; }
+    .printable-receipt-wrapper .space-y-1 > * + * { margin-top: 2.5px !important; }
+    .printable-receipt-wrapper .space-y-1\\.5 > * + * { margin-top: 3.5px !important; }
+    .printable-receipt-wrapper .space-y-2 > * + * { margin-top: 5px !important; }
+    .printable-receipt-wrapper .py-0\\.5 { padding-top: 1px !important; padding-bottom: 1px !important; }
+    .printable-receipt-wrapper .py-1 { padding-top: 2px !important; padding-bottom: 2px !important; }
+    .printable-receipt-wrapper .py-1\\.5 { padding-top: 3px !important; padding-bottom: 3px !important; }
+    .printable-receipt-wrapper .py-2 { padding-top: 4px !important; padding-bottom: 4px !important; }
+    .printable-receipt-wrapper .pb-1 { padding-bottom: 2px !important; }
+    .printable-receipt-wrapper .pb-2 { padding-bottom: 4px !important; }
+    .printable-receipt-wrapper .pb-2\\.5 { padding-bottom: 5px !important; }
+    .printable-receipt-wrapper .pt-0\\.5 { padding-top: 1px !important; }
+    .printable-receipt-wrapper .pt-1 { padding-top: 2px !important; }
+    .printable-receipt-wrapper .pt-1\\.5 { padding-top: 3px !important; }
+    .printable-receipt-wrapper .pt-2 { padding-top: 4px !important; }
+    .printable-receipt-wrapper .pt-2\\.5 { padding-top: 5px !important; }
+    .printable-receipt-wrapper .mb-1 { margin-bottom: 2px !important; }
+    .printable-receipt-wrapper .mb-1\\.5 { margin-bottom: 3px !important; }
+    .printable-receipt-wrapper .mt-0\\.5 { margin-top: 1px !important; }
+    .printable-receipt-wrapper .mt-1 { margin-top: 2px !important; }
+
     /* Flex items & Table Rows */
     .printable-receipt-wrapper .flex {
       display: flex !important;
       width: 100% !important;
-      box-sizing: border-box !important;
     }
 
     .printable-receipt-wrapper .justify-between {
@@ -224,9 +232,19 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     }
 
     /* Dividers */
-    .printable-receipt-wrapper .border-b { border-bottom: 1px solid #000000 !important; }
-    .printable-receipt-wrapper .border-t { border-top: 1px solid #000000 !important; }
-    .printable-receipt-wrapper .border { border: 1px solid #000000 !important; }
+    .printable-receipt-wrapper .border-b {
+      border-bottom: 1px dashed #000000 !important;
+      padding-bottom: 2px !important;
+      margin-bottom: 2px !important;
+    }
+    .printable-receipt-wrapper .border-t {
+      border-top: 1px dashed #000000 !important;
+      padding-top: 2px !important;
+      margin-top: 2px !important;
+    }
+    .printable-receipt-wrapper .border {
+      border: 1px solid #000000 !important;
+    }
     .printable-receipt-wrapper .border-dashed {
       border-style: dashed !important;
       border-color: #000000 !important;
@@ -250,23 +268,33 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       filter: brightness(0) !important;
       image-rendering: -webkit-optimize-contrast !important;
       image-rendering: pixelated !important;
+      display: inline-block !important;
+      margin: 0 auto !important;
+    }
+
+    /* Logo size */
+    .printable-receipt-wrapper .w-11 {
+      width: 40px !important;
+      height: 40px !important;
     }
 
     /* QR Code container sizing */
     .printable-receipt-wrapper .w-24 {
-      width: 76px !important;
-      height: 76px !important;
+      width: 72px !important;
+      height: 72px !important;
+      margin: 0 auto !important;
     }
 
     @media print {
-      body {
-        padding: 0 !important;
+      html, body {
         margin: 0 !important;
+        padding: 0 !important;
+        width: 48mm !important;
       }
       .printable-receipt-wrapper {
+        margin: 0 !important;
+        padding: 0 1mm 2mm 1mm !important;
         width: 48mm !important;
-        max-width: 48mm !important;
-        padding: 1mm 1.5mm !important;
       }
     }
   </style>
@@ -290,6 +318,17 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 
   const executePrint = () => {
     try {
+      // Calculate true rendered height of receipt inside iframe at 48mm width
+      const wrapper = iframeDoc.querySelector('.printable-receipt-wrapper') as HTMLElement | null;
+      const trueHeightPx = wrapper?.offsetHeight || wrapper?.scrollHeight || iframeDoc.body.scrollHeight || 400;
+      // 1px = 0.264583mm (at 96dpi). Add 6mm for clean tear-off margin
+      const dynamicHeightMm = Math.max(70, Math.ceil((trueHeightPx / 96) * 25.4) + 6);
+
+      // Inject exact @page size so Chrome preview and printer only take the receipt length!
+      const dynamicPageStyle = iframeDoc.createElement('style');
+      dynamicPageStyle.textContent = `@page { size: 58mm ${dynamicHeightMm}mm !important; margin: 0mm !important; }`;
+      iframeDoc.head.appendChild(dynamicPageStyle);
+
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
     } catch (err) {

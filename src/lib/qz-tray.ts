@@ -191,7 +191,7 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     }
   }
 
-  const innerContent = clone.innerHTML;
+  const innerContent = clone.innerHTML.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -215,6 +215,9 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
       padding: 0 !important;
       width: 48mm !important;
       max-width: 48mm !important;
+      height: auto !important;
+      min-height: 0 !important;
+      display: block !important;
       background: #ffffff !important;
       color: #000000 !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
@@ -224,7 +227,7 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     .thermal-receipt-container {
       width: 48mm !important;
       max-width: 48mm !important;
-      padding: 1.5mm 0.5mm 4mm 0.5mm !important;
+      padding: 0 0.5mm 2mm 0.5mm !important;
       margin: 0 auto !important;
       background: #ffffff !important;
       color: #000000 !important;

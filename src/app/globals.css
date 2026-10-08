@@ -276,7 +276,7 @@
 @media print {
   @page {
     size: auto;
-    margin: 2mm 3mm;
+    margin: 0mm !important;
   }
   
   html, body {
@@ -289,7 +289,8 @@
     color: #000000 !important;
     overflow: visible !important;
     height: auto !important;
-    min-height: 100% !important;
+    min-height: 0 !important;
+    display: block !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
