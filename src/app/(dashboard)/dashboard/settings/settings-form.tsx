@@ -627,6 +627,71 @@ export function SettingsForm({
                     disabled={!isAdmin}
                   />
                 </div>
+
+                {/* QZ Tray Direct Thermal Printing Configuration */}
+                <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-rose-100/70 text-rose-800 shrink-0 mt-0.5">
+                        <Printer className="h-5 w-5" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <Label htmlFor="qz-direct-toggle" className="text-xs font-bold text-gray-900 cursor-pointer">
+                          Direct Silent Thermal Printing (QZ Tray)
+                        </Label>
+                        <p className="text-[11px] text-gray-500 max-w-xl leading-relaxed">
+                          Sends receipts directly to the Windows thermal printer without opening the browser print dialog. Automatically falls back to standard print if QZ Tray is not running.
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="qz-direct-toggle"
+                      checked={receiptForm.useQzTray ?? true}
+                      onCheckedChange={(checked) =>
+                        setReceiptForm({ ...receiptForm, useQzTray: checked })
+                      }
+                      disabled={!isAdmin}
+                    />
+                  </div>
+
+                  {(receiptForm.useQzTray ?? true) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-stone-200">
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-gray-700">Windows Printer Name</Label>
+                        <Input
+                          value={receiptForm.printerName || 'POS-58 11.3.0.0'}
+                          onChange={(e) => setReceiptForm({ ...receiptForm, printerName: e.target.value })}
+                          disabled={!isAdmin}
+                          placeholder="POS-58 11.3.0.0"
+                          className="h-8 text-xs font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-gray-700">Thermal Roll Width</Label>
+                        <div className="flex items-center gap-2 pt-1">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={receiptForm.paperWidth === '58mm' ? 'default' : 'outline'}
+                            onClick={() => setReceiptForm({ ...receiptForm, paperWidth: '58mm' })}
+                            className={cn('h-7 text-xs font-semibold px-3', receiptForm.paperWidth === '58mm' ? 'bg-stone-900 text-white' : '')}
+                          >
+                            58mm (SPEED X BT-500M)
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={receiptForm.paperWidth === '80mm' ? 'default' : 'outline'}
+                            onClick={() => setReceiptForm({ ...receiptForm, paperWidth: '80mm' })}
+                            className={cn('h-7 text-xs font-semibold px-3', receiptForm.paperWidth === '80mm' ? 'bg-stone-900 text-white' : '')}
+                          >
+                            80mm Standard
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Right Column: Live 80mm Thermal Receipt Simulation (5 cols) */}

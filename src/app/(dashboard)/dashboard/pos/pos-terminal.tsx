@@ -1471,7 +1471,7 @@ export function POSTerminal({
                       Receipt {lastSaleInfo.invoiceNumber || 'Official Slip'}
                     </h3>
                     <Badge className="bg-stone-900 text-white text-[9px] uppercase font-bold tracking-wider">
-                      80mm Thermal
+                      {receiptSettings.paperWidth || '58mm'} Thermal
                     </Badge>
                   </div>
                   <p className="text-[11px] text-gray-500">Official clinic receipt generated</p>

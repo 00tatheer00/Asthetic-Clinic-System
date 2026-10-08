@@ -2,16 +2,27 @@
 
 /**
  * Universal High-Reliability Receipt & Invoice Print Helper for Brimish Skin Care
- * Resolves the blank white page issue when printing or exporting to PDF from modals.
- * Works seamlessly with thermal POS receipt printers (80mm/58mm) and standard PDF/A4 printers.
+ * Priority 1: Direct silent thermal printing via QZ Tray to "POS-58 11.3.0.0" (58mm thermal roll).
+ * Priority 2 (Fallback): Isolated iframe printing via native browser dialog.
  */
+
+import { toast } from 'sonner';
+import { getReceiptSettings } from '@/lib/receipt-settings';
+import { printElementWithQz } from '@/lib/qz-tray';
 
 export interface PrintReceiptOptions {
   title?: string;
   isThermal?: boolean;
+  skipQz?: boolean;
+  printerName?: string;
 }
 
-export function printReceipt(elementId: string, options?: PrintReceiptOptions | string): boolean {
+let isPrintJobRunning = false;
+
+/**
+ * Fallback browser printing via isolated iframe
+ */
+export function executeIframePrint(elementId: string, options?: PrintReceiptOptions | string): boolean {
   if (typeof window === 'undefined') return false;
 
   const title = typeof options === 'string' ? options : options?.title || 'Brimish-Invoice-Receipt';
@@ -250,4 +261,62 @@ export function printReceipt(elementId: string, options?: PrintReceiptOptions | 
   }
 
   return true;
+}
+
+/**
+ * Primary Print Function:
+ * 1. Checks if QZ Tray is enabled and attempts direct thermal print to "POS-58 11.3.0.0".
+ * 2. If QZ Tray succeeds: silently prints and returns without browser print dialog.
+ * 3. If QZ Tray is unavailable or fails: smoothly falls back to the isolated iframe browser print.
+ */
+export async function printReceipt(
+  elementId: string,
+  options?: PrintReceiptOptions | string
+): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+
+  // Prevent multiple simultaneous print triggers
+  if (isPrintJobRunning) {
+    console.warn('[printReceipt] A print job is already in progress');
+    return false;
+  }
+
+  const title = typeof options === 'string' ? options : options?.title || 'Brimish-Invoice-Receipt';
+  const skipQz = typeof options === 'object' && options?.skipQz === true;
+  const preferredPrinter = typeof options === 'object' ? options?.printerName : undefined;
+
+  const settings = getReceiptSettings();
+
+  // If QZ Tray is enabled and not explicitly skipped, attempt direct thermal printing
+  if (!skipQz && settings.useQzTray) {
+    isPrintJobRunning = true;
+    try {
+      const qzResult = await printElementWithQz(elementId, {
+        printerName: preferredPrinter || settings.printerName || 'POS-58 11.3.0.0',
+        paperWidth: settings.paperWidth || '58mm',
+        title,
+      });
+
+      if (qzResult.success) {
+        toast.success(`Printing directly to ${qzResult.printer || 'POS-58'}`, {
+          duration: 2500,
+        });
+        isPrintJobRunning = false;
+        return true;
+      }
+
+      // QZ Tray attempt failed (e.g., printer offline, user declined, or connection rejected)
+      console.warn('[printReceipt] QZ Tray print failed, activating browser fallback:', qzResult.error);
+      toast.info('Direct thermal bridge unavailable. Opening browser print...', {
+        duration: 3000,
+      });
+    } catch (err) {
+      console.warn('[printReceipt] Unexpected error with QZ Tray, using browser fallback:', err);
+    } finally {
+      isPrintJobRunning = false;
+    }
+  }
+
+  // Fallback: Use standard high-reliability isolated iframe printing
+  return executeIframePrint(elementId, options);
 }

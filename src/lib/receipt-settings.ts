@@ -10,6 +10,9 @@ export interface InvoiceReceiptSettings {
   receiptPhone: string;
   receiptFooterMessage: string;
   enableQrVerification: boolean;
+  printerName: string;
+  paperWidth: '58mm' | '80mm';
+  useQzTray: boolean;
 }
 
 export const DEFAULT_RECEIPT_SETTINGS: InvoiceReceiptSettings = {
@@ -20,6 +23,9 @@ export const DEFAULT_RECEIPT_SETTINGS: InvoiceReceiptSettings = {
   receiptPhone: 'Dr: 0335-6400959 | WhatsApp: 0335-6400959',
   receiptFooterMessage: 'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days of treatment.',
   enableQrVerification: true,
+  printerName: 'POS-58 11.3.0.0',
+  paperWidth: '58mm',
+  useQzTray: true,
 };
 
 const STORAGE_KEY = 'brimish_receipt_settings';
