@@ -141,7 +141,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         return (
           <div key={section.label} className="mb-2">
             {!collapsed && (
-              <p className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+              <p className="px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
                 {section.label}
               </p>
             )}
@@ -159,17 +159,17 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                   prefetch={true}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    'group/nav relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 mx-2 cursor-pointer',
+                    'group/nav relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200 mx-2 cursor-pointer',
                     isActive
-                      ? 'bg-rose-50/90 text-rose-700 font-semibold shadow-xs border border-rose-200/70'
-                      : 'text-gray-600 hover:bg-rose-50/50 hover:text-rose-700 hover:translate-x-1',
+                      ? 'bg-rose-600 text-white font-bold shadow-md shadow-rose-500/25 border border-rose-700'
+                      : 'text-slate-700 hover:bg-rose-50 hover:text-rose-700 hover:translate-x-1',
                     collapsed && 'justify-center px-2 hover:translate-x-0'
                   )}
                 >
                   <Icon
                     className={cn(
                       'h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover/nav:scale-110',
-                      isActive ? 'text-rose-600' : 'text-gray-400 group-hover/nav:text-rose-600'
+                      isActive ? 'text-white' : 'text-slate-500 group-hover/nav:text-rose-600'
                     )}
                   />
                   {!collapsed && <span className="transition-colors duration-200">{item.label}</span>}
@@ -179,7 +179,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
                     </span>
                   )}
                   {isActive && !collapsed && !(item.href === '/dashboard/reviews' && pendingReviewsCount > 0) && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse" />
+                    <span className="ml-auto h-2 w-2 rounded-full bg-white shadow-xs" />
                   )}
                 </Link>
               );
@@ -202,21 +202,21 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
   );
 
   return (
-    <div className="fixed inset-0 h-screen w-screen flex overflow-hidden bg-slate-50">
+    <div className="fixed inset-0 h-screen w-screen flex overflow-hidden bg-slate-100">
       <Suspense fallback={null}>
         <RouteProgressBar />
       </Suspense>
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'hidden lg:flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-300 shrink-0 select-none z-20 min-h-0 overflow-hidden',
+          'hidden lg:flex flex-col h-full border-r-2 border-slate-200 bg-white transition-all duration-300 shrink-0 select-none z-20 min-h-0 overflow-hidden',
           collapsed ? 'w-[68px]' : 'w-64'
         )}
       >
         {/* Logo */}
-        <div className={cn('flex items-center h-16 shrink-0 px-4 border-b border-gray-100 bg-white', collapsed && 'justify-center px-2')}>
+        <div className={cn('flex items-center h-16 shrink-0 px-4 border-b-2 border-slate-100 bg-white', collapsed && 'justify-center px-2')}>
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="relative h-9 w-9 rounded-xl overflow-hidden border border-rose-100 shadow-sm shrink-0 bg-white">
+            <div className="relative h-9 w-9 rounded-xl overflow-hidden border border-rose-200 shadow-sm shrink-0 bg-white">
               <NextImage
                 src="/images/logo.png"
                 alt="Brimish Skin Care Logo"
@@ -227,10 +227,10 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
             </div>
             {!collapsed && (
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-gray-900 tracking-tight font-serif leading-tight">
+                <span className="text-sm font-bold text-slate-950 tracking-tight font-serif leading-tight">
                   Brimish
                 </span>
-                <span className="text-[10px] text-rose-600 font-medium tracking-wide">
+                <span className="text-[10px] text-rose-700 font-extrabold tracking-wide">
                   Clinic Intelligence
                 </span>
               </div>
@@ -243,13 +243,13 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
 
 
         {/* Collapse Toggle */}
-        <div className="border-t border-gray-100 p-2 shrink-0 bg-white">
+        <div className="border-t-2 border-slate-100 p-2 shrink-0 bg-white">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="w-full justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50/80 transition-all duration-200"
+            className="w-full justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 transition-all duration-200"
           >
             {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           </Button>
@@ -259,7 +259,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
       {/* Main Content */}
       <div className="flex flex-1 flex-col h-full overflow-hidden min-w-0">
         {/* Top Bar */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-8 z-10 shadow-xs">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b-2 border-slate-200 bg-white px-4 lg:px-8 z-10 shadow-xs">
           <div className="flex items-center gap-3">
             {/* Mobile Menu Button */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -293,7 +293,7 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
               </SheetContent>
             </Sheet>
 
-            <h2 className="text-sm font-medium text-gray-700 hidden sm:block">
+            <h2 className="text-sm font-bold text-slate-900 hidden sm:block">
               Clinic Dashboard
             </h2>
           </div>
@@ -308,20 +308,20 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
               return (
                 <DropdownMenu>
                   <DropdownMenuTrigger
-                    className="relative h-9 w-9 flex items-center justify-center text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl cursor-pointer border border-transparent hover:border-rose-100"
+                    className="relative h-9 w-9 flex items-center justify-center text-slate-700 hover:text-rose-700 hover:bg-rose-50 hover:scale-105 transition-all duration-200 rounded-xl cursor-pointer border-2 border-slate-200 hover:border-rose-300 shadow-2xs"
                     aria-label="Clinic Alerts"
                   >
                     <Bell className="h-[18px] w-[18px]" />
                     {totalAlerts > 0 && (
                       <span className={cn(
-                        'absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-xs',
+                        'absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full text-[10px] font-extrabold text-white shadow-xs',
                         pendingBookings.length > 0 ? 'bg-rose-600 animate-pulse ring-2 ring-white' : 'bg-amber-600'
                       )}>
                         {totalAlerts}
                       </span>
                     )}
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-[340px] sm:w-[420px] p-0 shadow-xl rounded-2xl border-rose-100 bg-white">
+                  <DropdownMenuContent align="end" className="w-[340px] sm:w-[420px] p-0 shadow-2xl rounded-2xl border-2 border-rose-200 bg-white">
                     {/* Header Tabs — 4 notification categories */}
                     <div className="p-2 bg-gradient-to-r from-rose-50/90 to-pink-50/90 border-b border-rose-100">
                       <div className="flex items-center gap-1">

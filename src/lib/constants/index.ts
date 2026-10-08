@@ -92,28 +92,28 @@ export const INVOICE_STATUS_LABELS: Record<string, string> = {
   voided: 'Voided',
 };
 
-// Status color mappings for badges
+// Status color mappings for badges - vibrant & high contrast for all display panels
 export const APPOINTMENT_STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  rescheduled: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-  checked_in: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
-  completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  no_show: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-  cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
-  expired: 'bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500',
+  pending: 'bg-amber-100 text-amber-950 border border-amber-400 font-bold shadow-2xs dark:bg-amber-900/50 dark:text-amber-200 dark:border-amber-600',
+  confirmed: 'bg-blue-100 text-blue-950 border border-blue-400 font-bold shadow-2xs dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-600',
+  rescheduled: 'bg-orange-100 text-orange-950 border border-orange-400 font-bold shadow-2xs dark:bg-orange-900/50 dark:text-orange-200 dark:border-orange-600',
+  checked_in: 'bg-indigo-100 text-indigo-950 border border-indigo-400 font-bold shadow-2xs dark:bg-indigo-900/50 dark:text-indigo-200 dark:border-indigo-600',
+  completed: 'bg-emerald-100 text-emerald-950 border border-emerald-400 font-bold shadow-2xs dark:bg-emerald-900/50 dark:text-emerald-200 dark:border-emerald-600',
+  no_show: 'bg-rose-100 text-rose-950 border border-rose-400 font-bold shadow-2xs dark:bg-rose-900/50 dark:text-rose-200 dark:border-rose-600',
+  cancelled: 'bg-slate-200 text-slate-900 border border-slate-400 font-bold shadow-2xs dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600',
+  expired: 'bg-zinc-200 text-zinc-900 border border-zinc-400 font-bold shadow-2xs dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-600',
 };
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
-  received: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  preparing: 'bg-indigo-100 text-indigo-800',
-  ready: 'bg-emerald-100 text-emerald-800',
-  shipped: 'bg-purple-100 text-purple-800',
-  delivered: 'bg-green-100 text-green-800',
-  picked_up: 'bg-green-100 text-green-800',
-  completed: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  received: 'bg-amber-100 text-amber-950 border border-amber-400 font-bold shadow-2xs',
+  confirmed: 'bg-blue-100 text-blue-950 border border-blue-400 font-bold shadow-2xs',
+  preparing: 'bg-indigo-100 text-indigo-950 border border-indigo-400 font-bold shadow-2xs',
+  ready: 'bg-emerald-100 text-emerald-950 border border-emerald-400 font-bold shadow-2xs',
+  shipped: 'bg-purple-100 text-purple-950 border border-purple-400 font-bold shadow-2xs',
+  delivered: 'bg-emerald-100 text-emerald-950 border border-emerald-400 font-bold shadow-2xs',
+  picked_up: 'bg-emerald-100 text-emerald-950 border border-emerald-400 font-bold shadow-2xs',
+  completed: 'bg-emerald-100 text-emerald-950 border border-emerald-400 font-bold shadow-2xs',
+  cancelled: 'bg-rose-100 text-rose-950 border border-rose-400 font-bold shadow-2xs',
 };
 
 // Navigation items for public website
