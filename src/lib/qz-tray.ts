@@ -43,11 +43,26 @@ export async function connectQz(): Promise<QzTrayStatic> {
     return qz;
   }
 
-  // Attempt connection with fast timeout for responsive fallback
-  await qz.websocket.connect({
-    retries: 1,
-    delay: 1,
-  });
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+  try {
+    await qz.websocket.connect({
+      retries: 1,
+      delay: 0,
+      usingSecure: isHttps,
+    });
+  } catch (err) {
+    if (!isHttps) {
+      // In HTTP mode, explicitly try insecure port 8182 if first attempt failed
+      await qz.websocket.connect({
+        retries: 1,
+        delay: 0,
+        usingSecure: false,
+      });
+    } else {
+      throw err;
+    }
+  }
 
   return qz;
 }
