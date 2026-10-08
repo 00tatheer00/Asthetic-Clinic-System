@@ -196,6 +196,7 @@ export function POSTerminal({
       if (e.key === 'Escape') {
         if (showReceiptModal) {
           setShowReceiptModal(false);
+          setLastSaleInfo(null);
         } else if (showAddProductModal) {
           setShowAddProductModal(false);
         } else if (searchQuery) {
@@ -481,6 +482,19 @@ export function POSTerminal({
 
       setShowReceiptModal(true);
       toast.success('Sale completed successfully!');
+
+      // Automatically clear POS terminal state for the new sale
+      setItems([]);
+      setCustomerName('');
+      setCustomerPhone('');
+      setAmountReceived('');
+      setDiscountType(null);
+      setDiscountValue(0);
+      setPosTaxRate(taxRate || 0);
+      setIsCustomTax(false);
+      setPosFormError(null);
+      setMobileView('catalog');
+      router.refresh();
     } else {
       toast.error(result.error || 'Failed to process sale');
     }
@@ -497,6 +511,8 @@ export function POSTerminal({
     setDiscountValue(0);
     setPosTaxRate(taxRate || 0);
     setIsCustomTax(false);
+    setPosFormError(null);
+    setMobileView('catalog');
     router.refresh();
   };
 
@@ -1435,7 +1451,15 @@ export function POSTerminal({
       {/* ============================================================ */}
       {/* OFFICIAL 80MM THERMAL RECEIPT SLIP MODAL (WITH QR CODE)      */}
       {/* ============================================================ */}
-      <Dialog open={showReceiptModal} onOpenChange={setShowReceiptModal}>
+      <Dialog
+        open={showReceiptModal}
+        onOpenChange={(open) => {
+          setShowReceiptModal(open);
+          if (!open) {
+            setLastSaleInfo(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-md max-h-[94vh] overflow-y-auto p-0">
           {lastSaleInfo && (
             <div>
