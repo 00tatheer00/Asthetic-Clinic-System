@@ -45,39 +45,30 @@ export async function connectQz(): Promise<QzTrayStatic> {
 
   const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
-  try {
-    // Over HTTPS, localhost.qz.io is the official SSL-signed domain that bypasses browser mixed-content restrictions
-    await qz.websocket.connect({
-      host: isHttps ? ['localhost.qz.io', 'localhost'] : ['localhost', 'localhost.qz.io'],
-      usingSecure: isHttps,
-      retries: 2,
-      delay: 0,
-      keepAlive: 60,
-    });
-  } catch (err) {
-    console.warn('[QZ Tray] Primary connect failed, trying fallback connection:', err);
+  // Attempt configurations in order of highest probability:
+  // 1. localhost over secure (matches QZ Tray's CN=localhost certificate)
+  // 2. localhost.qz.io over secure
+  // 3. localhost over insecure (if mixed content is tolerated or on http)
+  const configs = [
+    { host: 'localhost', usingSecure: isHttps, retries: 0, delay: 0 },
+    { host: 'localhost.qz.io', usingSecure: isHttps, retries: 0, delay: 0 },
+    { host: 'localhost', usingSecure: false, retries: 0, delay: 0 },
+  ];
+
+  let lastError: unknown = null;
+  for (const config of configs) {
     try {
-      await qz.websocket.connect({
-        host: ['localhost', 'localhost.qz.io'],
-        usingSecure: isHttps,
-        retries: 2,
-        delay: 0,
-      });
-    } catch (fallbackErr) {
-      if (!isHttps) {
-        await qz.websocket.connect({
-          host: ['localhost'],
-          usingSecure: false,
-          retries: 1,
-          delay: 0,
-        });
-      } else {
-        throw fallbackErr;
+      await qz.websocket.connect(config);
+      if (qz.websocket.isActive()) {
+        return qz;
       }
+    } catch (err) {
+      lastError = err;
+      console.warn('[QZ Tray] Connection attempt failed with config:', config, err);
     }
   }
 
-  return qz;
+  throw lastError instanceof Error ? lastError : new Error('Unable to connect to QZ Tray');
 }
 
 /**
