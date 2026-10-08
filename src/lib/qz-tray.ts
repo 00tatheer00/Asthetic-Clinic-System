@@ -46,21 +46,34 @@ export async function connectQz(): Promise<QzTrayStatic> {
   const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
   try {
+    // Over HTTPS, localhost.qz.io is the official SSL-signed domain that bypasses browser mixed-content restrictions
     await qz.websocket.connect({
-      retries: 1,
-      delay: 0,
+      host: isHttps ? ['localhost.qz.io', 'localhost'] : ['localhost', 'localhost.qz.io'],
       usingSecure: isHttps,
+      retries: 2,
+      delay: 0,
+      keepAlive: 60,
     });
   } catch (err) {
-    if (!isHttps) {
-      // In HTTP mode, explicitly try insecure port 8182 if first attempt failed
+    console.warn('[QZ Tray] Primary connect failed, trying fallback connection:', err);
+    try {
       await qz.websocket.connect({
-        retries: 1,
+        host: ['localhost', 'localhost.qz.io'],
+        usingSecure: isHttps,
+        retries: 2,
         delay: 0,
-        usingSecure: false,
       });
-    } else {
-      throw err;
+    } catch (fallbackErr) {
+      if (!isHttps) {
+        await qz.websocket.connect({
+          host: ['localhost'],
+          usingSecure: false,
+          retries: 1,
+          delay: 0,
+        });
+      } else {
+        throw fallbackErr;
+      }
     }
   }
 

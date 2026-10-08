@@ -307,11 +307,18 @@ export async function printReceipt(
 
       // QZ Tray attempt failed (e.g., printer offline, user declined, or connection rejected)
       console.warn('[printReceipt] QZ Tray print failed, activating browser fallback:', qzResult.error);
-      toast.info('Direct thermal bridge unavailable. Opening browser print...', {
-        duration: 3000,
+      const userMessage = qzResult.error
+        ? `Thermal print error: ${qzResult.error}. Opening browser print...`
+        : 'Direct thermal bridge unavailable. Opening browser print...';
+      toast.info(userMessage, {
+        duration: 4000,
       });
-    } catch (err) {
-      console.warn('[printReceipt] Unexpected error with QZ Tray, using browser fallback:', err);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.warn('[printReceipt] Unexpected error with QZ Tray, using browser fallback:', errMsg);
+      toast.info(`Thermal bridge error: ${errMsg}. Opening browser print...`, {
+        duration: 4000,
+      });
     } finally {
       isPrintJobRunning = false;
     }

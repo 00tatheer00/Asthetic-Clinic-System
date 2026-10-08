@@ -32,7 +32,7 @@ declare module 'qz-tray' {
   }
 
   export interface QzWebSocketOptions {
-    host?: string;
+    host?: string | string[];
     port?: { secure?: number[]; insecure?: number[] };
     usingSecure?: boolean;
     protocol?: string;
