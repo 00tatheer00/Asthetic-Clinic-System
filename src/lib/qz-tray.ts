@@ -272,11 +272,18 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
       color: #000000 !important;
       border: 1px solid #000000 !important;
     }
+    .thermal-receipt-container img {
+      max-width: 100% !important;
+      height: auto !important;
+      filter: brightness(0) !important;
+      image-rendering: -webkit-optimize-contrast !important;
+      image-rendering: pixelated !important;
+    }
   </style>
 </head>
 <body>
   <div class="thermal-receipt-container">
-    ${innerContent}
+    ${innerContent.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png')}
   </div>
 </body>
 </html>`;

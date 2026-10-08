@@ -74,8 +74,13 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     copiedStyles += node.outerHTML + '\n';
   });
 
-  // Extract clean HTML content
-  const contentHtml = element.innerHTML;
+  // Dynamically calculate receipt height in mm for Chrome's @page rule
+  const elementHeightPx = element.scrollHeight || element.offsetHeight || 500;
+  // Convert px to mm: 1px = 0.264583mm (at standard 96dpi). Add 12mm safety margin for tear-off
+  const heightMm = Math.max(90, Math.ceil((elementHeightPx / 96) * 25.4) + 12);
+
+  // Extract clean HTML content and swap golden logo for crisp thermal silhouette
+  const contentHtml = element.innerHTML.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png');
 
   // Write standalone printable document
   iframeDoc.open();
@@ -88,11 +93,11 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
   ${copiedStyles}
   <style>
     /* ======================================================== */
-    /* STANDALONE RECEIPT PRINT STYLES (PURE HIGH CONTRAST)      */
+    /* STANDALONE 58MM THERMAL RECEIPT STYLES (SPEED X / POS-58)*/
     /* ======================================================== */
     @page {
-      size: auto;
-      margin: 3mm 4mm;
+      size: 58mm ${heightMm}mm;
+      margin: 0 !important;
     }
     
     * {
@@ -108,51 +113,87 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       background: #ffffff !important;
       color: #000000 !important;
       width: 100% !important;
-      height: auto !important;
-      min-height: 100% !important;
+      box-sizing: border-box !important;
       overflow: visible !important;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
       display: flex !important;
       justify-content: center !important;
       align-items: flex-start !important;
-      padding: 6px 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     .printable-receipt-wrapper {
-      width: 100% !important;
-      max-width: 340px !important;
+      width: 48mm !important;
+      max-width: 48mm !important;
+      min-width: 48mm !important;
       margin: 0 auto !important;
-      padding: 10px 8px !important;
+      padding: 1.5mm 1mm !important;
+      box-sizing: border-box !important;
       background: #ffffff !important;
       color: #000000 !important;
       border: none !important;
       box-shadow: none !important;
-      font-size: 11px !important;
-      line-height: 1.35 !important;
+      font-size: 9.5px !important;
+      line-height: 1.25 !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+    }
+
+    /* Force any nested wrapper containers to strictly respect 48mm head width */
+    .printable-receipt-wrapper #printable-invoice,
+    .printable-receipt-wrapper [id*="printable"],
+    .printable-receipt-wrapper > div {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      box-sizing: border-box !important;
     }
 
     /* Thermal receipt typography & utility fallbacks */
     .printable-receipt-wrapper * {
       color: #000000 !important;
       text-shadow: none !important;
+      box-sizing: border-box !important;
     }
 
-    /* Prevent solid black blocks on badges in print — convert to clean outlined border */
-    .printable-receipt-wrapper .bg-black,
-    .printable-receipt-wrapper [class*="bg-black"],
-    .printable-receipt-wrapper [class*="bg-stone-900"],
-    .printable-receipt-wrapper [class*="bg-gray-900"] {
-      background-color: transparent !important;
-      background: transparent !important;
+    /* Clinic Header & Headings */
+    .printable-receipt-wrapper h2 {
+      font-size: 11px !important;
+      font-weight: 900 !important;
+      line-height: 1.2 !important;
+      text-align: center !important;
+      margin: 1px 0 !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    .printable-receipt-wrapper p {
+      font-size: 8.5px !important;
+      line-height: 1.2 !important;
+      margin: 1px 0 !important;
       color: #000000 !important;
-      border: 1px solid #000000 !important;
     }
 
-    .printable-receipt-wrapper .flex { display: flex !important; }
-    .printable-receipt-wrapper .justify-between { justify-content: space-between !important; }
+    /* Flex items & Table Rows */
+    .printable-receipt-wrapper .flex {
+      display: flex !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    .printable-receipt-wrapper .justify-between {
+      justify-content: space-between !important;
+      gap: 2px !important;
+    }
+
     .printable-receipt-wrapper .justify-center { justify-content: center !important; }
     .printable-receipt-wrapper .items-center { align-items: center !important; }
     .printable-receipt-wrapper .text-center { text-align: center !important; }
@@ -163,37 +204,69 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     .printable-receipt-wrapper .font-semibold { font-weight: 600 !important; }
     .printable-receipt-wrapper .block { display: block !important; }
     .printable-receipt-wrapper .w-full { width: 100% !important; }
-    .printable-receipt-wrapper .w-1\\/2 { width: 50% !important; }
-    .printable-receipt-wrapper .w-1\\/4 { width: 25% !important; }
+    .printable-receipt-wrapper .w-1\\/2 { width: 48% !important; }
+    .printable-receipt-wrapper .w-1\\/4 { width: 26% !important; }
     .printable-receipt-wrapper .mx-auto { margin-left: auto !important; margin-right: auto !important; }
 
-    .printable-receipt-wrapper .border-b { border-bottom-width: 1px !important; }
-    .printable-receipt-wrapper .border-t { border-top-width: 1px !important; }
-    .printable-receipt-wrapper .border { border-width: 1px !important; }
-    .printable-receipt-wrapper .border-dashed { border-style: dashed !important; }
-    .printable-receipt-wrapper .border-black { border-color: #000000 !important; }
+    /* Fine-tune font sizes for 48mm thermal roll */
+    .printable-receipt-wrapper .text-xs,
+    .printable-receipt-wrapper .text-sm {
+      font-size: 10px !important;
+    }
+    .printable-receipt-wrapper .text-\\[10px\\] {
+      font-size: 9px !important;
+    }
+    .printable-receipt-wrapper .text-\\[9px\\] {
+      font-size: 8.5px !important;
+    }
+    .printable-receipt-wrapper .text-\\[8px\\] {
+      font-size: 8px !important;
+    }
 
-    .printable-receipt-wrapper .border-b,
-    .printable-receipt-wrapper .border-t,
-    .printable-receipt-wrapper .border {
+    /* Dividers */
+    .printable-receipt-wrapper .border-b { border-bottom: 1px solid #000000 !important; }
+    .printable-receipt-wrapper .border-t { border-top: 1px solid #000000 !important; }
+    .printable-receipt-wrapper .border { border: 1px solid #000000 !important; }
+    .printable-receipt-wrapper .border-dashed {
+      border-style: dashed !important;
       border-color: #000000 !important;
     }
 
+    /* Status badge (PAID IN FULL) */
+    .printable-receipt-wrapper span.rounded,
+    .printable-receipt-wrapper [class*="rounded"] {
+      border-radius: 2px !important;
+      padding: 1px 3px !important;
+      font-size: 8.5px !important;
+      border: 1px solid #000000 !important;
+      background: transparent !important;
+      color: #000000 !important;
+    }
+
+    /* Pure black images for thermal head */
     .printable-receipt-wrapper img {
       max-width: 100% !important;
       height: auto !important;
-      filter: grayscale(100%) contrast(150%) !important;
+      filter: brightness(0) !important;
       image-rendering: -webkit-optimize-contrast !important;
+      image-rendering: pixelated !important;
     }
 
-    @media screen {
+    /* QR Code container sizing */
+    .printable-receipt-wrapper .w-24 {
+      width: 76px !important;
+      height: 76px !important;
+    }
+
+    @media print {
       body {
-        background: #f5f5f5 !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       .printable-receipt-wrapper {
-        background: #ffffff !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-        margin-top: 20px !important;
+        width: 48mm !important;
+        max-width: 48mm !important;
+        padding: 1mm 1.5mm !important;
       }
     }
   </style>
@@ -305,20 +378,11 @@ export async function printReceipt(
         return true;
       }
 
-      // QZ Tray attempt failed (e.g., printer offline, user declined, or connection rejected)
-      console.warn('[printReceipt] QZ Tray print failed, activating browser fallback:', qzResult.error);
-      const userMessage = qzResult.error
-        ? `Thermal print error: ${qzResult.error}. Opening browser print...`
-        : 'Direct thermal bridge unavailable. Opening browser print...';
-      toast.info(userMessage, {
-        duration: 4000,
-      });
+      // QZ Tray attempt failed (e.g., bridge offline), silently activate standard browser print
+      console.info('[printReceipt] QZ Tray unavailable, falling back to browser print:', qzResult.error);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      console.warn('[printReceipt] Unexpected error with QZ Tray, using browser fallback:', errMsg);
-      toast.info(`Thermal bridge error: ${errMsg}. Opening browser print...`, {
-        duration: 4000,
-      });
+      console.info('[printReceipt] QZ Tray offline, opening browser print:', errMsg);
     } finally {
       isPrintJobRunning = false;
     }
