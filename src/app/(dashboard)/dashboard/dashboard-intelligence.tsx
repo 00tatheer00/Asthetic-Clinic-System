@@ -948,7 +948,7 @@ export function DashboardIntelligence({
         </Card>
       </div>
 
-      {/* 6. SECTION 3: INVENTORY WATCHLIST & CLINIC HIGHLIGHTS */}
+      {/* 8. SECTION 3: INVENTORY WATCHLIST & CLINIC HIGHLIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start pb-8">
         {/* Low Stock Watchlist */}
         <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
