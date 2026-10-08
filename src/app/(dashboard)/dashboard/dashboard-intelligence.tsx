@@ -279,162 +279,8 @@ export function DashboardIntelligence({
         </div>
       )}
 
-      {/* 3. Primary KPI Metrics Grid (Interactive Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Today's Appointments (Blue) */}
-        <Link href="/dashboard/appointments" className="group block focus:outline-none">
-          <Card className="border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-blue-50/20 rounded-2xl cursor-pointer">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700/80">
-                    Today&apos;s Appointments
-                  </p>
-                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-blue-950 transition-colors">
-                    {stats.todayAppointments}
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1.5 flex items-center gap-1 font-medium">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    <span>{stats.todayCompletedVisits} completed</span>
-                  </p>
-                </div>
-                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <Calendar className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        {/* Revenue KPI (Admin Only - Emerald) */}
-        {isAdmin ? (
-          <Link href="/dashboard/invoices" className="group block focus:outline-none">
-            <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-emerald-50/20 rounded-2xl cursor-pointer">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700/80">
-                      Today&apos;s Revenue
-                    </p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1 font-serif tracking-tight group-hover:text-emerald-950 transition-colors">
-                      {formatCurrency(stats.todayRevenue)}
-                    </p>
-                    <p className="text-xs text-emerald-700 mt-1.5 flex items-center gap-1 font-medium">
-                      <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-                      <span>All-Time: {formatCurrency(stats.allTimeRevenue || stats.monthRevenue)}</span>
-                    </p>
-                  </div>
-                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                    <DollarSign className="h-5 w-5" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ) : (
-          <Link href="/dashboard/patients" className="group block focus:outline-none">
-            <Card className="border border-indigo-200/80 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-indigo-50/20 rounded-2xl cursor-pointer">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700/80">
-                      Total Patients
-                    </p>
-                    <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-indigo-950 transition-colors">
-                      {stats.totalPatients}
-                    </p>
-                    <p className="text-xs text-indigo-600 mt-1.5 font-medium">
-                      Registered Clinic Directory
-                    </p>
-                  </div>
-                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                    <Users className="h-5 w-5" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
-
-        {/* Pending Web Orders (Amber) */}
-        <Link href="/dashboard/orders" className="group block focus:outline-none">
-          <Card className="border border-amber-200/80 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-amber-50/20 rounded-2xl cursor-pointer">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">
-                    Pending Orders
-                  </p>
-                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-amber-950 transition-colors">
-                    {stats.pendingOrders}
-                  </p>
-                  <p className="text-xs text-amber-700 mt-1.5 font-medium">
-                    Web Checkout Dispatch
-                  </p>
-                </div>
-                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <Package className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        {/* Low Stock Items (Rose if low stock, Teal if optimal) */}
-        <Link href="/dashboard/inventory" className="group block focus:outline-none">
-          <Card className={cn(
-            'transition-all duration-300 rounded-2xl cursor-pointer',
-            stats.lowStockCount > 0
-              ? 'border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 bg-gradient-to-br from-white via-white to-rose-50/20'
-              : 'border border-teal-200/80 hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/10 bg-gradient-to-br from-white via-white to-teal-50/20'
-          )}>
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className={cn(
-                    'text-[11px] font-bold uppercase tracking-wider',
-                    stats.lowStockCount > 0 ? 'text-rose-700/80' : 'text-teal-700/80'
-                  )}>
-                    Low Stock Items
-                  </p>
-                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-gray-900 transition-colors">
-                    {stats.lowStockCount}
-                  </p>
-                  <p
-                    className={`text-xs mt-1.5 font-medium ${
-                      stats.lowStockCount > 0 ? 'text-rose-600' : 'text-teal-600'
-                    }`}
-                  >
-                    {stats.lowStockCount > 0 ? 'Requires Reordering' : 'Stock Optimal'}
-                  </p>
-                </div>
-                <div
-                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${
-                    stats.lowStockCount > 0
-                      ? 'bg-rose-100/80 text-rose-600 group-hover:bg-rose-600 group-hover:text-white'
-                      : 'bg-teal-100/80 text-teal-600 group-hover:bg-teal-600 group-hover:text-white'
-                  }`}
-                >
-                  <AlertTriangle className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
-
-      {/* 4. Chart.js Interactive Visual Analytics Engine */}
-      <DashboardCharts
-        dailyData={dailyData}
-        statusData={statusData}
-        paymentData={paymentData}
-        isAdmin={isAdmin}
-        allTimeRevenue={stats.allTimeRevenue}
-        allTimeAppointments={stats.totalPatients}
-      />
-
-      {/* NEW ONLINE WEBSITE BOOKINGS QUEUE */}
-      {pendingBookings.length > 0 && (
+      {/* 3. FRONT-DESK RECEPTION PRIORITY: NEW ONLINE WEBSITE BOOKINGS QUEUE */}
+      {pendingBookings.length > 0 ? (
         <Card className="border-2 border-rose-300 bg-gradient-to-r from-rose-50/80 via-pink-50/40 to-white shadow-md rounded-2xl sm:rounded-3xl p-5 space-y-4 animate-in fade-in-50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-rose-200/80">
             <div className="flex items-center gap-2.5">
@@ -515,8 +361,36 @@ export function DashboardIntelligence({
             ))}
           </div>
         </Card>
+      ) : (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-gray-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-gray-900 font-serif">
+                  New Online Website Bookings
+                </h4>
+                <Badge variant="outline" className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border-emerald-200">
+                  All Caught Up
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                No pending website booking requests awaiting WhatsApp confirmation.
+              </p>
+            </div>
+          </div>
+          <Link href="/dashboard/appointments?status=pending">
+            <Button variant="ghost" size="sm" className="text-xs text-rose-700 hover:text-rose-800 hover:bg-rose-50 font-semibold h-8 px-3 rounded-xl">
+              <span>View Bookings Queue</span>
+              <ChevronRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
       )}
 
+      {/* 4. FRONT-DESK RECEPTION WORKFLOW: TODAY'S APPOINTMENTS (8 cols) & QUICK ACTIONS (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (8 cols): Today's Live Schedule */}
         <div className="lg:col-span-8 space-y-6">
@@ -766,7 +640,161 @@ export function DashboardIntelligence({
         </div>
       </div>
 
-      {/* 5. SECTION 2: RECENT FINANCIAL TRANSACTIONS (50%) + POST-PROCEDURE CARE QUEUE (50%) */}
+      {/* 5. Primary KPI Metrics Grid (Interactive Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Today's Appointments (Blue) */}
+        <Link href="/dashboard/appointments" className="group block focus:outline-none">
+          <Card className="border border-blue-200/80 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-blue-50/20 rounded-2xl cursor-pointer">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-blue-700/80">
+                    Today&apos;s Appointments
+                  </p>
+                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-blue-950 transition-colors">
+                    {stats.todayAppointments}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1.5 flex items-center gap-1 font-medium">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>{stats.todayCompletedVisits} completed</span>
+                  </p>
+                </div>
+                <div className="h-11 w-11 rounded-2xl bg-blue-100/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <Calendar className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Revenue KPI (Admin Only - Emerald) */}
+        {isAdmin ? (
+          <Link href="/dashboard/invoices" className="group block focus:outline-none">
+            <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-emerald-50/20 rounded-2xl cursor-pointer">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700/80">
+                      Today&apos;s Revenue
+                    </p>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-gray-950 mt-1 font-serif tracking-tight group-hover:text-emerald-950 transition-colors">
+                      {formatCurrency(stats.todayRevenue)}
+                    </p>
+                    <p className="text-xs text-emerald-700 mt-1.5 flex items-center gap-1 font-medium">
+                      <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>All-Time: {formatCurrency(stats.allTimeRevenue || stats.monthRevenue)}</span>
+                    </p>
+                  </div>
+                  <div className="h-11 w-11 rounded-2xl bg-emerald-100/70 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <DollarSign className="h-5 w-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ) : (
+          <Link href="/dashboard/patients" className="group block focus:outline-none">
+            <Card className="border border-indigo-200/80 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-indigo-50/20 rounded-2xl cursor-pointer">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-700/80">
+                      Total Patients
+                    </p>
+                    <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-indigo-950 transition-colors">
+                      {stats.totalPatients}
+                    </p>
+                    <p className="text-xs text-indigo-600 mt-1.5 font-medium">
+                      Registered Clinic Directory
+                    </p>
+                  </div>
+                  <div className="h-11 w-11 rounded-2xl bg-indigo-100/70 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <Users className="h-5 w-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        )}
+
+        {/* Pending Web Orders (Amber) */}
+        <Link href="/dashboard/orders" className="group block focus:outline-none">
+          <Card className="border border-amber-200/80 hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-300 bg-gradient-to-br from-white via-white to-amber-50/20 rounded-2xl cursor-pointer">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">
+                    Pending Orders
+                  </p>
+                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-amber-950 transition-colors">
+                    {stats.pendingOrders}
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1.5 font-medium">
+                    Web Checkout Dispatch
+                  </p>
+                </div>
+                <div className="h-11 w-11 rounded-2xl bg-amber-100/70 text-amber-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <Package className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Low Stock Items (Rose if low stock, Teal if optimal) */}
+        <Link href="/dashboard/inventory" className="group block focus:outline-none">
+          <Card className={cn(
+            'transition-all duration-300 rounded-2xl cursor-pointer',
+            stats.lowStockCount > 0
+              ? 'border border-rose-200/80 hover:border-rose-500 hover:shadow-lg hover:shadow-rose-500/10 bg-gradient-to-br from-white via-white to-rose-50/20'
+              : 'border border-teal-200/80 hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/10 bg-gradient-to-br from-white via-white to-teal-50/20'
+          )}>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className={cn(
+                    'text-[11px] font-bold uppercase tracking-wider',
+                    stats.lowStockCount > 0 ? 'text-rose-700/80' : 'text-teal-700/80'
+                  )}>
+                    Low Stock Items
+                  </p>
+                  <p className="text-3xl font-extrabold text-gray-950 mt-1 font-serif group-hover:text-gray-900 transition-colors">
+                    {stats.lowStockCount}
+                  </p>
+                  <p
+                    className={`text-xs mt-1.5 font-medium ${
+                      stats.lowStockCount > 0 ? 'text-rose-600' : 'text-teal-600'
+                    }`}
+                  >
+                    {stats.lowStockCount > 0 ? 'Requires Reordering' : 'Stock Optimal'}
+                  </p>
+                </div>
+                <div
+                  className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${
+                    stats.lowStockCount > 0
+                      ? 'bg-rose-100/80 text-rose-600 group-hover:bg-rose-600 group-hover:text-white'
+                      : 'bg-teal-100/80 text-teal-600 group-hover:bg-teal-600 group-hover:text-white'
+                  }`}
+                >
+                  <AlertTriangle className="h-5 w-5" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      {/* 6. Chart.js Interactive Visual Analytics Engine */}
+      <DashboardCharts
+        dailyData={dailyData}
+        statusData={statusData}
+        paymentData={paymentData}
+        isAdmin={isAdmin}
+        allTimeRevenue={stats.allTimeRevenue}
+        allTimeAppointments={stats.totalPatients}
+      />
+
+      {/* 7. SECTION 2: RECENT FINANCIAL TRANSACTIONS (50%) + POST-PROCEDURE CARE QUEUE (50%) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Left: Recent POS Invoices & Sales Stream */}
         <Card className="border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-2xl sm:rounded-3xl overflow-hidden bg-white">
