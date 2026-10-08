@@ -366,14 +366,16 @@
     color: #000000 !important;
     border-color: #000000 !important;
     text-shadow: none !important;
+    border-left: none !important;
+    border-right: none !important;
   }
 
   #printable-invoice img,
   #printable-rx-slip img,
   #printable-receipt img,
   #printable-reconciliation-slip img {
-    filter: grayscale(100%) contrast(150%) !important;
-    image-rendering: -webkit-optimize-contrast !important;
+    filter: none !important;
+    image-rendering: pixelated !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

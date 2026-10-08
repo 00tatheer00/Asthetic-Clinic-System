@@ -18,6 +18,7 @@ export interface PrintReceiptOptions {
 }
 
 let isPrintJobRunning = false;
+let lastPrintTime = 0;
 
 /**
  * Fallback browser printing via isolated iframe
@@ -80,7 +81,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
   <title>${title}</title>
   <style>
     /* ======================================================== */
-    /* STANDALONE 58MM THERMAL RECEIPT (ZERO TOP/BOTTOM GAPS)   */
+    /* STANDALONE 58MM THERMAL RECEIPT (ZERO GAPS & CLEAN LINES)*/
     /* ======================================================== */
     @page {
       size: 58mm auto;
@@ -130,6 +131,14 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       line-height: 1.25 !important;
       word-break: break-word !important;
       overflow-wrap: break-word !important;
+    }
+
+    /* Strictly NO left or right borders anywhere on the receipt */
+    .printable-receipt-wrapper,
+    .printable-receipt-wrapper div,
+    .printable-receipt-wrapper section {
+      border-left: none !important;
+      border-right: none !important;
     }
 
     /* Force all nested wrapper containers to start immediately at top without any margins */
@@ -231,58 +240,87 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       font-size: 8px !important;
     }
 
-    /* Dividers */
+    /* Clean Horizontal Dividers ONLY (No dashed side borders) */
     .printable-receipt-wrapper .border-b {
-      border-bottom: 1px dashed #000000 !important;
-      padding-bottom: 2px !important;
-      margin-bottom: 2px !important;
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-bottom: 1px solid #000000 !important;
+      padding-bottom: 3px !important;
+      margin-bottom: 3px !important;
     }
     .printable-receipt-wrapper .border-t {
-      border-top: 1px dashed #000000 !important;
-      padding-top: 2px !important;
-      margin-top: 2px !important;
+      border-top: 1px solid #000000 !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-bottom: none !important;
+      padding-top: 3px !important;
+      margin-top: 3px !important;
     }
-    .printable-receipt-wrapper .border {
-      border: 1px solid #000000 !important;
-    }
+    .printable-receipt-wrapper .border,
     .printable-receipt-wrapper .border-dashed {
-      border-style: dashed !important;
-      border-color: #000000 !important;
+      border-left: none !important;
+      border-right: none !important;
     }
 
     /* Status badge (PAID IN FULL) */
     .printable-receipt-wrapper span.rounded,
     .printable-receipt-wrapper [class*="rounded"] {
       border-radius: 2px !important;
-      padding: 1px 3px !important;
+      padding: 1px 4px !important;
       font-size: 8.5px !important;
       border: 1px solid #000000 !important;
       background: transparent !important;
       color: #000000 !important;
+      display: inline-block !important;
     }
 
-    /* Pure black images for thermal head */
+    /* Images */
     .printable-receipt-wrapper img {
       max-width: 100% !important;
       height: auto !important;
-      filter: brightness(0) !important;
+      display: block !important;
+      margin: 0 auto !important;
+      filter: none !important;
+      -webkit-filter: none !important;
       image-rendering: -webkit-optimize-contrast !important;
       image-rendering: pixelated !important;
-      display: inline-block !important;
-      margin: 0 auto !important;
     }
 
     /* Logo size */
-    .printable-receipt-wrapper .w-11 {
-      width: 40px !important;
-      height: 40px !important;
+    .printable-receipt-wrapper .w-11,
+    .printable-receipt-wrapper img[src*="logo"] {
+      width: 38px !important;
+      height: 38px !important;
+      object-fit: contain !important;
+      filter: none !important;
     }
 
-    /* QR Code container sizing */
-    .printable-receipt-wrapper .w-24 {
+    /* Verification QR Code: Scannable Black on White matrix */
+    .printable-receipt-wrapper img[src*="data:image"],
+    .printable-receipt-wrapper .w-24 img {
       width: 72px !important;
       height: 72px !important;
+      background: #ffffff !important;
+      filter: none !important;
+      -webkit-filter: none !important;
+      image-rendering: pixelated !important;
+      display: block !important;
       margin: 0 auto !important;
+    }
+
+    /* QR Code container box */
+    .printable-receipt-wrapper .w-24 {
+      width: 76px !important;
+      height: 76px !important;
+      margin: 0 auto !important;
+      padding: 1px !important;
+      background: #ffffff !important;
+      border: 1px solid #000000 !important;
+      border-radius: 2px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
 
     @media print {
@@ -307,6 +345,9 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 </html>`);
   iframeDoc.close();
 
+  let hasExecutedPrint = false;
+  let printTimer: ReturnType<typeof setTimeout> | null = null;
+
   const cleanup = () => {
     document.title = originalDocTitle;
     setTimeout(() => {
@@ -317,6 +358,14 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
   };
 
   const executePrint = () => {
+    if (hasExecutedPrint) return;
+    hasExecutedPrint = true;
+
+    if (printTimer) {
+      clearTimeout(printTimer);
+      printTimer = null;
+    }
+
     try {
       // Calculate true rendered height of receipt inside iframe at 48mm width
       const wrapper = iframeDoc.querySelector('.printable-receipt-wrapper') as HTMLElement | null;
@@ -339,6 +388,11 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     }
   };
 
+  const triggerPrintOnce = () => {
+    if (hasExecutedPrint) return;
+    executePrint();
+  };
+
   // Ensure all images (logo, QR code) are fully loaded in the iframe before printing
   const images = iframeDoc.images;
   if (images && images.length > 0) {
@@ -348,7 +402,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     const onImageDone = () => {
       loadedCount++;
       if (loadedCount >= totalImages) {
-        setTimeout(executePrint, 150);
+        triggerPrintOnce();
       }
     };
 
@@ -357,19 +411,19 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       if (img.complete) {
         loadedCount++;
       } else {
-        img.addEventListener('load', onImageDone);
-        img.addEventListener('error', onImageDone);
+        img.addEventListener('load', onImageDone, { once: true });
+        img.addEventListener('error', onImageDone, { once: true });
       }
     }
 
     if (loadedCount >= totalImages) {
-      setTimeout(executePrint, 150);
+      printTimer = setTimeout(triggerPrintOnce, 120);
     } else {
       // Safety timeout in case an image hangs
-      setTimeout(executePrint, 800);
+      printTimer = setTimeout(triggerPrintOnce, 600);
     }
   } else {
-    setTimeout(executePrint, 150);
+    printTimer = setTimeout(triggerPrintOnce, 120);
   }
 
   return true;
@@ -387,11 +441,19 @@ export async function printReceipt(
 ): Promise<boolean> {
   if (typeof window === 'undefined') return false;
 
-  // Prevent multiple simultaneous print triggers
-  if (isPrintJobRunning) {
-    console.warn('[printReceipt] A print job is already in progress');
+  // Prevent multiple simultaneous or accidental rapid print triggers (2.5s debounce lock)
+  const now = Date.now();
+  if (isPrintJobRunning || now - lastPrintTime < 2500) {
+    console.warn('[printReceipt] A print job is already in progress (debounced)');
     return false;
   }
+  isPrintJobRunning = true;
+  lastPrintTime = now;
+
+  // Release lock after 3 seconds
+  setTimeout(() => {
+    isPrintJobRunning = false;
+  }, 3000);
 
   const title = typeof options === 'string' ? options : options?.title || 'Brimish-Invoice-Receipt';
   const skipQz = typeof options === 'object' && options?.skipQz === true;
@@ -401,7 +463,6 @@ export async function printReceipt(
 
   // If QZ Tray is enabled and not explicitly skipped, attempt direct thermal printing
   if (!skipQz && settings.useQzTray) {
-    isPrintJobRunning = true;
     try {
       const qzResult = await printElementWithQz(elementId, {
         printerName: preferredPrinter || settings.printerName || 'POS-58 11.3.0.0',
@@ -413,7 +474,6 @@ export async function printReceipt(
         toast.success(`Printing directly to ${qzResult.printer || 'POS-58'}`, {
           duration: 2500,
         });
-        isPrintJobRunning = false;
         return true;
       }
 
@@ -422,8 +482,6 @@ export async function printReceipt(
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.info('[printReceipt] QZ Tray offline, opening browser print:', errMsg);
-    } finally {
-      isPrintJobRunning = false;
     }
   }
 

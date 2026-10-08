@@ -252,18 +252,51 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     .thermal-receipt-container .w-1\\/2 { width: 50% !important; }
     .thermal-receipt-container .w-1\\/4 { width: 25% !important; }
     .thermal-receipt-container .mx-auto { margin-left: auto !important; margin-right: auto !important; }
-    .thermal-receipt-container .border-b { border-bottom: 1px dashed #000000 !important; }
-    .thermal-receipt-container .border-t { border-top: 1px solid #000000 !important; }
-    .thermal-receipt-container .border { border: 1px solid #000000 !important; }
-    .thermal-receipt-container .border-dashed { border-style: dashed !important; }
+    .thermal-receipt-container,
+    .thermal-receipt-container * {
+      border-left: none !important;
+      border-right: none !important;
+    }
+    .thermal-receipt-container .border-b {
+      border-bottom: 1px solid #000000 !important;
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      padding-bottom: 3px !important;
+      margin-bottom: 3px !important;
+    }
+    .thermal-receipt-container .border-t {
+      border-top: 1px solid #000000 !important;
+      border-bottom: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      padding-top: 3px !important;
+      margin-top: 3px !important;
+    }
+    .thermal-receipt-container .border,
+    .thermal-receipt-container .border-dashed {
+      border-left: none !important;
+      border-right: none !important;
+    }
     .thermal-receipt-container img {
       max-width: 100% !important;
       height: auto !important;
       display: block !important;
       margin-left: auto !important;
       margin-right: auto !important;
-      filter: grayscale(100%) contrast(160%) !important;
-      image-rendering: -webkit-optimize-contrast !important;
+      filter: none !important;
+      -webkit-filter: none !important;
+      image-rendering: pixelated !important;
+    }
+    .thermal-receipt-container img[src*="logo"] {
+      width: 38px !important;
+      height: 38px !important;
+      object-fit: contain !important;
+    }
+    .thermal-receipt-container img[src*="data:image"] {
+      width: 72px !important;
+      height: 72px !important;
+      background: #ffffff !important;
     }
     /* Prevent solid dark rectangles on badges in print */
     .thermal-receipt-container .bg-black,
@@ -274,13 +307,6 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
       background: transparent !important;
       color: #000000 !important;
       border: 1px solid #000000 !important;
-    }
-    .thermal-receipt-container img {
-      max-width: 100% !important;
-      height: auto !important;
-      filter: brightness(0) !important;
-      image-rendering: -webkit-optimize-contrast !important;
-      image-rendering: pixelated !important;
     }
   </style>
 </head>
