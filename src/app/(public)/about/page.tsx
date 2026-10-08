@@ -54,7 +54,7 @@ export default function AboutPage() {
             <span className="text-rose-600">You Can Trust</span>
           </h1>
           <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-            At Brimish Skin Care Clinic, Dr. Bilal and our trained team provide safe, genuine, and proven skin treatments for acne, dark spots, and glowing skin.
+            Experience exceptional skin care with Dr. Bilal, where advanced technology meets personalized expertise. Our treatments are thoughtfully designed to enhance your skin’s health, clarity, and natural radiance.
           </p>
         </div>
       </section>

@@ -120,8 +120,13 @@ export function HeroCinematic() {
             </p>
           </div>
 
+          {/* Doctor Introduction & Philosophy Statement */}
+          <p className="text-xs sm:text-base lg:text-lg text-slate-100/95 font-normal leading-relaxed max-w-2xl text-center sm:text-left mx-auto sm:mx-0 drop-shadow-sm font-sans pt-1 sm:pt-2">
+            Experience exceptional skin care with <span className="text-white font-semibold">Dr. Bilal</span>, where advanced technology meets personalized expertise. Our treatments are thoughtfully designed to enhance your skin’s health, clarity, and natural radiance.
+          </p>
+
           {/* High-Impact Hero Action Buttons (Sleek & Compact on Mobile) */}
-          <div className="pt-1.5 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
+          <div className="pt-1.5 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
             {/* 1. Book Appointment */}
             <Link href="/book" prefetch={true} className="w-full sm:w-auto">
               <Button
