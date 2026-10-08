@@ -643,14 +643,14 @@ export function DashboardShell({ staff, children }: DashboardShellProps) {
         {/* Page Content */}
         <main
           className={cn(
-            'flex-1 min-h-0 bg-slate-50/60',
+            'flex-1 min-h-0 bg-slate-50/80',
             pathname === '/dashboard/pos' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'
           )}
         >
           <div
             className={cn(
               pathname === '/dashboard/pos'
-                ? 'h-full flex flex-col p-2.5 sm:p-4 overflow-hidden'
+                ? 'h-full flex flex-col p-1 sm:p-2 overflow-hidden'
                 : 'mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20 animate-page-enter'
             )}
           >

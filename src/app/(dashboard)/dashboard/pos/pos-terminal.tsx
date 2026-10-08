@@ -169,6 +169,7 @@ export function POSTerminal({
 
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [mobileView, setMobileView] = useState<'catalog' | 'cart'>('catalog');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Keyboard Shortcuts for High-Speed Reception POS Billing
@@ -614,15 +615,18 @@ export function POSTerminal({
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
-      {/* 1. Top Header Row: Title, Sync, Shortcuts & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 shrink-0 border-b border-gray-100">
-        <div className="flex items-center gap-3">
+      {/* 1. Sleek Compact Top Bar: Title, Sync, Shortcuts, Actions & Mobile Tab Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 shrink-0 border-b border-slate-200/90">
+        <div className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
+            POS
+          </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-none">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
               Point of Sale
             </h1>
-            <p className="text-[11px] text-gray-500 mt-1">
-              Walk-in checkout &amp; thermal receipts
+            <p className="text-[10px] text-slate-500 font-medium leading-none">
+              Walk-in patient checkout &amp; thermal receipts
             </p>
           </div>
 
@@ -631,24 +635,58 @@ export function POSTerminal({
             variant="outline"
             onClick={handleManualRefresh}
             disabled={isRefreshing}
-            className="h-7 text-xs px-2.5 rounded-lg border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            className="h-7 text-xs px-2 rounded-lg border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-100 ml-1"
             title="Sync with latest products & website changes"
           >
-            <RefreshCw className={cn('h-3.5 w-3.5 mr-1', isRefreshing && 'animate-spin text-rose-500')} />
+            <RefreshCw className={cn('h-3 w-3 mr-1', isRefreshing && 'animate-spin text-rose-500')} />
             <span>Sync</span>
           </Button>
         </div>
 
+        {/* Mobile / Tablet View Switcher (< lg) */}
+        <div className="flex lg:hidden items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-semibold shrink-0">
+          <button
+            type="button"
+            onClick={() => setMobileView('catalog')}
+            className={cn(
+              'py-1 px-3 rounded-md transition-all',
+              mobileView === 'catalog'
+                ? 'bg-white text-slate-900 font-bold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            )}
+          >
+            Catalog ({filteredProducts.length + filteredTreatments.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileView('cart')}
+            className={cn(
+              'py-1 px-3 rounded-md transition-all flex items-center gap-1.5',
+              mobileView === 'cart'
+                ? 'bg-rose-600 text-white font-bold shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            )}
+          >
+            <ShoppingCart className="h-3.5 w-3.5" />
+            <span>Current Sale</span>
+            {items.length > 0 && (
+              <span className={cn('text-[10px] px-1.5 rounded-full font-mono', mobileView === 'cart' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700')}>
+                {items.reduce((s, i) => s + i.quantity, 0)}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Right Actions: Keyboard Guide, Add Category, New Product */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <div className="hidden sm:flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {/* Keyboard Shortcuts Guide */}
-          <div className="hidden xl:flex items-center gap-1.5 text-[10px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200">
-            <span className="font-semibold text-gray-700">Keys:</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F2</kbd> Search
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F8</kbd> Cash
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F9</kbd> Card
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">F10</kbd> Print
-            <kbd className="px-1.5 py-0.5 rounded bg-white shadow-2xs border text-gray-800 font-mono font-bold">Esc</kbd> Close
+          <div className="hidden xl:flex items-center gap-1.5 text-[10px] text-slate-600 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200">
+            <span className="font-semibold text-slate-700">Keys:</span>
+            <kbd className="px-1.5 py-0.2 rounded bg-white shadow-2xs border border-slate-200 text-slate-800 font-mono font-bold">F2</kbd> Search
+            <kbd className="px-1.5 py-0.2 rounded bg-white shadow-2xs border border-slate-200 text-slate-800 font-mono font-bold">F8</kbd> Cash
+            <kbd className="px-1.5 py-0.2 rounded bg-white shadow-2xs border border-slate-200 text-slate-800 font-mono font-bold">F9</kbd> Card
+            <kbd className="px-1.5 py-0.2 rounded bg-white shadow-2xs border border-slate-200 text-slate-800 font-mono font-bold">F10</kbd> Print
+            <kbd className="px-1.5 py-0.2 rounded bg-white shadow-2xs border border-slate-200 text-slate-800 font-mono font-bold">Esc</kbd> Close
           </div>
 
           {/* Add Category Button */}
@@ -657,10 +695,10 @@ export function POSTerminal({
             variant="outline"
             size="sm"
             onClick={() => setShowAddCategoryModal(true)}
-            className="h-8 px-2.5 text-xs rounded-lg border-gray-200 hover:border-rose-300 text-gray-700 hover:text-rose-600 flex items-center gap-1 shadow-2xs"
+            className="h-7 px-2.5 text-xs rounded-lg border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-600 flex items-center gap-1 shadow-2xs bg-white"
             title="Add custom category"
           >
-            <Plus className="h-3.5 w-3.5 text-rose-500" />
+            <Plus className="h-3 w-3 text-rose-500" />
             <span>Category</span>
           </Button>
 
@@ -668,104 +706,109 @@ export function POSTerminal({
           <Button
             size="sm"
             onClick={() => setShowAddProductModal(true)}
-            className="h-8 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 rounded-lg flex items-center gap-1.5 shadow-xs"
+            className="h-7 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-2.5 rounded-lg flex items-center gap-1 shadow-xs"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3 w-3" />
             <span>New Product</span>
           </Button>
         </div>
       </div>
 
-      {/* 2. Filter & Search Toolbar Strip */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 py-2 shrink-0 border-b border-gray-100 bg-gray-50/60 rounded-xl px-2.5 mt-2">
-        {/* Left: Catalog Type Chips & Category Dropdown */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          {/* Catalog Filter Chips */}
-          <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs">
-            <button
-              onClick={() => setActiveCatalogTab('all')}
-              className={cn(
-                'px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150',
-                activeCatalogTab === 'all'
-                  ? 'bg-gray-900 text-white shadow-2xs'
-                  : 'text-gray-600 hover:text-gray-900'
+      {/* 2. Main Split Grid: 100% Full Height (Elongated Current Sale Container) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0 pt-1.5 overflow-hidden">
+        {/* Left Side: Product & Treatment Catalog Grid */}
+        <div
+          className={cn(
+            'lg:col-span-7 xl:col-span-7 flex flex-col h-full min-h-0 overflow-hidden',
+            mobileView === 'cart' ? 'hidden lg:flex' : 'flex'
+          )}
+        >
+          {/* Catalog Filter & Search Toolbar Strip */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 py-1.5 px-2 bg-slate-50/80 rounded-xl border border-slate-200/90 mb-2 shrink-0">
+            {/* Catalog Type Chips & Category Dropdown */}
+            <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+              {/* Catalog Filter Chips */}
+              <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                <button
+                  onClick={() => setActiveCatalogTab('all')}
+                  className={cn(
+                    'px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all duration-150',
+                    activeCatalogTab === 'all'
+                      ? 'bg-rose-600 text-white shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  )}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setActiveCatalogTab('products')}
+                  className={cn(
+                    'px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all duration-150',
+                    activeCatalogTab === 'products'
+                      ? 'bg-rose-500 text-white shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  )}
+                >
+                  Products
+                </button>
+                <button
+                  onClick={() => setActiveCatalogTab('treatments')}
+                  className={cn(
+                    'px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all duration-150',
+                    activeCatalogTab === 'treatments'
+                      ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  )}
+                >
+                  Services
+                </button>
+              </div>
+
+              {/* Category Filter Dropdown with Inline Custom Option */}
+              <select
+                value={selectedCategoryFilter}
+                onChange={(e) => {
+                  if (e.target.value === '__add_new_category__') {
+                    setShowAddCategoryModal(true);
+                  } else {
+                    setSelectedCategoryFilter(e.target.value);
+                  }
+                }}
+                className="h-7 text-xs px-2 rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-500 font-medium min-w-[120px]"
+              >
+                <option value="all">All Categories</option>
+                {categoriesList.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+                <option value="__add_new_category__" className="text-rose-600 font-bold">
+                  + Add Custom Category...
+                </option>
+              </select>
+            </div>
+
+            {/* Right: Search Input */}
+            <div className="relative w-full sm:w-56 md:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Input
+                ref={searchInputRef}
+                placeholder="Search items [F2]..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 h-7 text-xs bg-white rounded-lg border-slate-200 focus-visible:ring-rose-500 text-slate-900 placeholder:text-slate-400"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               )}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveCatalogTab('products')}
-              className={cn(
-                'px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150',
-                activeCatalogTab === 'products'
-                  ? 'bg-rose-500 text-white shadow-2xs font-bold'
-                  : 'text-gray-600 hover:text-gray-900'
-              )}
-            >
-              Products
-            </button>
-            <button
-              onClick={() => setActiveCatalogTab('treatments')}
-              className={cn(
-                'px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150',
-                activeCatalogTab === 'treatments'
-                  ? 'bg-indigo-600 text-white shadow-2xs font-bold'
-                  : 'text-gray-600 hover:text-gray-900'
-              )}
-            >
-              Services
-            </button>
+            </div>
           </div>
 
-          {/* Category Filter Dropdown with Inline Custom Option */}
-          <select
-            value={selectedCategoryFilter}
-            onChange={(e) => {
-              if (e.target.value === '__add_new_category__') {
-                setShowAddCategoryModal(true);
-              } else {
-                setSelectedCategoryFilter(e.target.value);
-              }
-            }}
-            className="h-8 text-xs px-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-rose-500 font-medium min-w-[130px]"
-          >
-            <option value="all">All Categories</option>
-            {categoriesList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-            <option value="__add_new_category__" className="text-rose-600 font-bold">
-              + Add Custom Category...
-            </option>
-          </select>
-        </div>
-
-        {/* Right: Search Input */}
-        <div className="relative w-full sm:w-64 md:w-80">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-          <Input
-            ref={searchInputRef}
-            placeholder="Search items [F2]..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-8 text-xs bg-white rounded-lg border-gray-200 focus-visible:ring-rose-500"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Main Split Grid: 100% Viewport Height (No outer scrolling) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 flex-1 min-h-0 pt-2.5 overflow-hidden">
-        {/* Left Side: Product & Treatment Catalog Grid */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col h-full min-h-0 overflow-hidden">
           <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 space-y-4 overscroll-contain [scrollbar-width:thin]">
             {/* Products Section */}
             {filteredProducts.length > 0 && (
@@ -773,11 +816,11 @@ export function POSTerminal({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-rose-500" />
-                    <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                      Retail & Clinical Products ({filteredProducts.length})
+                    <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Retail &amp; Clinical Products ({filteredProducts.length})
                     </p>
                   </div>
-                  <span className="text-[11px] text-gray-400">Click card to add</span>
+                  <span className="text-[11px] text-slate-400">Click card to add</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
@@ -793,22 +836,22 @@ export function POSTerminal({
                         className={cn(
                           'text-left p-3 rounded-xl border transition-all flex flex-col justify-between cursor-pointer group shadow-2xs',
                           isOutOfStock
-                            ? 'border-gray-200 bg-gray-50/70 opacity-60 hover:border-gray-300'
-                            : 'border-gray-200 bg-white hover:border-rose-300 hover:shadow-sm hover:-translate-y-0.5 active:scale-[0.98]'
+                            ? 'border-slate-200 bg-slate-50/70 opacity-60 hover:border-slate-300'
+                            : 'border-slate-200 bg-white hover:border-rose-300 hover:shadow-xs hover:-translate-y-0.5 active:scale-[0.98]'
                         )}
                       >
                         <div>
-                          <p className="text-xs font-bold text-gray-900 line-clamp-2 group-hover:text-rose-600 transition-colors leading-snug">
+                          <p className="text-xs font-bold text-slate-900 line-clamp-2 group-hover:text-rose-600 transition-colors leading-snug">
                             {p.name}
                           </p>
                           {p.product_categories?.name && (
-                            <p className="text-[10px] text-gray-400 font-medium mt-0.5 truncate">
+                            <p className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">
                               {p.product_categories.name}
                             </p>
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-100">
+                        <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
                           <span className="text-xs font-bold text-rose-600 font-serif">
                             {formatCurrency(p.sale_price)}
                           </span>
@@ -838,11 +881,11 @@ export function POSTerminal({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-indigo-600" />
-                    <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                      Procedures & Clinical Services ({filteredTreatments.length})
+                    <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Procedures &amp; Clinical Services ({filteredTreatments.length})
                     </p>
                   </div>
-                  <span className="text-[11px] text-gray-400">Fixed rate clinical procedures</span>
+                  <span className="text-[11px] text-slate-400">Fixed rate clinical procedures</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
@@ -851,10 +894,10 @@ export function POSTerminal({
                       key={t.id}
                       type="button"
                       onClick={() => addTreatment(t)}
-                      className="text-left p-3 rounded-xl border border-gray-200 bg-white hover:border-indigo-300 hover:shadow-sm hover:-translate-y-0.5 transition-all active:scale-[0.98] flex flex-col justify-between shadow-2xs cursor-pointer group"
+                      className="text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:shadow-xs hover:-translate-y-0.5 transition-all active:scale-[0.98] flex flex-col justify-between shadow-2xs cursor-pointer group"
                     >
                       <div>
-                        <p className="text-xs font-bold text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-snug">
+                        <p className="text-xs font-bold text-slate-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-snug">
                           {t.name}
                         </p>
                         <p className="text-[10px] text-indigo-400 font-medium mt-0.5">
@@ -862,7 +905,7 @@ export function POSTerminal({
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-100">
+                      <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
                         <span className="text-xs font-bold text-indigo-700 font-serif">
                           {t.price ? formatCurrency(t.price) : 'Custom rate'}
                         </span>
@@ -878,10 +921,10 @@ export function POSTerminal({
 
             {/* Empty State if search matches nothing */}
             {filteredProducts.length === 0 && filteredTreatments.length === 0 && (
-              <div className="py-16 text-center border border-dashed border-gray-200 rounded-2xl bg-white p-6">
-                <Package className="h-9 w-9 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm font-semibold text-gray-700">No matching items found</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+              <div className="py-16 text-center border border-dashed border-slate-200 rounded-2xl bg-white p-6">
+                <Package className="h-9 w-9 text-slate-300 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-slate-700">No matching items found</p>
+                <p className="text-xs text-slate-400 mt-0.5">
                   Try a different search query or click &quot;New Product&quot; to add one.
                 </p>
                 <Button
@@ -897,38 +940,55 @@ export function POSTerminal({
           </div>
         </div>
 
-        {/* Right Side: Cart & Immediate Checkout (Pinned Totals, Never scrolls out of view) */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col h-full min-h-0 bg-white rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden">
+        {/* Right Side: Current Sale Container (FULL HEIGHT, CLEAN, PROFESSIONAL, NO DARKNESS) */}
+        <div
+          className={cn(
+            'lg:col-span-5 xl:col-span-5 flex flex-col h-full min-h-0 bg-white rounded-2xl border-2 border-slate-200/90 shadow-sm overflow-hidden',
+            mobileView === 'catalog' ? 'hidden lg:flex' : 'flex'
+          )}
+        >
           {/* Cart Header */}
-          <div className="px-3.5 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50/80 via-white to-gray-50/50 shrink-0">
+          <div className="px-3.5 py-2.5 border-b border-slate-200/80 flex items-center justify-between bg-white shrink-0">
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100/80 shadow-2xs">
+              <div className="h-7 w-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200/80 shadow-2xs">
                 <ShoppingCart className="h-3.5 w-3.5" />
               </div>
               <div>
-                <h2 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">Current Sale</h2>
+                <h2 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">Current Sale</h2>
+                <p className="text-[10px] text-slate-500 font-medium hidden sm:block">Walk-in patient billing</p>
               </div>
               {items.length > 0 && (
-                <Badge className="bg-rose-500 text-white text-[10px] font-bold border-0 px-2 py-0.2 rounded-full ml-1">
-                  {items.reduce((s, i) => s + i.quantity, 0)} items
-                </Badge>
+                <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.2 rounded-full border border-rose-200 ml-1">
+                  {items.reduce((s, i) => s + i.quantity, 0)} {items.reduce((s, i) => s + i.quantity, 0) === 1 ? 'item' : 'items'}
+                </span>
               )}
             </div>
 
-            {items.length > 0 && (
+            <div className="flex items-center gap-2">
+              {/* Back to catalog button on mobile */}
               <button
                 type="button"
-                onClick={clearCart}
-                className="text-[11px] text-gray-400 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1 hover:bg-rose-50 px-2 py-0.5 rounded-md"
+                onClick={() => setMobileView('catalog')}
+                className="lg:hidden text-[11px] text-slate-600 font-semibold px-2 py-0.5 rounded-md hover:bg-slate-100 border border-slate-200"
               >
-                <Trash2 className="h-3 w-3" />
-                <span>Clear</span>
+                + Add Items
               </button>
-            )}
+
+              {items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={clearCart}
+                  className="text-[11px] text-slate-400 hover:text-rose-600 font-semibold transition-colors flex items-center gap-1 hover:bg-rose-50 px-2 py-0.5 rounded-md cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  <span>Clear</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Customer Details Inputs */}
-          <div className="p-3 pb-2 shrink-0 border-b border-gray-100/80 bg-gray-50/40">
+          <div className="p-2.5 sm:p-3 shrink-0 border-b border-slate-200/80 bg-slate-50/60">
             {posFormError && (
               <div className="mb-2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 font-medium">
                 <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />
@@ -937,26 +997,26 @@ export function POSTerminal({
             )}
             <div className="grid grid-cols-2 gap-2">
               <div className="relative">
-                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <User className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                 <Input
                   placeholder="Patient Name *"
                   value={customerName}
                   onChange={(e) => { setCustomerName(e.target.value); setPosFormError(null); }}
                   className={cn(
-                    'h-8 text-xs pl-8 bg-white rounded-lg border-gray-200 shadow-2xs focus-visible:ring-rose-500 font-medium',
+                    'h-8 text-xs pl-8 bg-white rounded-lg border-slate-200 shadow-2xs focus-visible:ring-rose-500 font-medium text-slate-900 placeholder:text-slate-400',
                     posFormError && !customerName.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : ''
                   )}
                   required
                 />
               </div>
               <div className="relative">
-                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <Phone className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                 <Input
                   placeholder="Phone * (0300...)"
                   value={customerPhone}
                   onChange={(e) => { setCustomerPhone(normalizePakistaniPhone(e.target.value)); setPosFormError(null); }}
                   className={cn(
-                    'h-8 text-xs pl-8 bg-white rounded-lg border-gray-200 shadow-2xs focus-visible:ring-rose-500 font-medium',
+                    'h-8 text-xs pl-8 bg-white rounded-lg border-slate-200 shadow-2xs focus-visible:ring-rose-500 font-medium text-slate-900 placeholder:text-slate-400',
                     posFormError && !customerPhone.trim() ? 'border-red-400 ring-1 ring-red-200 bg-red-50/30' : ''
                   )}
                   required
@@ -965,54 +1025,54 @@ export function POSTerminal({
             </div>
           </div>
 
-          {/* Cart Items List: Scrollable Internally */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 p-2.5 pr-2 overscroll-contain [scrollbar-width:thin]">
+          {/* Cart Items List: Scrollable with Generous Vertical Space */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 p-2.5 sm:p-3 pr-2 overscroll-contain [scrollbar-width:thin]">
             {items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
-                <div className="h-12 w-12 rounded-2xl bg-rose-50/70 border border-rose-100 flex items-center justify-center mb-2.5 text-rose-400 shadow-2xs">
-                  <ShoppingCart className="h-6 w-6 stroke-1.5" />
+              <div className="h-full min-h-[120px] flex flex-col items-center justify-center text-center p-4 text-slate-400">
+                <div className="h-11 w-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center mb-2 text-rose-500 shadow-2xs">
+                  <ShoppingCart className="h-5 w-5 stroke-1.5" />
                 </div>
-                <p className="text-xs font-bold text-gray-700">Cart is empty</p>
-                <p className="text-[11px] text-gray-400 mt-0.5 max-w-[200px]">
-                  Click any product or procedure on the left to add
+                <p className="text-xs font-bold text-slate-700">Current sale is empty</p>
+                <p className="text-[11px] text-slate-400 mt-0.5 max-w-[220px] leading-relaxed">
+                  Click any product or procedure on the left catalog to add to this bill
                 </p>
               </div>
             ) : (
               items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-2 p-2 rounded-xl bg-gray-50/90 border border-gray-100 hover:border-gray-200 transition-all text-xs"
+                  className="flex items-center gap-2 p-2 rounded-xl bg-white border border-slate-200/90 hover:border-rose-200 hover:shadow-2xs transition-all text-xs group"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate leading-tight">{item.name}</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">
+                    <p className="font-bold text-slate-900 truncate leading-tight">{item.name}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 font-medium">
                       {formatCurrency(item.unit_price)} × {item.quantity}
                     </p>
                   </div>
 
                   {/* Quantity Stepper */}
-                  <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-0.5 shrink-0 shadow-2xs">
+                  <div className="flex items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-lg p-0.5 shrink-0 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="p-1 rounded text-gray-600 hover:bg-gray-100 active:scale-95"
+                      className="h-5 w-5 flex items-center justify-center rounded text-slate-600 hover:text-slate-900 hover:bg-white active:scale-95 transition-all"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
-                    <span className="w-5 text-center font-bold text-xs text-gray-900">
+                    <span className="w-5 text-center font-bold text-xs text-slate-900">
                       {item.quantity}
                     </span>
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="p-1 rounded text-gray-600 hover:bg-gray-100 active:scale-95"
+                      className="h-5 w-5 flex items-center justify-center rounded text-slate-600 hover:text-slate-900 hover:bg-white active:scale-95 transition-all"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
                   </div>
 
                   {/* Line Total */}
-                  <span className="font-bold text-gray-900 text-xs w-16 text-right shrink-0">
+                  <span className="font-bold text-slate-900 text-xs w-16 sm:w-20 text-right shrink-0 font-mono">
                     {formatCurrency(item.unit_price * item.quantity)}
                   </span>
 
@@ -1020,7 +1080,7 @@ export function POSTerminal({
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}
-                    className="p-1 text-gray-400 hover:text-red-600 transition-colors shrink-0"
+                    className="p-1 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors shrink-0"
                     title="Remove item"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -1030,25 +1090,25 @@ export function POSTerminal({
             )}
           </div>
 
-          {/* Fixed Checkout Summary (Always 100% visible at bottom) */}
-          <div className="border-t border-gray-100 shrink-0">
+          {/* Fixed Checkout Summary (Clean, Professional, No Darkness) */}
+          <div className="border-t-2 border-slate-200/90 shrink-0 bg-white">
             {/* Discount & GST Controls Strip */}
-            <div className="p-2.5 bg-gray-50/70 border-b border-gray-100 space-y-2 text-xs">
+            <div className="p-2.5 bg-slate-50/70 border-b border-slate-200/80 space-y-2 text-xs">
               {/* Discount Row */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 font-semibold text-gray-700">
+                  <div className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <Tag className="h-3.5 w-3.5 text-rose-500" />
                     <span>Discount</span>
                     {saleDiscount > 0 && (
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">
                         -{formatCurrency(saleDiscount)}
                       </span>
                     )}
                   </div>
 
                   {/* Discount Segmented Switcher */}
-                  <div className="flex items-center bg-white p-0.5 rounded-lg border border-gray-200 shadow-2xs">
+                  <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
                     <button
                       type="button"
                       onClick={() => {
@@ -1057,7 +1117,7 @@ export function POSTerminal({
                       }}
                       className={cn(
                         'px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all',
-                        !discountType ? 'bg-gray-900 text-white shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-900'
+                        !discountType ? 'bg-slate-100 text-slate-900 font-bold' : 'text-slate-500 hover:text-slate-900'
                       )}
                     >
                       None
@@ -1070,7 +1130,7 @@ export function POSTerminal({
                       }}
                       className={cn(
                         'px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all flex items-center gap-0.5',
-                        discountType === 'percentage' ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-900'
+                        discountType === 'percentage' ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
                       )}
                     >
                       <span>% Off</span>
@@ -1083,7 +1143,7 @@ export function POSTerminal({
                       }}
                       className={cn(
                         'px-2 py-0.5 text-[10px] font-semibold rounded-md transition-all',
-                        discountType === 'fixed' ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-gray-500 hover:text-gray-900'
+                        discountType === 'fixed' ? 'bg-rose-500 text-white shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
                       )}
                     >
                       Flat PKR
@@ -1106,9 +1166,9 @@ export function POSTerminal({
                           const val = parseFloat(e.target.value) || 0;
                           setDiscountValue(Math.min(100, Math.max(0, val)));
                         }}
-                        className="h-7 text-xs bg-white pr-6 rounded-lg"
+                        className="h-7 text-xs bg-white pr-6 rounded-lg border-slate-200 text-slate-900"
                       />
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold">%</span>
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[11px] font-bold">%</span>
                     </div>
                     {[5, 10, 15, 20].map((p) => (
                       <button
@@ -1119,7 +1179,7 @@ export function POSTerminal({
                           'h-7 px-2 rounded-lg border text-[10px] font-bold transition-all',
                           discountValue === p
                             ? 'border-rose-400 bg-rose-50 text-rose-700 shadow-2xs'
-                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
                         )}
                       >
                         {p}%
@@ -1132,7 +1192,7 @@ export function POSTerminal({
                 {discountType === 'fixed' && (
                   <div className="flex items-center gap-1.5 pt-0.5 animate-in fade-in duration-200">
                     <div className="relative flex-1">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-semibold">Rs</span>
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] font-semibold">Rs</span>
                       <Input
                         type="number"
                         min="0"
@@ -1143,7 +1203,7 @@ export function POSTerminal({
                           const val = parseFloat(e.target.value) || 0;
                           setDiscountValue(Math.max(0, val));
                         }}
-                        className="h-7 text-xs bg-white pl-6 rounded-lg"
+                        className="h-7 text-xs bg-white pl-6 rounded-lg border-slate-200 text-slate-900"
                       />
                     </div>
                     {[200, 500, 1000, 2000].map((amt) => (
@@ -1155,7 +1215,7 @@ export function POSTerminal({
                           'h-7 px-1.5 rounded-lg border text-[10px] font-bold transition-all',
                           discountValue === amt
                             ? 'border-rose-400 bg-rose-50 text-rose-700 shadow-2xs'
-                            : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
                         )}
                       >
                         {amt}
@@ -1166,9 +1226,9 @@ export function POSTerminal({
               </div>
 
               {/* GST / Sales Tax Controls */}
-              <div className="space-y-1.5 pt-1.5 border-t border-gray-200/70">
+              <div className="space-y-1.5 pt-1.5 border-t border-slate-200/70">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 font-semibold text-gray-700">
+                  <div className="flex items-center gap-1.5 font-semibold text-slate-700">
                     <Receipt className="h-3.5 w-3.5 text-blue-500" />
                     <span>Sales Tax (GST)</span>
                   </div>
@@ -1187,7 +1247,7 @@ export function POSTerminal({
                           'px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all',
                           !isCustomTax && posTaxRate === rate
                             ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
-                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                         )}
                       >
                         {rate === 0 ? '0%' : `${rate}%`}
@@ -1200,7 +1260,7 @@ export function POSTerminal({
                         'px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all',
                         isCustomTax
                           ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
-                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
                       )}
                     >
                       Custom
@@ -1223,12 +1283,12 @@ export function POSTerminal({
                           const val = parseFloat(e.target.value) || 0;
                           setPosTaxRate(Math.min(100, Math.max(0, val)));
                         }}
-                        className="h-7 text-xs bg-white pr-7 rounded-lg"
+                        className="h-7 text-xs bg-white pr-7 rounded-lg border-slate-200 text-slate-900"
                         autoFocus
                       />
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-[11px] font-bold">%</span>
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-[11px] font-bold">%</span>
                     </div>
-                    <span className="text-[10px] font-medium text-gray-500">
+                    <span className="text-[10px] font-medium text-slate-500">
                       Applied: {posTaxRate}%
                     </span>
                   </div>
@@ -1240,41 +1300,41 @@ export function POSTerminal({
             <div className="p-3 bg-white space-y-2">
               {/* Detailed Breakdown */}
               <div className="space-y-1 text-xs">
-                <div className="flex justify-between text-gray-600">
+                <div className="flex justify-between text-slate-600 font-medium">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(subtotal)}</span>
+                  <span className="font-bold text-slate-900 font-mono">{formatCurrency(subtotal)}</span>
                 </div>
                 {saleDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-700 font-semibold bg-emerald-50/80 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                  <div className="flex justify-between text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
                     <span>Discount {discountType === 'percentage' ? `(${discountValue}%)` : '(Flat)'}</span>
-                    <span>-{formatCurrency(saleDiscount)}</span>
+                    <span className="font-mono">-{formatCurrency(saleDiscount)}</span>
                   </div>
                 )}
                 {posTaxRate > 0 ? (
-                  <div className="flex justify-between text-blue-700 font-semibold bg-blue-50/80 px-2 py-0.5 rounded-md border border-blue-200/50">
+                  <div className="flex justify-between text-blue-800 font-semibold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/80">
                     <span>GST ({posTaxRate}%)</span>
-                    <span>+{formatCurrency(tax)}</span>
+                    <span className="font-mono">+{formatCurrency(tax)}</span>
                   </div>
                 ) : (
-                  <div className="flex justify-between text-gray-400 text-[11px]">
+                  <div className="flex justify-between text-slate-400 text-[11px]">
                     <span>GST / Tax</span>
-                    <span className="font-medium text-gray-500">0% (Exempt)</span>
+                    <span className="font-medium text-slate-500">0% (Exempt)</span>
                   </div>
                 )}
               </div>
 
-              {/* High-Impact Total Payable Card */}
-              <div className="p-2.5 rounded-xl bg-gradient-to-r from-gray-900 via-gray-950 to-gray-900 text-white flex items-center justify-between shadow-xs border border-gray-800">
+              {/* High-Impact Total Payable Card (Crisp, Light, No Darkness) */}
+              <div className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-rose-50/90 via-pink-50/40 to-slate-50/90 text-slate-900 flex items-center justify-between border-2 border-rose-200/90 shadow-2xs">
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold block leading-none">
+                  <span className="text-[10px] uppercase tracking-wider text-rose-800 font-extrabold block leading-none">
                     Total Amount
                   </span>
-                  <span className="text-xs text-rose-300 font-medium mt-0.5 inline-block">
+                  <span className="text-xs text-rose-600 font-semibold mt-0.5 inline-block">
                     Net Payable
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight font-mono">
                     {formatCurrency(total)}
                   </span>
                 </div>
@@ -1288,8 +1348,8 @@ export function POSTerminal({
                   className={cn(
                     'py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer',
                     paymentMethod === 'cash'
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-2xs ring-1 ring-emerald-400/50'
-                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-950 shadow-2xs ring-1 ring-emerald-400/50'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   )}
                 >
                   <Banknote className="h-4 w-4 text-emerald-600" />
@@ -1301,8 +1361,8 @@ export function POSTerminal({
                   className={cn(
                     'py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer',
                     paymentMethod === 'card'
-                      ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-2xs ring-1 ring-blue-400/50'
-                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      ? 'border-blue-500 bg-blue-50 text-blue-950 shadow-2xs ring-1 ring-blue-400/50'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   )}
                 >
                   <CreditCard className="h-4 w-4 text-blue-600" />
@@ -1320,14 +1380,14 @@ export function POSTerminal({
                         placeholder="Amount received (e.g. 5000)"
                         value={amountReceived}
                         onChange={(e) => setAmountReceived(e.target.value)}
-                        className="h-8 text-xs bg-gray-50/80 border-gray-200 rounded-lg font-medium"
+                        className="h-8 text-xs bg-slate-50 border-slate-200 rounded-lg font-medium text-slate-900"
                       />
                     </div>
                     {total > 0 && (
                       <button
                         type="button"
                         onClick={() => setAmountReceived(String(total))}
-                        className="h-8 px-2.5 rounded-lg text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shrink-0"
+                        className="h-8 px-2.5 rounded-lg text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors shrink-0"
                       >
                         Exact
                       </button>
@@ -1335,9 +1395,9 @@ export function POSTerminal({
                   </div>
 
                   {change > 0 && (
-                    <div className="flex items-center justify-between text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-900 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg">
                       <span>Change to Return:</span>
-                      <span className="text-sm font-extrabold">{formatCurrency(change)}</span>
+                      <span className="text-sm font-extrabold font-mono">{formatCurrency(change)}</span>
                     </div>
                   )}
                 </div>
@@ -1349,10 +1409,10 @@ export function POSTerminal({
                 onClick={handleCompleteSale}
                 disabled={items.length === 0 || processing}
                 className={cn(
-                  'w-full h-11 text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer',
+                  'w-full h-11 sm:h-12 text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer',
                   items.length === 0
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                    : 'bg-gradient-to-r from-rose-600 via-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white shadow-rose-900/20'
+                    ? 'bg-rose-50 text-rose-300 border border-rose-200 cursor-not-allowed shadow-none'
+                    : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-900/10'
                 )}
               >
                 {processing ? (
