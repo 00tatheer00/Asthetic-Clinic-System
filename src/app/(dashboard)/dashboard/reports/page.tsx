@@ -28,35 +28,56 @@ export default async function ReportsPage() {
   ] = await Promise.all([
     supabase
       .from('invoices')
-      .select('id, invoice_number, total, subtotal, discount_amount, tax_amount, payment_method, status, created_at, customer_name')
+      .select(
+        'id, invoice_number, total, subtotal, discount_amount, tax_amount, payment_method, payment_status, status, created_at, customer_name, customer_phone, customer_email, customer_address, patient_id, patients(id, name, phone, email, address), invoice_line_items(id, description, quantity, unit_price, line_total)'
+      )
       .order('created_at', { ascending: false }),
     supabase
       .from('appointments')
-      .select('id, status, scheduled_at, duration_minutes, treatment_id, treatments(name), patient_id, patients(name), created_at')
+      .select(
+        'id, status, scheduled_at, duration_minutes, customer_name, customer_phone, customer_email, message, confirmed_at, created_at, treatment_id, treatments(id, name, price), patient_id, patients(id, name, phone, email, gender)'
+      )
       .is('deleted_at', null)
       .order('scheduled_at', { ascending: false }),
     supabase
       .from('orders')
-      .select('id, order_number, total, status, delivery_method, payment_method, created_at, customer_name')
+      .select(
+        'id, order_number, total, subtotal, delivery_fee, discount_amount, status, delivery_method, delivery_address, delivery_city, payment_method, payment_status, created_at, customer_name, customer_phone, customer_email, order_items(id, name, quantity, unit_price, line_total)'
+      )
       .order('created_at', { ascending: false }),
     supabase
       .from('products')
-      .select('id, name, sku, stock_quantity, sale_price, purchase_price, product_categories(name)')
-      .is('deleted_at', null),
+      .select(
+        'id, name, sku, stock_quantity, reserved_quantity, low_stock_threshold, sale_price, purchase_price, expiry_date, is_active, is_published, product_categories(id, name)'
+      )
+      .is('deleted_at', null)
+      .order('name'),
     supabase
       .from('treatments')
-      .select('id, name, price, treatment_categories(name)')
+      .select('id, name, price, treatment_categories(id, name)')
       .is('deleted_at', null),
     supabase
       .from('patients')
-      .select('id, name, phone, email, gender, created_at')
-      .is('deleted_at', null),
+      .select('id, name, phone, email, gender, date_of_birth, address, notes, created_at')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false }),
   ]);
+
+  const normalizedInvoices = (invoices || []).map((inv: any) => ({
+    ...inv,
+    patients: Array.isArray(inv.patients) ? inv.patients[0] || null : inv.patients || null,
+    invoice_line_items: Array.isArray(inv.invoice_line_items) ? inv.invoice_line_items : [],
+  }));
 
   const normalizedAppointments = (appointments || []).map((a: any) => ({
     ...a,
     treatments: Array.isArray(a.treatments) ? a.treatments[0] || null : a.treatments || null,
     patients: Array.isArray(a.patients) ? a.patients[0] || null : a.patients || null,
+  }));
+
+  const normalizedOrders = (orders || []).map((o: any) => ({
+    ...o,
+    order_items: Array.isArray(o.order_items) ? o.order_items : [],
   }));
 
   const normalizedProducts = (products || []).map((p: any) => ({
@@ -75,9 +96,9 @@ export default async function ReportsPage() {
 
   return (
     <ReportsView
-      invoices={invoices || []}
+      invoices={normalizedInvoices}
       appointments={normalizedAppointments}
-      orders={orders || []}
+      orders={normalizedOrders}
       products={normalizedProducts}
       treatments={normalizedTreatments}
       patients={patients || []}

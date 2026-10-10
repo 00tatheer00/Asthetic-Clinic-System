@@ -48,9 +48,28 @@ interface InvoiceRecord {
   discount_amount: number;
   tax_amount: number;
   payment_method: string | null;
+  payment_status?: string | null;
   status: string;
   created_at: string;
   customer_name: string;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  customer_address?: string | null;
+  patient_id?: string | null;
+  patients?: {
+    id: string;
+    name: string;
+    phone: string;
+    email?: string | null;
+    address?: string | null;
+  } | null;
+  invoice_line_items?: Array<{
+    id: string;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    line_total: number;
+  }> | null;
 }
 
 interface AppointmentRecord {
@@ -59,19 +78,51 @@ interface AppointmentRecord {
   scheduled_at: string;
   created_at: string;
   duration_minutes?: number | null;
-  treatments?: { name: string } | null;
-  patients?: { name: string } | null;
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  message?: string | null;
+  confirmed_at?: string | null;
+  treatment_id?: string | null;
+  treatments?: {
+    id?: string;
+    name: string;
+    price?: number | null;
+  } | null;
+  patient_id?: string | null;
+  patients?: {
+    id: string;
+    name: string;
+    phone?: string | null;
+    email?: string | null;
+    gender?: string | null;
+  } | null;
 }
 
 interface OrderRecord {
   id: string;
   order_number: string;
   total: number;
+  subtotal?: number;
+  delivery_fee?: number;
+  discount_amount?: number;
   status: string;
   delivery_method: string;
+  delivery_address?: string | null;
+  delivery_city?: string | null;
   payment_method: string;
+  payment_status?: string;
   created_at: string;
   customer_name: string;
+  customer_phone?: string | null;
+  customer_email?: string | null;
+  order_items?: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    unit_price: number;
+    line_total: number;
+  }>;
 }
 
 interface ProductRecord {
@@ -79,16 +130,21 @@ interface ProductRecord {
   name: string;
   sku: string;
   stock_quantity: number;
+  reserved_quantity?: number;
+  low_stock_threshold?: number;
   sale_price: number;
   purchase_price: number;
-  product_categories?: { name: string } | null;
+  expiry_date?: string | null;
+  is_active?: boolean;
+  is_published?: boolean;
+  product_categories?: { id?: string; name: string } | null;
 }
 
 interface TreatmentRecord {
   id: string;
   name: string;
   price: number | null;
-  treatment_categories?: { name: string } | null;
+  treatment_categories?: { id?: string; name: string } | null;
 }
 
 interface PatientRecord {
@@ -97,6 +153,9 @@ interface PatientRecord {
   phone: string;
   email: string | null;
   gender: string | null;
+  date_of_birth?: string | null;
+  address?: string | null;
+  notes?: string | null;
   created_at: string;
 }
 
@@ -276,61 +335,293 @@ export function ReportsView({
     toast.success('Daily Closing CSV exported');
   };
 
+  // Consolidated Unique Clinic Clients & Patients (EMR Registrations + Appointment Bookings + POS Invoices)
+  const allUniqueClients = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        phone: string;
+        email: string;
+        gender: string;
+        dateOfBirth: string;
+        address: string;
+        source: string;
+        totalAppointments: number;
+        totalInvoices: number;
+        totalSpent: number;
+        firstVisit: string;
+        lastVisit: string;
+        notes: string;
+      }
+    >();
+
+    const normalizePhone = (ph: string) => ph.replace(/[\s\-_]/g, '').trim();
+
+    // 1. Registered Patients in EMR
+    patients.forEach((p) => {
+      const normPh = normalizePhone(p.phone);
+      if (!normPh) return;
+      map.set(normPh, {
+        id: p.id,
+        name: p.name,
+        phone: p.phone,
+        email: p.email || '—',
+        gender: p.gender ? p.gender.toUpperCase() : '—',
+        dateOfBirth: p.date_of_birth || '—',
+        address: p.address || '—',
+        source: 'Registered Patient',
+        totalAppointments: 0,
+        totalInvoices: 0,
+        totalSpent: 0,
+        firstVisit: p.created_at,
+        lastVisit: p.created_at,
+        notes: p.notes || '—',
+      });
+    });
+
+    // 2. Appointments (Include walk-ins and web bookings)
+    appointments.forEach((a) => {
+      const rawPhone = a.patients?.phone || a.customer_phone || '';
+      const normPh = normalizePhone(rawPhone);
+      if (!normPh) return;
+
+      const pName = a.patients?.name?.trim() || a.customer_name?.trim() || '';
+      const existing = map.get(normPh);
+      if (existing) {
+        existing.totalAppointments += 1;
+        if (
+          pName &&
+          !pName.toLowerCase().includes('walk-in') &&
+          (!existing.name || existing.name.toLowerCase().includes('walk-in'))
+        ) {
+          existing.name = pName;
+        }
+        if (a.customer_email && existing.email === '—') {
+          existing.email = a.customer_email;
+        }
+        if (a.scheduled_at && new Date(a.scheduled_at) > new Date(existing.lastVisit)) {
+          existing.lastVisit = a.scheduled_at;
+        }
+      } else {
+        map.set(normPh, {
+          id: a.patient_id || `APPT-${a.id.slice(0, 8).toUpperCase()}`,
+          name: pName || 'Walk-in Booking Client',
+          phone: a.customer_phone || rawPhone,
+          email: a.customer_email || '—',
+          gender: a.patients?.gender ? a.patients.gender.toUpperCase() : '—',
+          dateOfBirth: '—',
+          address: '—',
+          source: 'Clinic Appointment Booking',
+          totalAppointments: 1,
+          totalInvoices: 0,
+          totalSpent: 0,
+          firstVisit: a.created_at,
+          lastVisit: a.scheduled_at || a.created_at,
+          notes: a.message?.trim() || '—',
+        });
+      }
+    });
+
+    // 3. Invoices (POS Walk-in and Consultations)
+    invoices.forEach((inv) => {
+      const rawPhone = inv.patients?.phone || inv.customer_phone || '';
+      const normPh = normalizePhone(rawPhone);
+      if (!normPh) return;
+
+      const pName =
+        inv.patients?.name?.trim() ||
+        (inv.customer_name && !inv.customer_name.toLowerCase().includes('walk-in')
+          ? inv.customer_name.trim()
+          : '');
+      const existing = map.get(normPh);
+      if (existing) {
+        existing.totalInvoices += 1;
+        existing.totalSpent += Number(inv.total || 0);
+        if (pName && (!existing.name || existing.name.toLowerCase().includes('walk-in'))) {
+          existing.name = pName;
+        }
+        if (inv.customer_email && existing.email === '—') {
+          existing.email = inv.customer_email;
+        }
+        if (inv.customer_address && existing.address === '—') {
+          existing.address = inv.customer_address;
+        }
+        if (inv.created_at && new Date(inv.created_at) > new Date(existing.lastVisit)) {
+          existing.lastVisit = inv.created_at;
+        }
+      } else {
+        map.set(normPh, {
+          id: inv.patient_id || `INV-${inv.invoice_number}`,
+          name: pName || 'POS Invoice Customer',
+          phone: inv.customer_phone || rawPhone,
+          email: inv.customer_email || '—',
+          gender: '—',
+          dateOfBirth: '—',
+          address: inv.customer_address || '—',
+          source: 'POS Invoice Customer',
+          totalAppointments: 0,
+          totalInvoices: 1,
+          totalSpent: Number(inv.total || 0),
+          firstVisit: inv.created_at,
+          lastVisit: inv.created_at,
+          notes: '—',
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [patients, appointments, invoices]);
+
+  // Export Handlers with rich, complete patient and financial data
   const handleExportInvoices = () => {
     const headers = [
       'Invoice Number',
-      'Date',
-      'Customer',
-      'Subtotal',
-      'Discount',
-      'Tax',
-      'Total',
+      'Date & Time',
+      'Patient / Customer Name',
+      'Phone Number',
+      'Email',
+      'Address',
+      'Items / Services Purchased',
+      'Total Items Quantity',
+      'Subtotal (PKR)',
+      'Discount (PKR)',
+      'Tax (PKR)',
+      'Net Total (PKR)',
       'Payment Method',
-      'Status',
+      'Payment Status',
+      'Invoice Status',
     ];
-    const rows = invoices.map((inv) => [
-      inv.invoice_number,
-      formatDate(inv.created_at),
-      inv.customer_name,
-      inv.subtotal,
-      inv.discount_amount,
-      inv.tax_amount,
-      inv.total,
-      inv.payment_method || 'cash',
-      inv.status,
-    ]);
-    exportToCSV('brimish-invoices', headers, rows);
-    toast.success('Invoices CSV exported');
+    const rows = invoices.map((inv) => {
+      let patientName = inv.customer_name?.trim() || '';
+      if ((!patientName || patientName.toLowerCase().includes('walk-in')) && inv.patients?.name) {
+        patientName = inv.patients.name;
+      }
+      if (!patientName) patientName = 'Walk-in Customer';
+
+      const phone = inv.patients?.phone || inv.customer_phone || '—';
+      const email = inv.patients?.email || inv.customer_email || '—';
+      const address = inv.patients?.address || inv.customer_address || '—';
+
+      const itemsDesc = (inv.invoice_line_items || [])
+        .map((it) => `${it.description || 'Item'} (x${it.quantity || 1})`)
+        .join('; ');
+
+      const totalItemsQty = (inv.invoice_line_items || []).reduce(
+        (sum, it) => sum + (Number(it.quantity) || 1),
+        0
+      );
+
+      const d = inv.created_at ? new Date(inv.created_at) : null;
+      const formattedDate = d
+        ? `${formatDate(inv.created_at)} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        : '—';
+
+      return [
+        inv.invoice_number,
+        formattedDate,
+        patientName,
+        phone,
+        email,
+        address,
+        itemsDesc || 'Clinical Consultation / Procedure',
+        totalItemsQty || 1,
+        Number(inv.subtotal) || 0,
+        Number(inv.discount_amount) || 0,
+        Number(inv.tax_amount) || 0,
+        Number(inv.total) || 0,
+        (inv.payment_method || 'cash').toUpperCase(),
+        (inv.payment_status || 'paid').toUpperCase(),
+        inv.status.toUpperCase(),
+      ];
+    });
+    exportToCSV(`brimish-invoices-complete`, headers, rows);
+    toast.success(`Exported ${invoices.length} complete invoices to CSV`);
   };
 
   const handleExportAppointments = () => {
-    const headers = ['Date', 'Time', 'Patient', 'Treatment', 'Status'];
+    const headers = [
+      'Booking ID',
+      'Appointment Date',
+      'Appointment Time',
+      'Patient Name',
+      'Patient Phone Number',
+      'Patient Email',
+      'Treatment / Procedure',
+      'Estimated Fee (PKR)',
+      'Duration',
+      'Appointment Status',
+      'Patient Notes / Symptoms',
+      'Confirmed Date',
+      'Booking Request Date',
+    ];
     const rows = appointments.map((a) => {
       const d = a.scheduled_at ? new Date(a.scheduled_at) : null;
+      let patientName = a.patients?.name?.trim() || a.customer_name?.trim() || '';
+      if (!patientName) patientName = 'Walk-in Patient';
+
+      const phone = a.patients?.phone?.trim() || a.customer_phone?.trim() || '—';
+      const email = a.patients?.email?.trim() || a.customer_email?.trim() || '—';
+      const treatmentName = a.treatments?.name || 'General Consultation';
+      const treatmentFee = a.treatments?.price ? Number(a.treatments.price) : 0;
+      const duration = a.duration_minutes ? `${a.duration_minutes} mins` : '30 mins';
+
       return [
+        a.id.slice(0, 8).toUpperCase(),
         d ? formatDate(a.scheduled_at) : '—',
         d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
-        a.patients?.name || 'Walk-in',
-        a.treatments?.name || 'General Consultation',
-        a.status,
+        patientName,
+        phone,
+        email,
+        treatmentName,
+        treatmentFee,
+        duration,
+        a.status.toUpperCase(),
+        a.message?.trim() || '—',
+        a.confirmed_at ? formatDate(a.confirmed_at) : '—',
+        formatDate(a.created_at),
       ];
     });
-    exportToCSV('brimish-appointments', headers, rows);
-    toast.success('Appointments CSV exported');
+    exportToCSV(`brimish-appointments-complete`, headers, rows);
+    toast.success(`Exported ${appointments.length} appointment bookings to CSV`);
   };
 
   const handleExportPatients = () => {
-    const headers = ['Patient ID', 'Name', 'Phone', 'Email', 'Gender', 'Registered Date'];
-    const rows = patients.map((p) => [
+    const headers = [
+      'Patient ID',
+      'Patient / Client Name',
+      'Phone Number',
+      'Email',
+      'Gender',
+      'Date of Birth',
+      'Address',
+      'Record Type',
+      'Total Appointments',
+      'Total Invoices',
+      'Total Amount Spent (PKR)',
+      'First Interaction Date',
+      'Last Interaction Date',
+      'Notes / History',
+    ];
+    const rows = allUniqueClients.map((p) => [
       p.id,
       p.name,
       p.phone,
-      p.email || '',
-      p.gender || '',
-      formatDate(p.created_at),
+      p.email,
+      p.gender,
+      p.dateOfBirth,
+      p.address,
+      p.source,
+      p.totalAppointments,
+      p.totalInvoices,
+      p.totalSpent,
+      formatDate(p.firstVisit),
+      formatDate(p.lastVisit),
+      p.notes,
     ]);
-    exportToCSV('brimish-patients', headers, rows);
-    toast.success('Patients CSV exported');
+    exportToCSV(`brimish-patients-directory`, headers, rows);
+    toast.success(`Exported ${allUniqueClients.length} complete patient & client profiles`);
   };
 
   const handleExportInventory = () => {
@@ -339,21 +630,103 @@ export function ReportsView({
       'SKU',
       'Category',
       'Stock Quantity',
+      'Reserved Quantity',
+      'Available Stock',
+      'Low Stock Threshold',
+      'Stock Status',
       'Cost Price (PKR)',
       'Sale Price (PKR)',
+      'Profit Margin (%)',
       'Total Retail Valuation (PKR)',
+      'Expiry Date',
     ];
-    const rows = products.map((p) => [
-      p.name,
-      p.sku,
-      p.product_categories?.name || 'Uncategorized',
-      p.stock_quantity,
-      p.purchase_price,
-      p.sale_price,
-      p.stock_quantity * p.sale_price,
-    ]);
-    exportToCSV('brimish-inventory', headers, rows);
-    toast.success('Inventory CSV exported');
+    const rows = products.map((p) => {
+      const available = Math.max(0, p.stock_quantity - (p.reserved_quantity || 0));
+      const threshold = p.low_stock_threshold || 5;
+      const status =
+        p.stock_quantity === 0
+          ? 'OUT OF STOCK'
+          : p.stock_quantity <= threshold
+          ? 'LOW STOCK ALERT'
+          : 'IN STOCK';
+      const margin =
+        p.sale_price > 0 && p.purchase_price > 0
+          ? Math.round(((p.sale_price - p.purchase_price) / p.sale_price) * 100)
+          : 0;
+
+      return [
+        p.name,
+        p.sku,
+        p.product_categories?.name || 'Uncategorized',
+        p.stock_quantity,
+        p.reserved_quantity || 0,
+        available,
+        threshold,
+        status,
+        Number(p.purchase_price) || 0,
+        Number(p.sale_price) || 0,
+        `${margin}%`,
+        (p.stock_quantity || 0) * (Number(p.sale_price) || 0),
+        p.expiry_date || '—',
+      ];
+    });
+    exportToCSV(`brimish-inventory-valuation`, headers, rows);
+    toast.success(`Exported ${products.length} products inventory to CSV`);
+  };
+
+  const handleExportOrders = () => {
+    const headers = [
+      'Order Number',
+      'Order Date & Time',
+      'Customer Name',
+      'Phone Number',
+      'Email',
+      'Delivery Method',
+      'Delivery City',
+      'Delivery Address',
+      'Products Ordered',
+      'Total Items Quantity',
+      'Subtotal (PKR)',
+      'Delivery Fee (PKR)',
+      'Net Total (PKR)',
+      'Payment Method',
+      'Payment Status',
+      'Order Status',
+    ];
+    const rows = orders.map((o) => {
+      const itemsStr = (o.order_items || [])
+        .map((it) => `${it.name} (x${it.quantity})`)
+        .join('; ');
+      const totalItemsQty = (o.order_items || []).reduce(
+        (sum, it) => sum + (Number(it.quantity) || 1),
+        0
+      );
+      const d = o.created_at ? new Date(o.created_at) : null;
+      const formattedDate = d
+        ? `${formatDate(o.created_at)} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        : '—';
+
+      return [
+        o.order_number,
+        formattedDate,
+        o.customer_name || '—',
+        o.customer_phone || '—',
+        o.customer_email || '—',
+        (o.delivery_method || 'courier').toUpperCase(),
+        o.delivery_city || '—',
+        o.delivery_address || '—',
+        itemsStr || 'Skincare Storefront Order',
+        totalItemsQty || 1,
+        Number(o.subtotal || o.total) || 0,
+        Number(o.delivery_fee) || 0,
+        Number(o.total) || 0,
+        (o.payment_method || 'cod').toUpperCase(),
+        (o.payment_status || 'pending').toUpperCase(),
+        o.status.toUpperCase(),
+      ];
+    });
+    exportToCSV(`brimish-online-orders`, headers, rows);
+    toast.success(`Exported ${orders.length} online orders to CSV`);
   };
 
   return (
@@ -631,45 +1004,65 @@ export function ReportsView({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
             <Button
               onClick={handleExportInvoices}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50/60 hover:shadow-md hover:shadow-emerald-500/15 transition-all duration-200 group cursor-pointer"
+              className="h-18 flex flex-col items-center justify-center gap-1 rounded-xl border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50/60 hover:shadow-md hover:shadow-emerald-500/15 transition-all duration-200 group cursor-pointer text-center px-2"
             >
               <Download className="h-4 w-4 text-emerald-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Invoices CSV</span>
-              <span className="text-[10px] text-gray-400">{invoices.length} invoices</span>
+              <span className="text-[10px] text-gray-500 font-medium">
+                {invoices.length} invoices (items & patients)
+              </span>
             </Button>
 
             <Button
               onClick={handleExportAppointments}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-blue-200 hover:border-blue-500 hover:bg-blue-50/60 hover:shadow-md hover:shadow-blue-500/15 transition-all duration-200 group cursor-pointer"
+              className="h-18 flex flex-col items-center justify-center gap-1 rounded-xl border border-blue-200 hover:border-blue-500 hover:bg-blue-50/60 hover:shadow-md hover:shadow-blue-500/15 transition-all duration-200 group cursor-pointer text-center px-2"
             >
               <Download className="h-4 w-4 text-blue-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Appointments CSV</span>
-              <span className="text-[10px] text-gray-400">{appointments.length} bookings</span>
+              <span className="text-[10px] text-gray-500 font-medium">
+                {appointments.length} bookings (patient names & phone)
+              </span>
             </Button>
 
             <Button
               onClick={handleExportPatients}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-purple-200 hover:border-purple-500 hover:bg-purple-50/60 hover:shadow-md hover:shadow-purple-500/15 transition-all duration-200 group cursor-pointer"
+              className="h-18 flex flex-col items-center justify-center gap-1 rounded-xl border border-purple-200 hover:border-purple-500 hover:bg-purple-50/60 hover:shadow-md hover:shadow-purple-500/15 transition-all duration-200 group cursor-pointer text-center px-2"
             >
               <Download className="h-4 w-4 text-purple-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Patients CSV</span>
-              <span className="text-[10px] text-gray-400">{patients.length} patient records</span>
+              <span className="text-[10px] text-gray-500 font-medium">
+                {allUniqueClients.length} complete patient profiles
+              </span>
             </Button>
 
             <Button
               onClick={handleExportInventory}
               variant="outline"
-              className="h-16 flex flex-col items-center justify-center gap-1 rounded-xl border border-amber-200 hover:border-amber-500 hover:bg-amber-50/60 hover:shadow-md hover:shadow-amber-500/15 transition-all duration-200 group cursor-pointer"
+              className="h-18 flex flex-col items-center justify-center gap-1 rounded-xl border border-amber-200 hover:border-amber-500 hover:bg-amber-50/60 hover:shadow-md hover:shadow-amber-500/15 transition-all duration-200 group cursor-pointer text-center px-2"
             >
               <Download className="h-4 w-4 text-amber-600 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold text-gray-800">Export Inventory CSV</span>
-              <span className="text-[10px] text-gray-400">{products.length} products</span>
+              <span className="text-[10px] text-gray-500 font-medium">
+                {products.length} products (stock & margins)
+              </span>
+            </Button>
+
+            <Button
+              onClick={handleExportOrders}
+              variant="outline"
+              className="h-18 flex flex-col items-center justify-center gap-1 rounded-xl border border-rose-200 hover:border-rose-500 hover:bg-rose-50/60 hover:shadow-md hover:shadow-rose-500/15 transition-all duration-200 group cursor-pointer text-center px-2"
+            >
+              <Download className="h-4 w-4 text-rose-600 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-semibold text-gray-800">Export Orders CSV</span>
+              <span className="text-[10px] text-gray-500 font-medium">
+                {orders.length} online orders (delivery & items)
+              </span>
             </Button>
           </div>
         </CardContent>
