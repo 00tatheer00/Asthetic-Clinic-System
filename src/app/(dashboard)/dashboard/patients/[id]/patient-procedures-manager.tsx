@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import QRCode from 'qrcode';
 import { useRouter } from 'next/navigation';
+import { useReceiptSettings } from '@/lib/receipt-settings';
 import {
   createPatientProcedure,
   logProcedureSession,
@@ -63,6 +65,7 @@ export function PatientProceduresManager({
   isAdmin,
 }: PatientProceduresManagerProps) {
   const router = useRouter();
+  const receiptSettings = useReceiptSettings();
 
   // Dialog states
   const [showNewProcDialog, setShowNewProcDialog] = useState(false);
@@ -1326,86 +1329,180 @@ export function PatientProceduresManager({
       {/* DIALOG 4: Printable / Shareable Official Receipt Slip     */}
       {/* ========================================================= */}
       <Dialog open={!!activeReceiptPrint} onOpenChange={(open) => !open && setActiveReceiptPrint(null)}>
-        <DialogContent className="sm:max-w-md print:p-0 print:border-0 print:shadow-none">
-          <DialogHeader className="print:hidden">
-            <DialogTitle>Procedure Payment Receipt</DialogTitle>
-            <DialogDescription>Print thermal/A4 receipt or share directly via WhatsApp.</DialogDescription>
+        <DialogContent className="max-w-md p-0 overflow-hidden bg-stone-50 border-stone-200">
+          <DialogHeader className="p-4 bg-white border-b border-stone-200 print:hidden">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <span>Receipt {activeReceiptPrint?.receiptNumber}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 uppercase font-semibold">
+                    58mm Thermal
+                  </span>
+                </DialogTitle>
+                <DialogDescription className="text-xs text-gray-500">
+                  Official clinic receipt generated
+                </DialogDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (!activeReceiptPrint) return;
+                    const origin =
+                      typeof window !== 'undefined' && window.location.origin
+                        ? window.location.origin
+                        : 'https://brimishskincare.com';
+                    const verifyUrl = `${origin}/verify-invoice?num=${encodeURIComponent(activeReceiptPrint.receiptNumber)}`;
+                    const text = `*Assalam-o-Alaikum ${patient.name}*,\nHere is your official payment receipt from *Brimish Skin Care & Laser Clinic*:\n\n• Receipt No: ${activeReceiptPrint.receiptNumber}\n• Procedure: ${activeReceiptPrint.planName}\n• Amount Paid: ${formatCurrency(activeReceiptPrint.amount)}\n• Remaining Balance: ${formatCurrency(activeReceiptPrint.balanceRemaining)}\n• Date: ${formatDateTime(activeReceiptPrint.paymentDate)}\n• Digital Verification: ${verifyUrl}\n\nThank you for choosing Brimish Skin Care!\nClinic: Sami Tower, Ring Road, Peshawar (0335-6400959)`;
+                    window.open(buildWhatsAppLink(patient.phone, text), '_blank');
+                  }}
+                  variant="outline"
+                  className="h-8 px-2.5 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 rounded-xl"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                  WhatsApp
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => activeReceiptPrint && printReceipt('printable-procedure-receipt', activeReceiptPrint.receiptNumber)}
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-8 px-3 text-xs font-semibold"
+                >
+                  <Printer className="h-3.5 w-3.5 mr-1" />
+                  Print / PDF
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
 
           {activeReceiptPrint && (
-            <div className="space-y-4">
-              {/* Standalone Printable Slip */}
+            <div className="bg-stone-100/70 p-4 sm:p-6 print:p-0 print:bg-white flex justify-center max-h-[75vh] overflow-y-auto">
+              {/* Standalone 58mm / 80mm Clinical Printable Slip matching POS */}
               <div
                 id="printable-procedure-receipt"
-                className="p-5 rounded-2xl border border-gray-200 bg-white font-mono text-xs space-y-3"
+                className="w-full max-w-[340px] bg-white border border-stone-200 print:border-0 shadow-sm p-4 font-mono text-[11px] text-black leading-tight space-y-0"
               >
-                {/* Header */}
-                <div className="text-center border-b border-gray-200 pb-3">
-                  <h3 className="font-serif font-black text-base uppercase tracking-tight text-gray-950 font-sans">
-                    Brimish Skin Care & Laser Clinic
-                  </h3>
-                  <p className="text-[10px] text-gray-500 font-sans mt-0.5">
-                    Sami Tower, Ring Road, Peshawar • 0335-6400959
+                {/* Clinic Header */}
+                <div className="text-center pb-2.5 border-b border-dashed border-black">
+                  <div className="flex justify-center mb-1.5">
+                    <Image
+                      src="/images/logo.png"
+                      alt="Brimish Skin Care Logo"
+                      width={46}
+                      height={46}
+                      className="w-11 h-11 object-contain"
+                      priority
+                    />
+                  </div>
+                  <h2 className="text-sm font-black tracking-tight text-black uppercase font-sans">
+                    {receiptSettings.receiptTitle || 'BRIMISH SKIN CARE & LASER CLINIC'}
+                  </h2>
+                  <p className="text-[10px] font-bold text-black mt-0.5">
+                    {receiptSettings.receiptDoctor || 'DR. BILAL AHMAD (MD Aesthetic Medicine)'}
                   </p>
-                  <p className="text-[9px] uppercase tracking-widest text-emerald-700 font-bold mt-1">
-                    Official Procedure Payment Receipt
+                  <p className="text-[9px] text-gray-700 mt-0.5">
+                    {receiptSettings.receiptSpecialty || 'Medical Aesthetics, Dermatology & Laser Center'}
+                  </p>
+                  <p className="text-[9px] text-gray-700 mt-0.5">
+                    {receiptSettings.receiptAddress || 'Sami Tower, Ring Road, Peshawar, KP'}
+                  </p>
+                  <p className="text-[9px] font-semibold text-black mt-0.5">
+                    {receiptSettings.receiptPhone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959'}
                   </p>
                 </div>
 
-                {/* Meta */}
-                <div className="space-y-1 text-[11px] border-b border-gray-100 pb-2">
+                {/* Receipt Metadata */}
+                <div className="py-2 border-b border-dashed border-black text-[10px] space-y-0.5">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Receipt No:</span>
-                    <span className="font-bold text-gray-900">{activeReceiptPrint.receiptNumber}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Date & Time:</span>
-                    <span>{formatDateTime(activeReceiptPrint.paymentDate)}</span>
+                    <span>Receipt #:</span>
+                    <strong className="font-bold">{activeReceiptPrint.receiptNumber}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Patient Name:</span>
-                    <span className="font-bold text-gray-900">{patient.name}</span>
+                    <span>Date:</span>
+                    <span>{formatDate(activeReceiptPrint.paymentDate)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Contact:</span>
-                    <span>{formatPhone(patient.phone)}</span>
+                    <span>Time:</span>
+                    <span>
+                      {new Date(activeReceiptPrint.paymentDate).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
-                </div>
-
-                {/* Procedure Breakdown */}
-                <div className="space-y-1.5 border-b border-gray-200 pb-2">
-                  <div className="flex justify-between font-bold text-gray-950 text-xs">
-                    <span>{activeReceiptPrint.planName}</span>
+                  <div className="flex justify-between">
+                    <span>Patient:</span>
+                    <strong className="font-bold">{patient.name}</strong>
                   </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Payment Channel:</span>
-                    <span className="uppercase">{activeReceiptPrint.paymentMethod}</span>
-                  </div>
-                  {activeReceiptPrint.notes && (
-                    <div className="flex justify-between text-gray-500 italic text-[10px]">
-                      <span>Note:</span>
-                      <span>{activeReceiptPrint.notes}</span>
+                  {patient.phone && (
+                    <div className="flex justify-between">
+                      <span>Phone:</span>
+                      <span>{formatPhone(patient.phone)}</span>
                     </div>
                   )}
-                </div>
-
-                {/* Financial Summary */}
-                <div className="space-y-1 pt-1 text-xs">
-                  <div className="flex justify-between font-black text-emerald-700 text-sm">
-                    <span>AMOUNT RECEIVED:</span>
-                    <span>{formatCurrency(activeReceiptPrint.amount)}</span>
+                  <div className="flex justify-between">
+                    <span>Payment:</span>
+                    <span className="uppercase font-bold">{activeReceiptPrint.paymentMethod}</span>
                   </div>
-                  <div className="flex justify-between text-gray-500 text-[11px]">
-                    <span>Remaining Balance:</span>
-                    <span className={activeReceiptPrint.balanceRemaining > 0 ? 'text-rose-600 font-bold' : 'text-emerald-600'}>
-                      {formatCurrency(activeReceiptPrint.balanceRemaining)}
+                  <div className="flex justify-between items-center">
+                    <span>Status:</span>
+                    <span className="font-bold uppercase text-[10px] px-1.5 py-0.5 border border-black rounded text-black bg-white">
+                      {activeReceiptPrint.balanceRemaining <= 0 ? 'PAID IN FULL' : 'PARTIAL PAYMENT'}
                     </span>
                   </div>
                 </div>
 
+                {/* Itemized Table */}
+                <div className="py-2 border-b border-dashed border-black">
+                  <div className="flex justify-between font-bold pb-1 text-[9px] border-b border-black uppercase tracking-wider">
+                    <span className="w-1/2">Item / Procedure</span>
+                    <span className="w-1/4 text-center">Qty x Rate</span>
+                    <span className="w-1/4 text-right">Total</span>
+                  </div>
+                  <div className="space-y-1.5 pt-1.5">
+                    <div>
+                      <p className="font-bold text-[10px] text-black leading-tight">
+                        {activeReceiptPrint.planName}
+                      </p>
+                      <div className="flex justify-between text-[9px] text-gray-800">
+                        <span>
+                          1 x {formatCurrency(activeReceiptPrint.amount)}
+                        </span>
+                        <span className="font-bold text-black">
+                          {formatCurrency(activeReceiptPrint.amount)}
+                        </span>
+                      </div>
+                      {activeReceiptPrint.notes && (
+                        <div className="text-[8px] text-gray-700 italic pt-0.5">
+                          {activeReceiptPrint.notes}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Totals Summary */}
+                <div className="py-2 border-b border-dashed border-black space-y-1 text-[10px]">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatCurrency(activeReceiptPrint.amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs sm:text-sm font-black pt-1.5 border-t border-black text-black">
+                    <span className="uppercase">NET TOTAL:</span>
+                    <span>{formatCurrency(activeReceiptPrint.amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-[9px] text-gray-700 pt-0.5">
+                    <span>Amount Tendered:</span>
+                    <span>{formatCurrency(activeReceiptPrint.amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-[9px] font-bold text-black">
+                    <span>{activeReceiptPrint.balanceRemaining <= 0 ? 'Change Returned:' : 'Remaining Balance:'}</span>
+                    <span>{formatCurrency(activeReceiptPrint.balanceRemaining)}</span>
+                  </div>
+                </div>
+
                 {/* Autogenerated QR Code for Online Verification */}
-                {qrCodeDataUrl && (
-                  <div className="text-center pt-2.5 pb-1 border-t border-dashed border-gray-200">
+                {receiptSettings.enableQrVerification && qrCodeDataUrl && (
+                  <div className="text-center pt-2.5 pb-1">
                     <div className="w-24 h-24 mx-auto bg-white p-1 border border-black rounded flex items-center justify-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -1420,46 +1517,24 @@ export function PatientProceduresManager({
                     <p className="text-[8px] text-gray-700 mt-0.5">
                       Official Clinic Digital Verification Record
                     </p>
-                    <p className="text-[8px] font-bold text-emerald-800 mt-0.5">
-                      brimishskincare.com
+                    <p className="text-[8px] font-bold text-black mt-0.5">
+                      brimishclinic.com
                     </p>
                   </div>
                 )}
 
-                {/* Footer */}
-                <div className="pt-2 border-t border-dashed border-gray-300 text-center text-[10px] text-gray-400 font-sans space-y-0.5">
-                  <p>Thank you for choosing Brimish Skin Care Clinic.</p>
-                  <p>Computer-generated verifiable receipt.</p>
+                {/* Receipt Footer */}
+                <div className="text-center pt-2 text-[9px] text-gray-800 space-y-0.5">
+                  <p className="font-bold text-black">
+                    {receiptSettings.receiptFooterMessage || 'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days of treatment.'}
+                  </p>
+                  <p className="text-[8px] text-gray-600">
+                    Follow-up consultations valid within 30 days
+                  </p>
+                  <p className="text-[8px] text-gray-500">
+                    Computer-generated official clinical slip
+                  </p>
                 </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-2 print:hidden">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const origin =
-                      typeof window !== 'undefined' && window.location.origin
-                        ? window.location.origin
-                        : 'https://brimishskincare.com';
-                    const verifyUrl = `${origin}/verify-invoice?num=${encodeURIComponent(activeReceiptPrint.receiptNumber)}`;
-                    const text = `*Assalam-o-Alaikum ${patient.name}*,\nHere is your official payment confirmation from *Brimish Skin Care & Laser Clinic*:\n\n• Receipt No: ${activeReceiptPrint.receiptNumber}\n• Procedure: ${activeReceiptPrint.planName}\n• Amount Paid: ${formatCurrency(activeReceiptPrint.amount)}\n• Remaining Balance: ${formatCurrency(activeReceiptPrint.balanceRemaining)}\n• Date: ${formatDateTime(activeReceiptPrint.paymentDate)}\n• Digital Verification: ${verifyUrl}\n\nThank you for choosing Brimish Skin Care!\nClinic: Sami Tower, Ring Road, Peshawar (0335-6400959)`;
-                    window.open(buildWhatsAppLink(patient.phone, text), '_blank');
-                  }}
-                  className="rounded-xl text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 h-9"
-                >
-                  <MessageCircle className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
-                  WhatsApp Receipt
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => printReceipt('printable-procedure-receipt', activeReceiptPrint.receiptNumber)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold h-9 px-4"
-                >
-                  <Printer className="h-3.5 w-3.5 mr-1.5" />
-                  Print Receipt / PDF
-                </Button>
               </div>
             </div>
           )}
