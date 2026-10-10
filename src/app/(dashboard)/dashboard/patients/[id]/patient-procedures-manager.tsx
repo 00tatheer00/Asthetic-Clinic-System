@@ -803,23 +803,55 @@ export function PatientProceduresManager({
 
                     {/* Linked Payments for this Procedure */}
                     {proc.payments && proc.payments.length > 0 && (
-                      <div className="pt-3 border-t border-gray-100">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-1.5">
-                          <CreditCard className="h-3.5 w-3.5 text-emerald-600" />
-                          Payment Transactions for this Plan ({proc.payments.length})
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-600 flex items-center gap-1.5">
+                            <CreditCard className="h-3.5 w-3.5 text-emerald-600" />
+                            Payment Transactions for this Plan ({proc.payments.length})
+                          </h4>
+                          <span className="text-xs text-gray-500 font-medium">
+                            Total Paid: <strong className="text-emerald-700 font-bold whitespace-nowrap">{formatCurrency(proc.paid_amount)}</strong>
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                           {proc.payments.map((pay) => (
-                            <div key={pay.id} className="p-3 rounded-xl border border-gray-200 bg-white shadow-2xs flex items-center justify-between">
-                              <div>
-                                <p className="text-xs font-mono font-bold text-gray-900">{pay.receipt_number}</p>
-                                <p className="text-[11px] text-gray-500 capitalize">{pay.payment_method} • {formatDate(pay.payment_date)}</p>
-                                {pay.notes && <p className="text-[10px] text-gray-400 mt-0.5 truncate">{pay.notes}</p>}
+                            <div
+                              key={pay.id}
+                              className="p-3.5 sm:p-4 rounded-2xl border border-gray-200/90 bg-white hover:border-emerald-300 hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0"
+                            >
+                              <div className="min-w-0 flex-1 space-y-1.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono font-bold text-xs text-gray-900 bg-gray-100 border border-gray-200/80 px-2 py-0.5 rounded-md">
+                                    {pay.receipt_number}
+                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] uppercase font-semibold text-emerald-800 bg-emerald-50/80 border-emerald-200 px-2 py-0.5"
+                                  >
+                                    {pay.payment_method}
+                                  </Badge>
+                                  <span className="text-[11px] text-gray-500 font-medium">
+                                    {formatDateTime(pay.payment_date)}
+                                  </span>
+                                </div>
+                                {pay.notes && (
+                                  <p className="text-xs text-gray-600 truncate max-w-full" title={pay.notes}>
+                                    {pay.notes}
+                                  </p>
+                                )}
                               </div>
-                              <div className="text-right">
-                                <p className="text-sm font-bold text-emerald-600 font-serif">{formatCurrency(pay.amount)}</p>
+
+                              <div className="shrink-0 flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 sm:border-l sm:border-gray-100 sm:pl-3">
+                                <div className="text-left sm:text-right">
+                                  <span className="text-[10px] text-gray-400 block uppercase font-semibold tracking-wider">
+                                    Received
+                                  </span>
+                                  <span className="text-sm sm:text-base font-bold text-emerald-600 font-serif whitespace-nowrap block">
+                                    {formatCurrency(pay.amount)}
+                                  </span>
+                                </div>
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => setActiveReceiptPrint({
                                     receiptNumber: pay.receipt_number,
@@ -831,9 +863,9 @@ export function PatientProceduresManager({
                                     balanceRemaining: proc.balance_amount,
                                     notes: pay.notes,
                                   })}
-                                  className="h-6 px-1.5 text-[10px] text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded"
+                                  className="h-8 px-3 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 rounded-xl font-medium shrink-0"
                                 >
-                                  <Printer className="h-3 w-3 mr-1" />
+                                  <Printer className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
                                   Slip
                                 </Button>
                               </div>
