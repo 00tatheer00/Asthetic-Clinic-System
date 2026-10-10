@@ -1752,57 +1752,80 @@ ALTER TABLE patient_procedures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE procedure_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE procedure_payments ENABLE ROW LEVEL SECURITY;
 
+-- Receipt sequences policy
+DROP POLICY IF EXISTS "Staff can manage payment receipt sequences" ON payment_receipt_sequences;
 CREATE POLICY "Staff can manage payment receipt sequences"
     ON payment_receipt_sequences FOR ALL
     TO authenticated
     USING (get_user_role() IS NOT NULL)
     WITH CHECK (get_user_role() IS NOT NULL);
 
+-- Patient Procedures Policies
+DROP POLICY IF EXISTS "Staff can view patient procedures" ON patient_procedures;
 CREATE POLICY "Staff can view patient procedures"
     ON patient_procedures FOR SELECT
     TO authenticated
     USING (get_user_role() IS NOT NULL AND deleted_at IS NULL);
 
+DROP POLICY IF EXISTS "Staff can create patient procedures" ON patient_procedures;
 CREATE POLICY "Staff can create patient procedures"
     ON patient_procedures FOR INSERT
     TO authenticated
     WITH CHECK (get_user_role() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Staff can update patient procedures" ON patient_procedures;
 CREATE POLICY "Staff can update patient procedures"
     ON patient_procedures FOR UPDATE
     TO authenticated
     USING (get_user_role() IS NOT NULL)
     WITH CHECK (get_user_role() IS NOT NULL);
 
+-- Procedure Sessions Policies
+DROP POLICY IF EXISTS "Staff can view procedure sessions" ON procedure_sessions;
 CREATE POLICY "Staff can view procedure sessions"
     ON procedure_sessions FOR SELECT
     TO authenticated
     USING (get_user_role() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Staff can create procedure sessions" ON procedure_sessions;
 CREATE POLICY "Staff can create procedure sessions"
     ON procedure_sessions FOR INSERT
     TO authenticated
     WITH CHECK (get_user_role() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Staff can update procedure sessions" ON procedure_sessions;
 CREATE POLICY "Staff can update procedure sessions"
     ON procedure_sessions FOR UPDATE
     TO authenticated
     USING (get_user_role() IS NOT NULL)
     WITH CHECK (get_user_role() IS NOT NULL);
 
+-- Procedure Payments Policies
+DROP POLICY IF EXISTS "Staff can view procedure payments" ON procedure_payments;
 CREATE POLICY "Staff can view procedure payments"
     ON procedure_payments FOR SELECT
     TO authenticated
     USING (get_user_role() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Staff can create procedure payments" ON procedure_payments;
 CREATE POLICY "Staff can create procedure payments"
     ON procedure_payments FOR INSERT
     TO authenticated
     WITH CHECK (get_user_role() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Staff can update procedure payments" ON procedure_payments;
 CREATE POLICY "Staff can update procedure payments"
     ON procedure_payments FOR UPDATE
     TO authenticated
     USING (get_user_role() IS NOT NULL)
     WITH CHECK (get_user_role() IS NOT NULL);
+
+-- 6. Grant Permissions & Reload Schema Cache
+GRANT ALL ON payment_receipt_sequences TO authenticated, service_role;
+GRANT ALL ON patient_procedures TO authenticated, service_role;
+GRANT ALL ON procedure_sessions TO authenticated, service_role;
+GRANT ALL ON procedure_payments TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION generate_procedure_receipt_number() TO authenticated, service_role;
+
+NOTIFY pgrst, 'reload schema';
 

@@ -85,6 +85,7 @@ Apply the SQL migration files located in `supabase/migrations/` to your Supabase
 4. `004_production_email_logs.sql`
 5. `005_performance_and_health_indexes.sql`
 6. `006_intelligence_and_followups.sql`
+7. `007_procedures_and_payments.sql`
 
 ### 5. Running Locally
 
