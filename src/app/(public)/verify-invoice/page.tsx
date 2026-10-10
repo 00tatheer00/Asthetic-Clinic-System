@@ -143,6 +143,110 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
     }
   }
 
+  // 5. Check procedure_payments (for official procedure receipts e.g. BSC-PAY-2026-XXXXX)
+  if (!invoice && (cleanNum || rawId)) {
+    let procPay: any = null;
+    const procSelect = `
+      id,
+      receipt_number,
+      amount,
+      payment_method,
+      payment_date,
+      created_at,
+      notes,
+      patients (
+        id,
+        name,
+        phone,
+        email,
+        address
+      ),
+      patient_procedures (
+        id,
+        plan_name,
+        total_sessions,
+        completed_sessions,
+        total_cost,
+        paid_amount,
+        balance_amount,
+        payment_status,
+        status
+      )
+    `;
+
+    if (rawId) {
+      const { data } = await supabase
+        .from('procedure_payments')
+        .select(procSelect)
+        .eq('id', rawId)
+        .maybeSingle();
+      procPay = data;
+    }
+
+    if (!procPay && cleanNum) {
+      const { data } = await supabase
+        .from('procedure_payments')
+        .select(procSelect)
+        .ilike('receipt_number', cleanNum)
+        .maybeSingle();
+      procPay = data;
+
+      if (!procPay) {
+        const { data: alt } = await supabase
+          .from('procedure_payments')
+          .select(procSelect)
+          .ilike('receipt_number', `%${cleanNum}%`)
+          .limit(1)
+          .maybeSingle();
+        procPay = alt;
+      }
+    }
+
+    if (procPay) {
+      const p = Array.isArray(procPay.patients) ? procPay.patients[0] : procPay.patients;
+      const pp = Array.isArray(procPay.patient_procedures)
+        ? procPay.patient_procedures[0]
+        : procPay.patient_procedures;
+      const planName = pp?.plan_name || 'Clinical Treatment Package';
+      const sessionCount = pp?.total_sessions ? ` (${pp.total_sessions} Sessions)` : '';
+      const balanceLeft = Number(pp?.balance_amount || 0);
+
+      invoice = {
+        id: procPay.id,
+        invoice_number: procPay.receipt_number,
+        customer_name: p?.name || 'Clinic Patient',
+        customer_phone: p?.phone || '',
+        customer_email: p?.email || '',
+        customer_address: p?.address || '',
+        subtotal: Number(procPay.amount),
+        discount_amount: 0,
+        tax_amount: 0,
+        tax_rate: 0,
+        tax_label: 'GST',
+        total: Number(procPay.amount),
+        payment_method: procPay.payment_method || 'cash',
+        payment_status: 'paid',
+        status: 'paid',
+        created_at: procPay.payment_date || procPay.created_at,
+        issued_at: procPay.payment_date || procPay.created_at,
+        paid_at: procPay.payment_date || procPay.created_at,
+        notes: procPay.notes || `Procedure Receipt for ${planName}. Remaining Balance: Rs. ${balanceLeft}`,
+        is_procedure_receipt: true,
+        invoice_line_items: [
+          {
+            id: procPay.id,
+            description: `${planName}${sessionCount} — Official Procedure Payment / Installment`,
+            quantity: 1,
+            unit_price: Number(procPay.amount),
+            discount_amount: 0,
+            line_total: Number(procPay.amount),
+            sort_order: 0,
+          },
+        ],
+      };
+    }
+  }
+
   // If invoice found but line items missing, try pulling from sale_items
   if (
     invoice &&

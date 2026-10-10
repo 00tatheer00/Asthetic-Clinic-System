@@ -134,8 +134,10 @@ export async function createPatientProcedure(formData: unknown) {
   }
 
   // If advance payment was made, log receipt
+  let receiptNumber: string | undefined = undefined;
   if (advancePayment > 0) {
     const receiptNum = await getNextReceiptNumber(supabase);
+    receiptNumber = receiptNum;
     const { error: payErr } = await supabase
       .from('procedure_payments')
       .insert({
@@ -166,7 +168,7 @@ export async function createPatientProcedure(formData: unknown) {
 
   revalidatePath(`/dashboard/patients/${data.patient_id}`);
   revalidatePath('/dashboard/patients');
-  return { success: true, procedureId: procedure.id };
+  return { success: true, procedureId: procedure.id, receiptNumber };
 }
 
 // ============================================================
@@ -239,8 +241,10 @@ export async function logProcedureSession(formData: unknown) {
   let newBalance = Number(procedure.balance_amount) || 0;
   let newPaymentStatus: ProcedurePaymentStatus = procedure.payment_status;
 
+  let receiptNumber: string | undefined = undefined;
   if (paymentAmount > 0) {
     const receiptNum = await getNextReceiptNumber(supabase);
+    receiptNumber = receiptNum;
     const { error: payErr } = await supabase
       .from('procedure_payments')
       .insert({
@@ -306,7 +310,7 @@ export async function logProcedureSession(formData: unknown) {
   });
 
   revalidatePath(`/dashboard/patients/${data.patient_id}`);
-  return { success: true, sessionId: session.id };
+  return { success: true, sessionId: session.id, receiptNumber };
 }
 
 // ============================================================
