@@ -9,6 +9,7 @@
 import { toast } from 'sonner';
 import { getReceiptSettings } from '@/lib/receipt-settings';
 import { printElementWithQz } from '@/lib/qz-tray';
+import { THERMAL_LOGO_DATA_URL } from '@/lib/thermal-logo';
 
 export interface PrintReceiptOptions {
   title?: string;
@@ -69,8 +70,43 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     return false;
   }
 
-  // Extract clean HTML content and swap golden logo for crisp thermal silhouette
-  const contentHtml = element.innerHTML.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png');
+  // Clone element to avoid modifying the on-screen POS preview
+  const clone = element.cloneNode(true) as HTMLElement;
+
+  // Sanitize borders: replace any dashed borders with solid borders
+  const allElements = clone.querySelectorAll<HTMLElement>('*');
+  allElements.forEach((el) => {
+    if (el.className && typeof el.className === 'string' && el.className.includes('border-dashed')) {
+      el.className = el.className.replace(/\bborder-dashed\b/g, 'border-solid');
+    }
+  });
+
+  // Process images: replace logo with inlined pure black/white thermal logo
+  const imgs = clone.querySelectorAll<HTMLImageElement>('img');
+  imgs.forEach((img) => {
+    const isLogo =
+      Boolean(
+        (img.src && img.src.toLowerCase().includes('logo')) ||
+        (img.alt && img.alt.toLowerCase().includes('logo')) ||
+        (img.className && img.className.includes('w-11'))
+      );
+
+    if (isLogo) {
+      img.src = THERMAL_LOGO_DATA_URL;
+      img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
+      img.removeAttribute('loading');
+      img.removeAttribute('decoding');
+      img.removeAttribute('style');
+      img.className = 'thermal-receipt-logo';
+      img.setAttribute(
+        'style',
+        'width: 30mm !important; max-width: 30mm !important; height: auto !important; max-height: 28mm !important; display: block !important; margin: 0 auto 4px auto !important; object-fit: contain !important;'
+      );
+    }
+  });
+
+  const contentHtml = clone.innerHTML;
 
   // Write standalone printable document — NO copiedStyles from main app (prevents flex centering and vertical gaps)
   iframeDoc.open();
@@ -240,27 +276,35 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       font-size: 8px !important;
     }
 
-    /* Clean Horizontal Dividers ONLY (No dashed side borders) */
-    .printable-receipt-wrapper .border-b {
+    /* Clean Solid Borders ONLY - No dashed lines */
+    .printable-receipt-wrapper,
+    .printable-receipt-wrapper * {
+      border-left: none !important;
+      border-right: none !important;
+    }
+    .printable-receipt-wrapper .border-b,
+    .printable-receipt-wrapper [class*="border-b"] {
       border-top: none !important;
       border-left: none !important;
       border-right: none !important;
       border-bottom: 1px solid #000000 !important;
+      border-style: solid !important;
       padding-bottom: 3px !important;
       margin-bottom: 3px !important;
     }
-    .printable-receipt-wrapper .border-t {
+    .printable-receipt-wrapper .border-t,
+    .printable-receipt-wrapper [class*="border-t"] {
       border-top: 1px solid #000000 !important;
       border-left: none !important;
       border-right: none !important;
       border-bottom: none !important;
+      border-style: solid !important;
       padding-top: 3px !important;
       margin-top: 3px !important;
     }
-    .printable-receipt-wrapper .border,
-    .printable-receipt-wrapper .border-dashed {
-      border-left: none !important;
-      border-right: none !important;
+    .printable-receipt-wrapper .border-dashed,
+    .printable-receipt-wrapper [class*="border-dashed"] {
+      border-style: solid !important;
     }
 
     /* Status badge (PAID IN FULL) */
@@ -288,10 +332,17 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     }
 
     /* Logo size */
+    .printable-receipt-wrapper .thermal-receipt-logo,
     .printable-receipt-wrapper .w-11,
-    .printable-receipt-wrapper img[src*="logo"] {
-      width: 38px !important;
-      height: 38px !important;
+    .printable-receipt-wrapper img[alt*="logo" i],
+    .printable-receipt-wrapper img[alt*="Logo" i],
+    .printable-receipt-wrapper img[src*="logo" i] {
+      width: 30mm !important;
+      max-width: 30mm !important;
+      height: auto !important;
+      max-height: 28mm !important;
+      display: block !important;
+      margin: 0 auto 4px auto !important;
       object-fit: contain !important;
       filter: none !important;
     }

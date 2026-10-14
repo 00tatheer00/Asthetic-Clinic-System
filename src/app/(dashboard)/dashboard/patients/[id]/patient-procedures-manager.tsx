@@ -1382,7 +1382,7 @@ export function PatientProceduresManager({
                 className="w-full max-w-[340px] bg-white border border-stone-200 print:border-0 shadow-sm p-4 font-mono text-[11px] text-black leading-tight space-y-0"
               >
                 {/* Clinic Header */}
-                <div className="text-center pb-2.5 border-b border-dashed border-black">
+                <div className="text-center pb-2.5 border-b border-black">
                   <div className="flex justify-center mb-1.5">
                     <Image
                       src="/images/logo.png"
@@ -1411,7 +1411,7 @@ export function PatientProceduresManager({
                 </div>
 
                 {/* Receipt Metadata */}
-                <div className="py-2 border-b border-dashed border-black text-[10px] space-y-0.5">
+                <div className="py-2 border-b border-black text-[10px] space-y-0.5">
                   <div className="flex justify-between">
                     <span>Receipt #:</span>
                     <strong className="font-bold">{activeReceiptPrint.receiptNumber}</strong>
@@ -1452,7 +1452,7 @@ export function PatientProceduresManager({
                 </div>
 
                 {/* Itemized Table */}
-                <div className="py-2 border-b border-dashed border-black">
+                <div className="py-2 border-b border-black">
                   <div className="flex justify-between font-bold pb-1 text-[9px] border-b border-black uppercase tracking-wider">
                     <span className="w-1/2">Item / Procedure</span>
                     <span className="w-1/4 text-center">Qty x Rate</span>
@@ -1481,7 +1481,7 @@ export function PatientProceduresManager({
                 </div>
 
                 {/* Totals Summary */}
-                <div className="py-2 border-b border-dashed border-black space-y-1 text-[10px]">
+                <div className="py-2 border-b border-black space-y-1 text-[10px]">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
                     <span>{formatCurrency(activeReceiptPrint.amount)}</span>

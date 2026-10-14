@@ -7,6 +7,7 @@
  */
 
 import type { QzTrayStatic } from 'qz-tray';
+import { THERMAL_LOGO_DATA_URL } from '@/lib/thermal-logo';
 
 let qzInstance: QzTrayStatic | null = null;
 
@@ -173,35 +174,6 @@ export async function isQzTrayAvailable(): Promise<boolean> {
 }
 
 
-let cachedThermalLogoBase64: string | null = null;
-
-/**
- * Fetches and caches the pure black/white thermal logo as a base64 Data URL.
- * Guarantees zero network latency or external URL fetch failures in QZ Tray's WebEngine.
- */
-async function getThermalLogoBase64(): Promise<string | null> {
-  if (cachedThermalLogoBase64) return cachedThermalLogoBase64;
-  if (typeof window === 'undefined') return null;
-
-  try {
-    const res = await fetch('/images/logo-thermal.png');
-    if (!res.ok) return null;
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        cachedThermalLogoBase64 = result;
-        resolve(result);
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(blob);
-    });
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Extracts element HTML, inlines thermal logo and QR codes as Data URLs,
  * and wraps in thermal-optimized 48mm CSS for the SPEED X BT-500M printer.
@@ -225,8 +197,15 @@ async function prepareThermalHtml(
   // 2. Clone element to avoid modifying the on-screen POS preview
   const clone = element.cloneNode(true) as HTMLElement;
 
+  // 2b. Sanitize borders: replace any dashed borders with solid borders
+  const allElements = clone.querySelectorAll<HTMLElement>('*');
+  allElements.forEach((el) => {
+    if (el.className && typeof el.className === 'string' && el.className.includes('border-dashed')) {
+      el.className = el.className.replace(/\bborder-dashed\b/g, 'border-solid');
+    }
+  });
+
   // 3. Process images: inline logo-thermal.png and preserve QR code base64
-  const thermalLogoDataUrl = await getThermalLogoBase64();
   const originalImgs = element.querySelectorAll<HTMLImageElement>('img');
   const cloneImgs = clone.querySelectorAll<HTMLImageElement>('img');
 
@@ -236,17 +215,36 @@ async function prepareThermalHtml(
     if (!target) continue;
 
     const isLogo =
-      target.src.includes('logo') ||
-      target.alt.toLowerCase().includes('logo') ||
-      (orig && orig.alt && orig.alt.toLowerCase().includes('logo'));
+      Boolean(
+        (target.src && target.src.toLowerCase().includes('logo')) ||
+        (target.alt && target.alt.toLowerCase().includes('logo')) ||
+        (target.className && target.className.includes('w-11')) ||
+        (orig && orig.src && orig.src.toLowerCase().includes('logo')) ||
+        (orig && orig.alt && orig.alt.toLowerCase().includes('logo')) ||
+        (orig && orig.className && orig.className.includes('w-11'))
+      );
 
-    if (isLogo && thermalLogoDataUrl) {
-      target.src = thermalLogoDataUrl;
+    if (isLogo) {
+      target.src = THERMAL_LOGO_DATA_URL;
+      target.removeAttribute('srcset');
+      target.removeAttribute('sizes');
+      target.removeAttribute('loading');
+      target.removeAttribute('decoding');
+      target.removeAttribute('style');
+      target.className = 'thermal-receipt-logo';
+      target.setAttribute(
+        'style',
+        'width: 30mm !important; max-width: 30mm !important; height: auto !important; max-height: 28mm !important; display: block !important; margin: 0 auto 4px auto !important; object-fit: contain !important;'
+      );
       continue;
     }
 
     // If already base64 (e.g. dynamic verification QR code), keep intact
-    if (target.src.startsWith('data:')) {
+    if (target.src && target.src.startsWith('data:')) {
+      target.removeAttribute('srcset');
+      target.removeAttribute('sizes');
+      target.removeAttribute('loading');
+      target.removeAttribute('decoding');
       continue;
     }
 
@@ -260,6 +258,8 @@ async function prepareThermalHtml(
         if (ctx) {
           ctx.drawImage(orig, 0, 0);
           target.src = canvas.toDataURL('image/png');
+          target.removeAttribute('srcset');
+          target.removeAttribute('sizes');
         }
       } else if (target.src.startsWith('/')) {
         target.src = `${window.location.origin}${target.src}`;
@@ -361,26 +361,31 @@ async function prepareThermalHtml(
     .thermal-receipt-container .tracking-tight { letter-spacing: -0.2px !important; }
     .thermal-receipt-container .tracking-wider { letter-spacing: 0.5px !important; }
 
-    /* Borders */
+    /* Clean Solid Borders ONLY - No dashed lines */
     .thermal-receipt-container,
     .thermal-receipt-container * {
       border-left: none !important;
       border-right: none !important;
     }
-    .thermal-receipt-container .border-b {
-      border-bottom: 1px dashed #000000 !important;
+    .thermal-receipt-container .border-b,
+    .thermal-receipt-container [class*="border-b"] {
+      border-bottom: 1px solid #000000 !important;
       border-top: none !important;
+      border-style: solid !important;
       padding-bottom: 3px !important;
       margin-bottom: 3px !important;
     }
-    .thermal-receipt-container .border-t {
+    .thermal-receipt-container .border-t,
+    .thermal-receipt-container [class*="border-t"] {
       border-top: 1px solid #000000 !important;
       border-bottom: none !important;
+      border-style: solid !important;
       padding-top: 3px !important;
       margin-top: 3px !important;
     }
-    .thermal-receipt-container .border-dashed {
-      border-style: dashed !important;
+    .thermal-receipt-container .border-dashed,
+    .thermal-receipt-container [class*="border-dashed"] {
+      border-style: solid !important;
     }
 
     /* Images */
@@ -393,10 +398,17 @@ async function prepareThermalHtml(
       -webkit-filter: none !important;
       image-rendering: pixelated !important;
     }
-    .thermal-receipt-container img[src*="logo"],
+    .thermal-receipt-container .thermal-receipt-logo,
+    .thermal-receipt-container img[alt*="logo" i],
+    .thermal-receipt-container img[alt*="Logo" i],
+    .thermal-receipt-container img[src*="logo" i],
     .thermal-receipt-container .w-11 {
-      width: 38px !important;
-      height: 38px !important;
+      width: 30mm !important;
+      max-width: 30mm !important;
+      height: auto !important;
+      max-height: 28mm !important;
+      display: block !important;
+      margin: 0 auto 4px auto !important;
       object-fit: contain !important;
     }
     .thermal-receipt-container img[src*="data:image"],
