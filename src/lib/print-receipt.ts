@@ -73,12 +73,20 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
   // Clone element to avoid modifying the on-screen POS preview
   const clone = element.cloneNode(true) as HTMLElement;
 
-  // Sanitize borders: replace any dashed borders with solid borders
+  // Strictly remove all borders from every element in the clone
   const allElements = clone.querySelectorAll<HTMLElement>('*');
   allElements.forEach((el) => {
-    if (el.className && typeof el.className === 'string' && el.className.includes('border-dashed')) {
-      el.className = el.className.replace(/\bborder-dashed\b/g, 'border-solid');
+    if (el.className && typeof el.className === 'string') {
+      el.className = el.className
+        .replace(/\bborder(-[a-z0-9]+)*\b/g, '')
+        .trim();
     }
+    el.removeAttribute('border');
+    el.style.border = 'none';
+    el.style.borderTop = 'none';
+    el.style.borderBottom = 'none';
+    el.style.borderLeft = 'none';
+    el.style.borderRight = 'none';
   });
 
   // Process images: replace logo with inlined pure black/white thermal logo
@@ -276,35 +284,23 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       font-size: 8px !important;
     }
 
-    /* Clean Solid Borders ONLY - No dashed lines */
+    /* Strictly NO BORDERS anywhere on the receipt */
     .printable-receipt-wrapper,
-    .printable-receipt-wrapper * {
-      border-left: none !important;
-      border-right: none !important;
-    }
-    .printable-receipt-wrapper .border-b,
-    .printable-receipt-wrapper [class*="border-b"] {
+    .printable-receipt-wrapper *,
+    .printable-receipt-wrapper div,
+    .printable-receipt-wrapper p,
+    .printable-receipt-wrapper span,
+    .printable-receipt-wrapper section,
+    .printable-receipt-wrapper img {
+      border: none !important;
       border-top: none !important;
-      border-left: none !important;
-      border-right: none !important;
-      border-bottom: 1px solid #000000 !important;
-      border-style: solid !important;
-      padding-bottom: 3px !important;
-      margin-bottom: 3px !important;
-    }
-    .printable-receipt-wrapper .border-t,
-    .printable-receipt-wrapper [class*="border-t"] {
-      border-top: 1px solid #000000 !important;
-      border-left: none !important;
-      border-right: none !important;
       border-bottom: none !important;
-      border-style: solid !important;
-      padding-top: 3px !important;
-      margin-top: 3px !important;
-    }
-    .printable-receipt-wrapper .border-dashed,
-    .printable-receipt-wrapper [class*="border-dashed"] {
-      border-style: solid !important;
+      border-left: none !important;
+      border-right: none !important;
+      border-style: none !important;
+      border-width: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     /* Status badge (PAID IN FULL) */
@@ -313,7 +309,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       border-radius: 2px !important;
       padding: 1px 4px !important;
       font-size: 8.5px !important;
-      border: 1px solid #000000 !important;
+      border: none !important;
       background: transparent !important;
       color: #000000 !important;
       display: inline-block !important;
@@ -367,8 +363,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       margin: 0 auto !important;
       padding: 1px !important;
       background: #ffffff !important;
-      border: 1px solid #000000 !important;
-      border-radius: 2px !important;
+      border: none !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;

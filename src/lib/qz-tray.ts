@@ -197,12 +197,20 @@ async function prepareThermalHtml(
   // 2. Clone element to avoid modifying the on-screen POS preview
   const clone = element.cloneNode(true) as HTMLElement;
 
-  // 2b. Sanitize borders: replace any dashed borders with solid borders
+  // 2b. Strictly remove all borders from every element in the clone
   const allElements = clone.querySelectorAll<HTMLElement>('*');
   allElements.forEach((el) => {
-    if (el.className && typeof el.className === 'string' && el.className.includes('border-dashed')) {
-      el.className = el.className.replace(/\bborder-dashed\b/g, 'border-solid');
+    if (el.className && typeof el.className === 'string') {
+      el.className = el.className
+        .replace(/\bborder(-[a-z0-9]+)*\b/g, '')
+        .trim();
     }
+    el.removeAttribute('border');
+    el.style.border = 'none';
+    el.style.borderTop = 'none';
+    el.style.borderBottom = 'none';
+    el.style.borderLeft = 'none';
+    el.style.borderRight = 'none';
   });
 
   // 3. Process images: inline logo-thermal.png and preserve QR code base64
@@ -313,7 +321,6 @@ async function prepareThermalHtml(
     }
     .thermal-receipt-container * {
       color: #000000 !important;
-      border-color: #000000 !important;
       text-shadow: none !important;
     }
 
@@ -361,31 +368,23 @@ async function prepareThermalHtml(
     .thermal-receipt-container .tracking-tight { letter-spacing: -0.2px !important; }
     .thermal-receipt-container .tracking-wider { letter-spacing: 0.5px !important; }
 
-    /* Clean Solid Borders ONLY - No dashed lines */
+    /* Strictly NO BORDERS anywhere on the receipt */
     .thermal-receipt-container,
-    .thermal-receipt-container * {
+    .thermal-receipt-container *,
+    .thermal-receipt-container div,
+    .thermal-receipt-container p,
+    .thermal-receipt-container span,
+    .thermal-receipt-container section,
+    .thermal-receipt-container img {
+      border: none !important;
+      border-top: none !important;
+      border-bottom: none !important;
       border-left: none !important;
       border-right: none !important;
-    }
-    .thermal-receipt-container .border-b,
-    .thermal-receipt-container [class*="border-b"] {
-      border-bottom: 1px solid #000000 !important;
-      border-top: none !important;
-      border-style: solid !important;
-      padding-bottom: 3px !important;
-      margin-bottom: 3px !important;
-    }
-    .thermal-receipt-container .border-t,
-    .thermal-receipt-container [class*="border-t"] {
-      border-top: 1px solid #000000 !important;
-      border-bottom: none !important;
-      border-style: solid !important;
-      padding-top: 3px !important;
-      margin-top: 3px !important;
-    }
-    .thermal-receipt-container .border-dashed,
-    .thermal-receipt-container [class*="border-dashed"] {
-      border-style: solid !important;
+      border-style: none !important;
+      border-width: 0 !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     /* Images */
@@ -428,7 +427,7 @@ async function prepareThermalHtml(
       background-color: transparent !important;
       background: transparent !important;
       color: #000000 !important;
-      border: 1px solid #000000 !important;
+      border: none !important;
     }
   </style>
 </head>
