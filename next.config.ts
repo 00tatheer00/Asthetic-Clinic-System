@@ -37,7 +37,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://res.cloudinary.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://vercel.live",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.resend.com https://vercel.live ws://localhost:* wss://localhost:* ws://127.0.0.1:* wss://127.0.0.1:* wss://localhost.qz.io:* https://localhost.qz.io:*",
       "frame-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",

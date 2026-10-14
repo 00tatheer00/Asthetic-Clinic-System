@@ -45,30 +45,53 @@ export async function connectQz(): Promise<QzTrayStatic> {
 
   const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
 
-  // Attempt configurations in order of highest probability:
-  // 1. localhost over secure (matches QZ Tray's CN=localhost certificate)
-  // 2. localhost.qz.io over secure
-  // 3. localhost over insecure (if mixed content is tolerated or on http)
-  const configs = [
-    { host: 'localhost', usingSecure: isHttps, retries: 0, delay: 0 },
-    { host: 'localhost.qz.io', usingSecure: isHttps, retries: 0, delay: 0 },
-    { host: 'localhost', usingSecure: false, retries: 0, delay: 0 },
-  ];
+  // 1. Primary: Use QZ Tray's built-in multi-host/multi-port auto-negotiator
+  // Scans localhost, localhost.qz.io, and 127.0.0.1 across ports 8182/8282/8382/8482 (or 8181 for HTTP)
+  try {
+    await qz.websocket.connect({
+      usingSecure: isHttps,
+      retries: 1,
+      delay: 0.5,
+      keepAlive: 60,
+    });
+    if (qz.websocket.isActive()) {
+      return qz;
+    }
+  } catch (err) {
+    console.warn('[QZ Tray] Primary auto-connect failed, trying specific hosts...', err);
+  }
+
+  // 2. Fallback attempts: test localhost.qz.io (valid SSL for HTTPS) and localhost
+  const fallbackHosts = isHttps
+    ? ['localhost.qz.io', 'localhost', '127.0.0.1']
+    : ['localhost', '127.0.0.1', 'localhost.qz.io'];
 
   let lastError: unknown = null;
-  for (const config of configs) {
+  for (const host of fallbackHosts) {
     try {
-      await qz.websocket.connect(config);
+      await qz.websocket.connect({
+        host,
+        usingSecure: isHttps,
+        retries: 0,
+        delay: 0,
+      });
       if (qz.websocket.isActive()) {
         return qz;
       }
     } catch (err) {
       lastError = err;
-      console.warn('[QZ Tray] Connection attempt failed with config:', config, err);
+      console.warn(`[QZ Tray] Connection to ${host} failed:`, err);
     }
   }
 
-  throw lastError instanceof Error ? lastError : new Error('Unable to connect to QZ Tray');
+  const errorDetail =
+    lastError instanceof Error
+      ? lastError.message
+      : 'Unable to connect to local QZ Tray WebSocket bridge.';
+
+  throw new Error(
+    `${errorDetail}. Please ensure QZ Tray is running on this PC. If running HTTPS, ensure Chrome allows Local Network Access or visit https://localhost.qz.io:8182 once to trust the certificate.`
+  );
 }
 
 /**
