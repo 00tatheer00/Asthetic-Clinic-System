@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useConsultationModal } from './online-consultation-modal';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export function ConsultationQuickBanner() {
   const { openConsultation } = useConsultationModal();
@@ -14,17 +15,36 @@ export function ConsultationQuickBanner() {
       <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        <div className="space-y-1.5 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-rose-200 text-[11px] font-semibold tracking-wider uppercase backdrop-blur-xs border border-white/10">
-            <Clock className="h-3 w-3 text-rose-300" />
-            <span>Fast 30-Second Booking</span>
+        <div className="flex items-start sm:items-center gap-4 max-w-xl">
+          {/* Doctor Avatar */}
+          <div className="relative shrink-0">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-lg shadow-black/40 relative bg-slate-900">
+              <Image
+                src="/images/dr-bilal.jpg"
+                alt="Dr. Bilal Khan"
+                fill
+                className="object-cover object-top"
+                sizes="80px"
+              />
+            </div>
+            <span
+              className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-[#2D1226] shadow-xs"
+              title="Available for Consultations"
+            />
           </div>
-          <h2 className="text-lg sm:text-xl font-bold font-serif text-white tracking-tight">
-            Need an Initial Clinical Consultation with Dr. Bilal?
-          </h2>
-          <p className="text-xs sm:text-sm text-rose-100/90 leading-relaxed font-sans">
-            Skip browsing treatment packages. Reserve a dedicated 1-on-1 skin evaluation with Dr. Bilal Ahmad via live video call or in-clinic.
-          </p>
+
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/10 text-rose-200 text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase backdrop-blur-xs border border-white/10">
+              <ShieldCheck className="h-3 w-3 text-amber-300" />
+              <span>Direct Physician Care</span>
+            </div>
+            <h2 className="text-base sm:text-xl font-bold font-serif text-white tracking-tight">
+              Need an Initial Clinical Consultation with Dr. Bilal?
+            </h2>
+            <p className="text-xs sm:text-sm text-rose-100/90 leading-relaxed font-sans">
+              Skip browsing treatment packages. Reserve a dedicated 1-on-1 skin evaluation with Dr. Bilal Khan via live video call or in-clinic.
+            </p>
+          </div>
         </div>
 
         {/* Action Buttons */}

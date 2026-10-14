@@ -1,5 +1,6 @@
+import Image from 'next/image';
 import { ContactForm } from './contact-form';
-import { MapPin, Phone, Mail, Clock, Car, ShieldCheck, MessageCircle, Navigation } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Car, ShieldCheck, MessageCircle, Navigation, Star } from 'lucide-react';
 import type { Metadata } from 'next';
 import { CLINIC_WHATSAPP_NUMBER } from '@/lib/utils/helpers';
 
@@ -65,6 +66,40 @@ export default function ContactPage() {
 
             {/* Contact Details & Parking */}
             <div className="lg:col-span-5 space-y-6">
+              {/* Doctor Reassurance Card */}
+              <div className="rounded-3xl border border-gray-200/80 bg-white p-5 sm:p-6 shadow-md flex items-center gap-4">
+                <div className="relative shrink-0">
+                  <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-md relative bg-slate-900">
+                    <Image
+                      src="/images/dr-bilal.jpg"
+                      alt="Dr. Bilal Khan"
+                      fill
+                      className="object-cover object-top"
+                      sizes="96px"
+                    />
+                  </div>
+                  <span
+                    className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white shadow-xs"
+                    title="Consultations Active"
+                  />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-semibold border border-amber-200">
+                    <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                    <span>Lead Aesthetic Physician</span>
+                  </div>
+                  <h3 className="font-serif font-bold text-gray-950 text-base sm:text-lg truncate">
+                    Dr. Bilal Khan
+                  </h3>
+                  <p className="text-xs text-rose-600 font-semibold">
+                    Dermatologist &amp; Cosmetologist
+                  </p>
+                  <p className="text-[11px] text-gray-500 line-clamp-2">
+                    Personally leading all consultations and procedures at Sami Tower, Ring Road, Peshawar.
+                  </p>
+                </div>
+              </div>
+
               <div className="rounded-3xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-md space-y-6">
                 <h3 className="text-lg font-bold font-serif text-gray-900 border-b border-gray-100 pb-3">
                   Clinic Information

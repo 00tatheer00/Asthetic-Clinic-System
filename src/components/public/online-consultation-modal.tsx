@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   X,
   User,
@@ -184,19 +185,38 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
               <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-rose-500/20 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 bg-pink-500/20 rounded-full blur-2xl pointer-events-none" />
 
-              <div className="pr-10 relative z-10 space-y-0.5">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-rose-200 text-[10px] font-semibold uppercase tracking-wider border border-white/10">
-                  <ShieldCheck className="h-3 w-3 text-rose-300" />
-                  <span>Brimish Skin Care Clinic</span>
+              <div className="pr-10 relative z-10 flex items-center gap-3.5">
+                {/* Doctor Avatar */}
+                <div className="relative shrink-0">
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-md relative bg-slate-900">
+                    <Image
+                      src="/images/dr-bilal.jpg"
+                      alt="Dr. Bilal Khan"
+                      fill
+                      className="object-cover object-top"
+                      sizes="56px"
+                    />
+                  </div>
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-[#2D1226]"
+                    title="Doctor Available"
+                  />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold tracking-tight font-serif text-white">
-                  Book Doctor Consultation
-                </h3>
-                <p className="text-xs text-rose-100/90 flex items-center gap-1.5 flex-wrap font-sans">
-                  <span className="font-semibold text-white">Dr. Bilal Ahmad</span>
-                  <span className="text-rose-300/60">•</span>
-                  <span>Specialist Aesthetic Dermatologist &amp; Laser Surgeon</span>
-                </p>
+
+                <div className="space-y-0.5">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-rose-200 text-[10px] font-semibold uppercase tracking-wider border border-white/10">
+                    <ShieldCheck className="h-3 w-3 text-amber-300" />
+                    <span>Brimish Skin Care Clinic</span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold tracking-tight font-serif text-white">
+                    Book Doctor Consultation
+                  </h3>
+                  <p className="text-xs text-rose-100/90 flex items-center gap-1.5 flex-wrap font-sans">
+                    <span className="font-semibold text-white">Dr. Bilal Khan</span>
+                    <span className="text-rose-300/60">•</span>
+                    <span>Dermatologist &amp; Cosmetologist</span>
+                  </p>
+                </div>
               </div>
 
               <button

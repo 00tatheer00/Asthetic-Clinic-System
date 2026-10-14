@@ -11,6 +11,7 @@ import {
   Stethoscope,
   Microscope,
   ShieldCheck,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HomeFaqSection, QuickBookBanner } from '@/components/public/home-interactive';
@@ -250,31 +251,65 @@ export default function HomePage() {
             
             {/* Doctor Portrait */}
             <div className="lg:col-span-5 relative">
-              <div className="relative mx-auto max-w-sm lg:max-w-none">
-                <div className="relative rounded-3xl overflow-hidden border border-gray-200 shadow-lg bg-white">
-                  <div className="relative h-[440px] w-full">
+              <div className="relative mx-auto max-w-md lg:max-w-none">
+                {/* Ambient Glow */}
+                <div className="absolute -inset-2 bg-gradient-to-tr from-amber-400/20 via-rose-500/15 to-amber-200/20 rounded-[32px] blur-md -z-10" />
+
+                <div className="relative rounded-3xl overflow-hidden border border-gray-200/80 shadow-2xl bg-white">
+                  {/* Doctor Image Container with optimal aspect ratio */}
+                  <div className="relative aspect-[4/5] sm:h-[520px] w-full bg-slate-100 overflow-hidden">
                     <Image
                       src="/images/dr-bilal.jpg"
-                      alt="Dr. Bilal Aesthetic Dermatologist at Brimish Skin Care Clinic Peshawar"
+                      alt="Dr. Bilal Khan - Dermatologist & Cosmetologist at Brimish Skin Care Clinic Peshawar"
                       fill
-                      className="object-cover object-top"
-                      sizes="(max-width: 768px) 100vw, 450px"
+                      priority
+                      className="object-cover object-top hover:scale-102 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, 480px"
                     />
-                  </div>
-                  <div className="p-5 bg-white border-t border-gray-100 space-y-2">
-                    <div className="flex items-center justify-between">
+
+                    {/* Floating Live Clinic Badge */}
+                    <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold shadow-lg">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Sami Tower, Ring Road, Peshawar</span>
+                    </div>
+
+                    {/* Motto Ribbon from Reception Wall */}
+                    <div className="absolute bottom-4 left-4 right-4 z-10 rounded-2xl bg-gradient-to-r from-black/90 via-black/80 to-black/90 backdrop-blur-md border border-white/15 p-3.5 text-white shadow-xl flex items-center justify-between gap-2">
                       <div>
-                        <div className="font-serif font-bold text-lg text-gray-900">Dr. Bilal Khan</div>
-                        <div className="text-xs text-rose-600 font-medium">Dermatologist & Cosmetologist</div>
+                        <div className="text-[10px] uppercase tracking-wider text-amber-300 font-bold font-sans">
+                          Brimish Skin Care
+                        </div>
+                        <div className="text-xs font-serif font-medium text-rose-100 italic">
+                          &ldquo;Healthy Skin • Confident You&rdquo;
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2.5 py-1 rounded-full">
-                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                      <div className="flex items-center gap-1 text-amber-300 text-xs font-bold bg-white/10 px-2.5 py-1 rounded-full border border-white/10 shrink-0">
+                        <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
                         <span>10+ Years</span>
                       </div>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      <span>Certified Dermatologist & Cosmetologist</span>
+                  </div>
+
+                  {/* Doctor Credentials Bar */}
+                  <div className="p-5 bg-white border-t border-gray-100 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-serif font-bold text-xl text-gray-950">Dr. Bilal Khan</h3>
+                        <p className="text-xs text-rose-600 font-semibold tracking-wide">
+                          Dermatologist &amp; Cosmetologist (MD Aesthetic Medicine)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-semibold border border-emerald-200">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                        <span>Certified Aesthetic Physician</span>
+                      </div>
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 text-purple-800 text-[11px] font-semibold border border-purple-200">
+                        <Award className="h-3.5 w-3.5 text-purple-600" />
+                        <span>15,000+ Clinical Treatments</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -284,25 +319,25 @@ export default function HomePage() {
             {/* Doctor Bio */}
             <div className="lg:col-span-7 space-y-5">
               <div className="inline-block px-3.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-semibold uppercase tracking-wider">
-                About Dr. Bilal
+                About Dr. Bilal Khan
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-serif font-bold text-gray-950 leading-tight">
-                Real Medical Care for Healthy, Clear Skin
+                Physician-Led Care for Healthy, Clear &amp; Radiant Skin
               </h2>
 
               <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-                Dr. Bilal started Brimish Skin Care Clinic in Peshawar to provide honest, safe, and effective skin treatments. We believe in clear advice, genuine care, and real results—without pushing unnecessary packages or fake promises.
+                Dr. Bilal founded Brimish Skin Care Clinic at Sami Tower, Ring Road, Peshawar to deliver authentic, medically-guided aesthetic solutions. Every patient receives a comprehensive skin diagnostic and custom treatment protocol designed specifically for Asian skin tones—with complete transparency and zero false whitening promises.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
                 {[
-                  'Certified skin & laser specialist',
-                  'Safe procedures for Pakistani skin types',
-                  'Strict hygiene and sterilized equipment',
-                  'Easy-to-follow home skincare guidance',
-                  'Separate, private rooms for female patients',
-                  'Complete consultation before any treatment',
+                  'Certified Aesthetic Dermatologist & Laser Surgeon',
+                  'Tailored treatments for Pakistani & Asian skin types',
+                  'Strict 4-step sterilization & clinical hygiene',
+                  'Doctor-prescribed home maintenance protocols',
+                  'Private, dedicated consultation suites for females',
+                  'Comprehensive pre-treatment skin evaluation',
                 ].map((point, idx) => (
                   <div key={idx} className="flex items-start gap-2.5">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -311,13 +346,22 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
+              <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
                 <Link href="/book" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto bg-gray-950 hover:bg-gray-800 text-white rounded-full px-7 py-3 text-sm font-semibold shadow-md cursor-pointer">
                     <Calendar className="mr-2 h-4 w-4" />
                     Book Consultation with Dr. Bilal
                   </Button>
                 </Link>
+                <a
+                  href="https://wa.me/923356400959"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md transition-all cursor-pointer"
+                >
+                  <MessageCircle className="h-4 w-4 fill-white text-white" />
+                  <span>WhatsApp 0335-6400959</span>
+                </a>
                 <Link href="/about" className="w-full sm:w-auto">
                   <Button variant="ghost" className="w-full sm:w-auto text-gray-700 hover:text-rose-600 text-sm font-semibold cursor-pointer">
                     Read Our Story →
