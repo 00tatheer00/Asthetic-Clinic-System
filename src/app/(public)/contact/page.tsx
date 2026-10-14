@@ -71,7 +71,7 @@ export default function ContactPage() {
                 <div className="relative shrink-0">
                   <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-md relative bg-slate-900">
                     <Image
-                      src="/images/dr-bilal.jpg"
+                      src="/drbilal-img.png"
                       alt="Dr. Bilal Khan"
                       fill
                       className="object-cover object-top"

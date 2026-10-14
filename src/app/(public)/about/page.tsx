@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     description:
       'Physician-led clinical excellence, sterile aesthetic treatments, and proven skincare solutions in Peshawar by Dr. Bilal Khan.',
     url: '/about',
-    images: ['/images/dr-bilal.jpg'],
+    images: ['/drbilal-img.png'],
   },
 };
 
@@ -75,7 +75,7 @@ export default function AboutPage() {
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200/80 bg-white">
                   <div className="relative aspect-[4/5] sm:h-[500px] w-full bg-slate-100 overflow-hidden">
                     <Image
-                      src="/images/dr-bilal.jpg"
+                      src="/drbilal-img.png"
                       alt="Dr. Bilal Khan - Dermatologist & Cosmetologist at Brimish Skin Care Clinic Peshawar"
                       fill
                       priority

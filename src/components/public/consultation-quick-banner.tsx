@@ -20,7 +20,7 @@ export function ConsultationQuickBanner() {
           <div className="relative shrink-0">
             <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-lg shadow-black/40 relative bg-slate-900">
               <Image
-                src="/images/dr-bilal.jpg"
+                src="/drbilal-img.png"
                 alt="Dr. Bilal Khan"
                 fill
                 className="object-cover object-top"

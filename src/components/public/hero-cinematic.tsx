@@ -97,10 +97,9 @@ export function HeroCinematic() {
 
       {/* 3. Hero Content Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex flex-col justify-between flex-1 py-4 sm:py-8 lg:py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full my-auto pt-2 sm:pt-4">
-          
+        <div className="w-full my-auto pt-4 sm:pt-6">
           {/* Hero Text & CTAs */}
-          <div className="lg:col-span-7 xl:col-span-8 space-y-2.5 sm:space-y-4 text-center sm:text-left">
+          <div className="max-w-3xl lg:max-w-4xl space-y-3 sm:space-y-4 text-center sm:text-left">
             {/* Clinic Badge */}
             <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 px-3 py-0.5 sm:px-3.5 sm:py-1 text-[10px] sm:text-xs font-medium text-rose-200 border border-white/15 max-w-[92%] sm:max-w-none mx-auto sm:mx-0">
               <span className="h-1.5 w-1.5 rounded-full bg-rose-400 shrink-0" />
@@ -128,11 +127,11 @@ export function HeroCinematic() {
             </p>
 
             {/* High-Impact Hero Action Buttons */}
-            <div className="pt-1.5 sm:pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
+            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center sm:justify-start gap-2.5 sm:gap-3.5 max-w-sm sm:max-w-none mx-auto sm:mx-0">
               {/* 1. Book Appointment */}
               <Link href="/book" prefetch={true} className="w-full sm:w-auto">
                 <Button
-                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-4 sm:px-7 h-9 sm:h-12 text-xs sm:text-sm font-semibold shadow-md shadow-rose-900/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
+                  className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-full px-5 sm:px-7 h-10 sm:h-12 text-xs sm:text-sm font-semibold shadow-lg shadow-rose-900/40 hover:shadow-rose-600/50 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
                 >
                   <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span>Book Appointment</span>
@@ -147,7 +146,7 @@ export function HeroCinematic() {
                   href="https://wa.me/923356400959"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-6 h-8.5 sm:h-12 rounded-full text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-6 h-9 sm:h-12 rounded-full text-xs sm:text-sm font-semibold text-white bg-[#25D366] hover:bg-[#20ba5a] shadow-md shadow-emerald-950/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
                   title="Chat with clinic on WhatsApp"
                 >
                   <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-white text-white" />
@@ -158,7 +157,7 @@ export function HeroCinematic() {
                 <Link href="/treatments" prefetch={true} className="w-full sm:w-auto">
                   <Button
                     variant="outline"
-                    className="w-full sm:w-auto rounded-full px-3 sm:px-6 h-8.5 sm:h-12 text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
+                    className="w-full sm:w-auto rounded-full px-3.5 sm:px-6 h-9 sm:h-12 text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/20 text-white border-white/25 backdrop-blur-sm hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
                   >
                     View Treatments
                   </Button>
@@ -166,57 +165,6 @@ export function HeroCinematic() {
               </div>
             </div>
           </div>
-
-          {/* Executive Doctor Spotlight Card (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 xl:col-span-4 justify-end">
-            <div className="relative group max-w-xs xl:max-w-sm w-full">
-              {/* Outer Luxury Ambient Glow */}
-              <div className="absolute -inset-1 bg-gradient-to-tr from-amber-400/40 via-rose-500/30 to-amber-200/40 rounded-3xl blur-md opacity-85 group-hover:opacity-100 transition duration-500 -z-10" />
-
-              <div className="rounded-3xl overflow-hidden bg-black/60 backdrop-blur-xl border border-white/20 shadow-2xl p-3 space-y-3">
-                <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-900">
-                  <Image
-                    src="/images/dr-bilal.jpg"
-                    alt="Dr. Bilal Khan - Dermatologist & Cosmetologist at Brimish Skin Care Clinic"
-                    fill
-                    priority
-                    sizes="(max-width: 1280px) 320px, 380px"
-                    className="object-cover object-top group-hover:scale-103 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-
-                  {/* Floating Doctor Details */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white space-y-0.5">
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/30 text-amber-300 text-[10px] font-semibold tracking-wider uppercase font-sans">
-                      <Star className="h-2.5 w-2.5 fill-amber-300 text-amber-300" />
-                      <span>Chief Physician</span>
-                    </div>
-                    <div className="text-base sm:text-lg font-serif font-bold text-white drop-shadow-sm">
-                      Dr. Bilal Khan
-                    </div>
-                    <p className="text-[11px] text-rose-200 font-medium tracking-wide">
-                      Dermatologist &amp; Cosmetologist
-                    </p>
-                    <p className="text-[10px] text-gray-300 italic pt-0.5">
-                      &ldquo;Healthy Skin • Confident You&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                <div className="px-1.5 pb-1 flex items-center justify-between text-xs text-rose-100/90 font-medium">
-                  <div className="flex items-center gap-1 text-emerald-400 text-[11px]">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Sami Tower, Ring Road</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-amber-300 font-bold text-[11px]">
-                    <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
-                    <span>10+ Yrs Exp</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* 4. Bottom Credibility Badges (Clean, Glassmorphic & Non-overlapping) */}

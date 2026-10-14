@@ -36,7 +36,7 @@ export function SeoStructuredData({
     image: [
       imageUrl,
       `${siteUrl}/images/hero-clinic.jpg`,
-      `${siteUrl}/images/dr-bilal.jpg`,
+      `${siteUrl}/drbilal-img.png`,
       `${siteUrl}/images/treatment-hydrafacial.jpg`,
     ],
     telephone: ['+923356400959', '+923356400959'],
@@ -105,7 +105,7 @@ export function SeoStructuredData({
         'Trichology',
       ],
       qualifications: 'MBBS, Certified Dermatologist & Cosmetologist, Aesthetic Medicine Specialist',
-      image: `${siteUrl}/images/dr-bilal.jpg`,
+      image: `${siteUrl}/drbilal-img.png`,
       knowsAbout: [
         'HydraFacial MD',
         'Laser Hair Removal',

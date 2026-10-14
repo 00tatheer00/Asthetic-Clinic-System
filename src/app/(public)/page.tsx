@@ -259,7 +259,7 @@ export default function HomePage() {
                   {/* Doctor Image Container with optimal aspect ratio */}
                   <div className="relative aspect-[4/5] sm:h-[520px] w-full bg-slate-100 overflow-hidden">
                     <Image
-                      src="/images/dr-bilal.jpg"
+                      src="/drbilal-img.png"
                       alt="Dr. Bilal Khan - Dermatologist & Cosmetologist at Brimish Skin Care Clinic Peshawar"
                       fill
                       priority

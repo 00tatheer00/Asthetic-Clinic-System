@@ -190,7 +190,7 @@ export function OnlineConsultationModalProvider({ children }: { children: React.
                 <div className="relative shrink-0">
                   <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-md relative bg-slate-900">
                     <Image
-                      src="/images/dr-bilal.jpg"
+                      src="/drbilal-img.png"
                       alt="Dr. Bilal Khan"
                       fill
                       className="object-cover object-top"
