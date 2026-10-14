@@ -471,20 +471,43 @@ export async function printReceipt(
       });
 
       if (qzResult.success) {
-        toast.success(`Printing directly to ${qzResult.printer || 'POS-58'}`, {
-          duration: 2500,
+        toast.success(`Printed directly to ${qzResult.printer || 'POS-58'}`, {
+          duration: 3000,
         });
         return true;
       }
 
-      // QZ Tray attempt failed (e.g., bridge offline), silently activate standard browser print
-      console.info('[printReceipt] QZ Tray unavailable, falling back to browser print:', qzResult.error);
+      // QZ Tray failed (e.g. printer offline or unreachable).
+      // DO NOT silently send another job or blindly trigger browser print!
+      console.warn('[printReceipt] QZ Tray printing failed:', qzResult.error);
+      const fallbackOpts = typeof options === 'string' ? { title: options, skipQz: true } : { ...options, skipQz: true };
+      toast.error(`Thermal printing error: ${qzResult.error || 'Check printer connection'}`, {
+        duration: 8000,
+        action: {
+          label: 'Print via Browser',
+          onClick: () => {
+            executeIframePrint(elementId, fallbackOpts);
+          },
+        },
+      });
+      return false;
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      console.info('[printReceipt] QZ Tray offline, opening browser print:', errMsg);
+      console.warn('[printReceipt] QZ Tray offline:', errMsg);
+      const fallbackOpts = typeof options === 'string' ? { title: options, skipQz: true } : { ...options, skipQz: true };
+      toast.error(`QZ Tray error: ${errMsg}`, {
+        duration: 8000,
+        action: {
+          label: 'Print via Browser',
+          onClick: () => {
+            executeIframePrint(elementId, fallbackOpts);
+          },
+        },
+      });
+      return false;
     }
   }
 
-  // Fallback: Use standard high-reliability isolated iframe printing
+  // Fallback / Default: If QZ Tray is disabled in settings or explicitly skipped
   return executeIframePrint(elementId, options);
 }

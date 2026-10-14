@@ -149,15 +149,61 @@ export async function isQzTrayAvailable(): Promise<boolean> {
   }
 }
 
+
+let cachedThermalLogoBase64: string | null = null;
+
 /**
- * Extracts element HTML, resolves relative image paths to base64 Data URLs or absolute URLs,
- * and wraps in thermal-optimized 48mm CSS for the SPEED X BT-500M printer.
+ * Fetches and caches the pure black/white thermal logo as a base64 Data URL.
+ * Guarantees zero network latency or external URL fetch failures in QZ Tray's WebEngine.
  */
-function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): string {
-  // Clone element to avoid touching the on-screen DOM
+async function getThermalLogoBase64(): Promise<string | null> {
+  if (cachedThermalLogoBase64) return cachedThermalLogoBase64;
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const res = await fetch('/images/logo-thermal.png');
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        cachedThermalLogoBase64 = result;
+        resolve(result);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extracts element HTML, inlines thermal logo and QR codes as Data URLs,
+ * and wraps in thermal-optimized 48mm CSS for the SPEED X BT-500M printer.
+ * Calculates exact physical receipt height to prevent continuous roll feeds.
+ */
+async function prepareThermalHtml(
+  element: HTMLElement,
+  title: string = 'Receipt',
+  printWidthMm: number = 48
+): Promise<{ html: string; heightMm: number }> {
+  // 1. Calculate physical height of the rendered receipt
+  const scrollHeight = element.scrollHeight;
+  const offsetHeight = element.offsetHeight;
+  const clientHeight = element.clientHeight;
+  const rect = element.getBoundingClientRect();
+  const measuredHeightPx = Math.max(scrollHeight, offsetHeight, clientHeight, Math.ceil(rect.height), 320);
+
+  // 1 CSS px (96 DPI) = 0.264583 mm. Add 8mm bottom tear-off space for the cutter
+  const heightMm = Math.max(65, Math.ceil((measuredHeightPx / 96) * 25.4) + 8);
+
+  // 2. Clone element to avoid modifying the on-screen POS preview
   const clone = element.cloneNode(true) as HTMLElement;
 
-  // Process images: ensure relative paths like /images/logo.png are inlined as base64 or absolute
+  // 3. Process images: inline logo-thermal.png and preserve QR code base64
+  const thermalLogoDataUrl = await getThermalLogoBase64();
   const originalImgs = element.querySelectorAll<HTMLImageElement>('img');
   const cloneImgs = clone.querySelectorAll<HTMLImageElement>('img');
 
@@ -166,11 +212,22 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     const target = cloneImgs[i];
     if (!target) continue;
 
-    // If already base64 (like the QR verification code), keep intact
+    const isLogo =
+      target.src.includes('logo') ||
+      target.alt.toLowerCase().includes('logo') ||
+      (orig && orig.alt && orig.alt.toLowerCase().includes('logo'));
+
+    if (isLogo && thermalLogoDataUrl) {
+      target.src = thermalLogoDataUrl;
+      continue;
+    }
+
+    // If already base64 (e.g. dynamic verification QR code), keep intact
     if (target.src.startsWith('data:')) {
       continue;
     }
 
+    // Canvas snapshot fallback for other images
     try {
       if (orig && orig.complete && orig.naturalWidth > 0) {
         const canvas = document.createElement('canvas');
@@ -191,9 +248,9 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     }
   }
 
-  const innerContent = clone.innerHTML.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png');
+  const innerContent = clone.innerHTML;
 
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -201,33 +258,31 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
   <title>${title}</title>
   <style>
     @page {
-      size: 48mm auto;
+      size: ${printWidthMm}mm ${heightMm}mm;
       margin: 0;
     }
-    * {
+    *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
-      color-adjust: exact !important;
       box-sizing: border-box !important;
+      margin: 0;
+      padding: 0;
     }
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      width: 48mm !important;
-      max-width: 48mm !important;
-      height: auto !important;
-      min-height: 0 !important;
-      display: block !important;
+      width: ${printWidthMm}mm !important;
+      max-width: ${printWidthMm}mm !important;
       background: #ffffff !important;
       color: #000000 !important;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
-      font-size: 9.5px !important;
+      font-family: 'Courier New', Consolas, 'Lucida Console', monospace !important;
+      font-size: 10px !important;
       line-height: 1.25 !important;
     }
     .thermal-receipt-container {
-      width: 48mm !important;
-      max-width: 48mm !important;
-      padding: 0 0.5mm 2mm 0.5mm !important;
+      width: ${printWidthMm}mm !important;
+      max-width: ${printWidthMm}mm !important;
+      padding: 0 1mm 2mm 1mm !important;
       margin: 0 auto !important;
       background: #ffffff !important;
       color: #000000 !important;
@@ -235,8 +290,11 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     }
     .thermal-receipt-container * {
       color: #000000 !important;
+      border-color: #000000 !important;
       text-shadow: none !important;
     }
+
+    /* Flex utilities */
     .thermal-receipt-container .flex { display: flex !important; }
     .thermal-receipt-container .justify-between { justify-content: space-between !important; }
     .thermal-receipt-container .justify-center { justify-content: center !important; }
@@ -252,53 +310,82 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
     .thermal-receipt-container .w-1\\/2 { width: 50% !important; }
     .thermal-receipt-container .w-1\\/4 { width: 25% !important; }
     .thermal-receipt-container .mx-auto { margin-left: auto !important; margin-right: auto !important; }
+
+    /* Spacing utilities */
+    .thermal-receipt-container .space-y-0\\.5 > * + * { margin-top: 2px !important; }
+    .thermal-receipt-container .space-y-1 > * + * { margin-top: 4px !important; }
+    .thermal-receipt-container .space-y-1\\.5 > * + * { margin-top: 6px !important; }
+    .thermal-receipt-container .space-y-2 > * + * { margin-top: 8px !important; }
+    .thermal-receipt-container .mb-1\\.5 { margin-bottom: 4px !important; }
+    .thermal-receipt-container .mt-0\\.5 { margin-top: 2px !important; }
+    .thermal-receipt-container .mt-1 { margin-top: 3px !important; }
+    .thermal-receipt-container .pt-0\\.5 { padding-top: 2px !important; }
+    .thermal-receipt-container .pt-1 { padding-top: 3px !important; }
+    .thermal-receipt-container .pt-1\\.5 { padding-top: 4px !important; }
+    .thermal-receipt-container .pt-2 { padding-top: 5px !important; }
+    .thermal-receipt-container .pt-2\\.5 { padding-top: 6px !important; }
+    .thermal-receipt-container .pb-1 { padding-bottom: 3px !important; }
+    .thermal-receipt-container .pb-2\\.5 { padding-bottom: 6px !important; }
+    .thermal-receipt-container .py-2 { padding-top: 4px !important; padding-bottom: 4px !important; }
+
+    /* Typography utilities */
+    .thermal-receipt-container .text-\\[8px\\] { font-size: 8px !important; }
+    .thermal-receipt-container .text-\\[9px\\] { font-size: 8.5px !important; }
+    .thermal-receipt-container .text-\\[10px\\] { font-size: 9.5px !important; }
+    .thermal-receipt-container .text-\\[11px\\] { font-size: 10px !important; }
+    .thermal-receipt-container .text-xs { font-size: 10px !important; }
+    .thermal-receipt-container .text-sm { font-size: 11px !important; }
+    .thermal-receipt-container .tracking-tight { letter-spacing: -0.2px !important; }
+    .thermal-receipt-container .tracking-wider { letter-spacing: 0.5px !important; }
+
+    /* Borders */
     .thermal-receipt-container,
     .thermal-receipt-container * {
       border-left: none !important;
       border-right: none !important;
     }
     .thermal-receipt-container .border-b {
-      border-bottom: 1px solid #000000 !important;
+      border-bottom: 1px dashed #000000 !important;
       border-top: none !important;
-      border-left: none !important;
-      border-right: none !important;
       padding-bottom: 3px !important;
       margin-bottom: 3px !important;
     }
     .thermal-receipt-container .border-t {
       border-top: 1px solid #000000 !important;
       border-bottom: none !important;
-      border-left: none !important;
-      border-right: none !important;
       padding-top: 3px !important;
       margin-top: 3px !important;
     }
-    .thermal-receipt-container .border,
     .thermal-receipt-container .border-dashed {
-      border-left: none !important;
-      border-right: none !important;
+      border-style: dashed !important;
     }
+
+    /* Images */
     .thermal-receipt-container img {
       max-width: 100% !important;
       height: auto !important;
       display: block !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      margin: 0 auto !important;
       filter: none !important;
       -webkit-filter: none !important;
       image-rendering: pixelated !important;
     }
-    .thermal-receipt-container img[src*="logo"] {
+    .thermal-receipt-container img[src*="logo"],
+    .thermal-receipt-container .w-11 {
       width: 38px !important;
       height: 38px !important;
       object-fit: contain !important;
     }
-    .thermal-receipt-container img[src*="data:image"] {
+    .thermal-receipt-container img[src*="data:image"],
+    .thermal-receipt-container .w-24 img {
       width: 72px !important;
       height: 72px !important;
       background: #ffffff !important;
+      margin: 0 auto !important;
+      display: block !important;
     }
-    /* Prevent solid dark rectangles on badges in print */
+
+    /* Badges */
     .thermal-receipt-container .bg-black,
     .thermal-receipt-container [class*="bg-black"],
     .thermal-receipt-container [class*="bg-stone-900"],
@@ -312,10 +399,12 @@ function prepareThermalHtml(element: HTMLElement, title: string = 'Receipt'): st
 </head>
 <body>
   <div class="thermal-receipt-container">
-    ${innerContent.replace(/\/images\/logo\.png/g, '/images/logo-thermal.png')}
+    ${innerContent}
   </div>
 </body>
 </html>`;
+
+  return { html, heightMm };
 }
 
 export interface PrintQzOptions {
@@ -326,6 +415,7 @@ export interface PrintQzOptions {
 
 /**
  * Prints an HTML element directly to the Windows thermal printer via QZ Tray.
+ * Calculates exact physical receipt height to avoid continuous blank paper roll feeds.
  * Returns { success: true, printer } on success, or { success: false, error } on failure.
  */
 export async function printElementWithQz(
@@ -341,26 +431,39 @@ export async function printElementWithQz(
     return { success: false, error: `Receipt element with ID "${elementId}" not found in DOM` };
   }
 
+  // Ensure receipt is not an empty container
+  const textContent = element.innerText || element.textContent || '';
+  if (textContent.trim().length < 10) {
+    return { success: false, error: 'Receipt content is empty' };
+  }
+
   try {
     const qz = await connectQz();
     const targetPrinter = options?.printerName || 'POS-58 11.3.0.0';
     const printer = await findPosPrinter(targetPrinter);
 
-    // 58mm paper: 48mm printable head width. 80mm paper: 72mm printable width.
+    // 58mm roll: 48mm printable head width. 80mm roll: 72mm printable width.
     const is58mm = options?.paperWidth !== '80mm';
     const printWidthMm = is58mm ? 48 : 72;
 
+    // Prepare HTML and calculate exact physical height
+    const { html: thermalHtml, heightMm } = await prepareThermalHtml(
+      element,
+      options?.title || 'Receipt',
+      printWidthMm
+    );
+
+    // Explicit dimensions (width & height) are REQUIRED for thermal continuous rolls
+    // to prevent infinite 0-height pagination loops that feed blank paper continuously.
     const config = qz.configs.create(printer, {
-      rasterize: true,         // Required for POS-58 Windows GDI spooler
-      size: { width: printWidthMm },
+      size: { width: printWidthMm, height: heightMm },
       units: 'mm',
       margins: 0,
-      scaleContent: true,
-      colorType: 'grayscale',
+      scaleContent: false, // 1:1 crisp rendering, do not scale!
+      colorType: 'color',  // Render full contrast in JavaFX WebKit
+      rasterize: false,    // Use native vector/GDI text rendering on Windows POS-58
       interpolation: 'nearest-neighbor',
     });
-
-    const thermalHtml = prepareThermalHtml(element, options?.title || 'Receipt');
 
     await qz.print(config, [
       {
@@ -368,6 +471,10 @@ export async function printElementWithQz(
         format: 'html',
         flavor: 'plain',
         data: thermalHtml,
+        options: {
+          pageWidth: printWidthMm,
+          pageHeight: heightMm,
+        },
       },
     ]);
 
