@@ -34,7 +34,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatTime } from '@/lib/utils/helpers';
 import { exportToCSV } from '@/lib/utils/csv-export';
 import { printReceipt } from '@/lib/print-receipt';
 import { toast } from 'sonner';
@@ -513,9 +513,8 @@ export function ReportsView({
         0
       );
 
-      const d = inv.created_at ? new Date(inv.created_at) : null;
-      const formattedDate = d
-        ? `${formatDate(inv.created_at)} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      const formattedDate = inv.created_at
+        ? `${formatDate(inv.created_at)} ${formatTime(inv.created_at)}`
         : '—';
 
       return [
@@ -569,8 +568,8 @@ export function ReportsView({
 
       return [
         a.id.slice(0, 8).toUpperCase(),
-        d ? formatDate(a.scheduled_at) : '—',
-        d ? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+        a.scheduled_at ? formatDate(a.scheduled_at) : '—',
+        a.scheduled_at ? formatTime(a.scheduled_at) : '—',
         patientName,
         phone,
         email,
@@ -701,9 +700,8 @@ export function ReportsView({
         (sum, it) => sum + (Number(it.quantity) || 1),
         0
       );
-      const d = o.created_at ? new Date(o.created_at) : null;
-      const formattedDate = d
-        ? `${formatDate(o.created_at)} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      const formattedDate = o.created_at
+        ? `${formatDate(o.created_at)} ${formatTime(o.created_at)}`
         : '—';
 
       return [

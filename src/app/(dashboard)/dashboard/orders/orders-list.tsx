@@ -49,7 +49,7 @@ import {
   Printer,
   MessageCircle,
 } from 'lucide-react';
-import { formatCurrency, formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatTime, formatPhone } from '@/lib/utils/helpers';
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -1031,16 +1031,11 @@ export function OrdersList({
                     </div>
                     <div className="flex justify-between">
                       <span>Date:</span>
-                      <span>{new Date(slipOrder.created_at).toLocaleDateString('en-GB')}</span>
+                      <span>{formatDate(slipOrder.created_at)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Time:</span>
-                      <span>
-                        {new Date(slipOrder.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
+                      <span>{formatTime(slipOrder.created_at)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Customer:</span>

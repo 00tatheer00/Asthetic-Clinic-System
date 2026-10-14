@@ -47,6 +47,7 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatTime,
   formatPhone,
   calculateLineTotal,
   calculateDiscount,
@@ -1497,12 +1498,7 @@ export function POSTerminal({
                     </div>
                     <div className="flex justify-between">
                       <span>Time:</span>
-                      <span>
-                        {new Date(lastSaleInfo.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
+                      <span>{formatTime(lastSaleInfo.createdAt)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Patient:</span>

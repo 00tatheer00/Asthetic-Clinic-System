@@ -19,7 +19,7 @@ import {
   ExternalLink,
   Printer,
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, formatPhone } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatTime, formatPhone } from '@/lib/utils/helpers';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -440,7 +440,7 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
                     </div>
                     <div className="flex justify-between sm:justify-start gap-4">
                       <span className="text-gray-500">Time:</span>
-                      <strong className="text-gray-900">{formatDateTime(invoice.issued_at || invoice.created_at).split(', ')[1] || 'Standard Time'}</strong>
+                      <strong className="text-gray-900">{formatTime(invoice.issued_at || invoice.created_at)}</strong>
                     </div>
                     <div className="flex justify-between sm:justify-start gap-4 items-center">
                       <span className="text-gray-500">Payment Status:</span>

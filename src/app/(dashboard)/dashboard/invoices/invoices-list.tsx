@@ -45,7 +45,7 @@ import {
   ExternalLink,
   MessageCircle,
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { useReceiptSettings } from '@/lib/receipt-settings';
 import { printReceipt } from '@/lib/print-receipt';
 import { toast } from 'sonner';
@@ -605,7 +605,7 @@ export function InvoicesList({
                     </div>
                     <div className="flex justify-between">
                       <span>Time:</span>
-                      <span>{formatDateTime(selectedInvoice.issued_at || selectedInvoice.created_at).split(', ')[1] || 'Real-time'}</span>
+                      <span>{formatTime(selectedInvoice.issued_at || selectedInvoice.created_at)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Patient:</span>

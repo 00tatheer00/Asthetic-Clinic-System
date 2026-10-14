@@ -30,7 +30,7 @@ import {
   Trash2, FileText, Layers, Loader2, ArrowRight, Stethoscope, RefreshCw,
   TrendingUp, Check, X,
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { printReceipt } from '@/lib/print-receipt';
@@ -1422,12 +1422,7 @@ export function PatientProceduresManager({
                   </div>
                   <div className="flex justify-between">
                     <span>Time:</span>
-                    <span>
-                      {new Date(activeReceiptPrint.paymentDate).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                    <span>{formatTime(activeReceiptPrint.paymentDate)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Patient:</span>
