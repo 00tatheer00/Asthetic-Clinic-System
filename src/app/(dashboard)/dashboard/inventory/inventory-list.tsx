@@ -135,8 +135,8 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
     is_published: true,
     is_active: true,
     is_taxable: true,
-    tax_rate: '18',
-    tax_type: 'percentage' as 'percentage' | 'flat',
+    tax_rate: '0',
+    tax_type: 'flat' as 'percentage' | 'flat',
     tax_inclusive: true,
     flat_tax_amount: '0',
   });
@@ -220,8 +220,8 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
       is_published: product.is_published ?? true,
       is_active: product.is_active ?? true,
       is_taxable: product.is_taxable ?? false,
-      tax_rate: String(product.tax_rate ?? 18),
-      tax_type: (product.tax_type as 'percentage' | 'flat') || 'percentage',
+      tax_rate: String(product.tax_rate ?? 0),
+      tax_type: (product.tax_type as 'percentage' | 'flat') || (product.flat_tax_amount && Number(product.flat_tax_amount) > 0 ? 'flat' : 'flat'),
       tax_inclusive: product.tax_inclusive !== false,
       flat_tax_amount: String(product.flat_tax_amount ?? 0),
     });
@@ -249,8 +249,8 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
       is_published: true,
       is_active: true,
       is_taxable: true,
-      tax_rate: '18',
-      tax_type: 'percentage',
+      tax_rate: '0',
+      tax_type: 'flat',
       tax_inclusive: true,
       flat_tax_amount: '0',
     });
@@ -533,7 +533,9 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                           </span>
                           {product.is_taxable ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5 mt-0.5 w-fit">
-                              GST {product.tax_rate}% {product.tax_inclusive !== false ? '(Incl)' : '(Excl)'}
+                              {Number(product.flat_tax_amount || 0) > 0 || product.tax_type === 'flat'
+                                ? `GST Rs. ${Number(product.flat_tax_amount || 0).toLocaleString()} (${product.tax_inclusive !== false ? 'Flat Incl' : 'Flat Excl'})`
+                                : `GST ${product.tax_rate}% (${product.tax_inclusive !== false ? 'Incl' : 'Excl'})`}
                             </span>
                           ) : (
                             <span className="text-[10px] text-gray-400 mt-0.5">
@@ -867,7 +869,7 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                 />
               </div>
 
-              {/* GST & Fiscal Tax Settings for Doctor & POS (Option 2 Flat Price with Included GST) */}
+              {/* GST & Fiscal Tax Settings for Doctor & POS (Doctor Flat Price Mode) */}
               <div className="sm:col-span-2 p-3.5 rounded-xl border border-rose-200/90 bg-gradient-to-br from-rose-50/50 via-white to-pink-50/30 dark:from-rose-950/20 dark:via-background dark:to-pink-950/10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -876,21 +878,50 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                     </div>
                     <div>
                       <Label className="text-xs font-bold text-gray-900 dark:text-gray-100 cursor-pointer">
-                        GST / Sales Tax (Auto POS Integration)
+                        GST / Tax Advance Setting (Flat Price Mode)
                       </Label>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                        Set advance GST for this product. POS will automatically deduce & record GST on bills.
+                        Doctor can enter flat GST in Rupees directly (e.g. Rs. 150). POS will automatically deduce & record it.
                       </p>
                     </div>
                   </div>
                   <Switch
                     checked={editForm.is_taxable}
-                    onCheckedChange={(checked) => setEditForm({ ...editForm, is_taxable: checked })}
+                    onCheckedChange={(checked: boolean) => setEditForm({ ...editForm, is_taxable: checked })}
                   />
                 </div>
 
                 {editForm.is_taxable && (
                   <div className="pt-2.5 border-t border-rose-100 dark:border-rose-900/40 space-y-3">
+                    {/* Mode Toggle: Flat Price (Doctor Preferred) vs % Percentage */}
+                    <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800/80 p-1 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, tax_type: 'flat' })}
+                        className={cn(
+                          'flex-1 py-1 px-2.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5',
+                          editForm.tax_type === 'flat'
+                            ? 'bg-rose-600 text-white shadow-xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                        )}
+                      >
+                        <CheckCircle2 className={cn('h-3.5 w-3.5', editForm.tax_type === 'flat' ? 'opacity-100' : 'opacity-0')} />
+                        <span>Flat GST Price (PKR Rupees) — Doctor Default</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, tax_type: 'percentage' })}
+                        className={cn(
+                          'py-1 px-3 rounded-md text-xs font-medium transition-all cursor-pointer',
+                          editForm.tax_type === 'percentage'
+                            ? 'bg-rose-600 text-white shadow-xs font-bold'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900'
+                        )}
+                      >
+                        % Percentage Rate
+                      </button>
+                    </div>
+
                     {/* Tax Pricing Mode: Inclusive (Option 2 Default) vs Exclusive */}
                     <div className="grid grid-cols-2 gap-2">
                       <button
@@ -904,11 +935,11 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Tax Inclusive (Flat Price)</span>
+                          <span className="text-xs font-bold">Tax Inclusive (Selling Price Includes GST)</span>
                           {editForm.tax_inclusive && <CheckCircle2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />}
                         </div>
                         <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
-                          Selling price already includes GST (Doctor Option 2)
+                          Customer pays flat retail price. POS automatically records the GST portion (Doctor Option 2).
                         </p>
                       </button>
 
@@ -923,72 +954,125 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Tax Exclusive (+ GST)</span>
+                          <span className="text-xs font-bold">Tax Exclusive (+ GST Extra)</span>
                           {!editForm.tax_inclusive && <CheckCircle2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />}
                         </div>
                         <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
-                          GST is added on top of selling price at POS
+                          GST is added on top of the retail price at POS checkout.
                         </p>
                       </button>
                     </div>
 
-                    {/* Tax Rate & Calculation Mode */}
+                    {/* Tax Amount / Rate Input & Calculation */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                          GST Rate (%)
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="any"
-                            value={editForm.tax_rate}
-                            onChange={(e) => setEditForm({ ...editForm, tax_rate: e.target.value })}
-                            placeholder="18"
-                            className="h-9 text-xs font-bold pr-7"
-                          />
-                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
-                            %
-                          </span>
+                      {editForm.tax_type === 'flat' ? (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center justify-between">
+                            <span>Flat GST Amount (PKR) *</span>
+                            <span className="text-[10px] text-rose-600 font-semibold">Fixed Rupees</span>
+                          </Label>
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">
+                              Rs.
+                            </span>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="any"
+                              value={editForm.flat_tax_amount}
+                              onChange={(e) => setEditForm({ ...editForm, flat_tax_amount: e.target.value })}
+                              placeholder="150"
+                              className="h-9 text-xs font-bold pl-9 pr-3 text-slate-900 bg-white dark:bg-card"
+                            />
+                          </div>
+                          {/* Quick Rupee Presets for Doctor */}
+                          <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                            {['50', '100', '150', '200', '250', '300', '500'].map((preset) => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setEditForm({ ...editForm, flat_tax_amount: preset })}
+                                className={cn(
+                                  'px-2 py-0.5 text-[10px] rounded font-bold transition-colors cursor-pointer',
+                                  editForm.flat_tax_amount === preset
+                                    ? 'bg-rose-600 text-white'
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300'
+                                )}
+                              >
+                                Rs. {preset}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        {/* Quick Presets */}
-                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                          {['0', '5', '16', '17', '18'].map((preset) => (
-                            <button
-                              key={preset}
-                              type="button"
-                              onClick={() => setEditForm({ ...editForm, tax_rate: preset })}
-                              className={cn(
-                                'px-2 py-0.5 text-[10px] rounded font-medium transition-colors cursor-pointer',
-                                editForm.tax_rate === preset
-                                  ? 'bg-rose-600 text-white font-bold'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
-                              )}
-                            >
-                              {preset}%
-                            </button>
-                          ))}
+                      ) : (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                            GST Percentage Rate (%)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="any"
+                              value={editForm.tax_rate}
+                              onChange={(e) => setEditForm({ ...editForm, tax_rate: e.target.value })}
+                              placeholder="18"
+                              className="h-9 text-xs font-bold pr-7"
+                            />
+                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                              %
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                            {['0', '5', '16', '17', '18'].map((preset) => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setEditForm({ ...editForm, tax_rate: preset })}
+                                className={cn(
+                                  'px-2 py-0.5 text-[10px] rounded font-medium transition-colors cursor-pointer',
+                                  editForm.tax_rate === preset
+                                    ? 'bg-rose-600 text-white font-bold'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                                )}
+                              >
+                                {preset}%
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Live Calculation Preview Card for Doctor */}
                       {(() => {
                         const price = parseFloat(editForm.sale_price) || 0;
+                        const isFlat = editForm.tax_type === 'flat';
+                        const flatAmount = parseFloat(editForm.flat_tax_amount) || 0;
                         const rate = parseFloat(editForm.tax_rate) || 0;
                         let netPrice = price;
                         let gstAmount = 0;
                         let finalCustomerPrice = price;
 
-                        if (price > 0 && rate > 0) {
-                          if (editForm.tax_inclusive) {
-                            netPrice = price / (1 + rate / 100);
-                            gstAmount = price - netPrice;
-                            finalCustomerPrice = price;
-                          } else {
-                            gstAmount = price * (rate / 100);
-                            finalCustomerPrice = price + gstAmount;
+                        if (price > 0) {
+                          if (isFlat) {
+                            gstAmount = flatAmount;
+                            if (editForm.tax_inclusive) {
+                              netPrice = Math.max(0, price - flatAmount);
+                              finalCustomerPrice = price;
+                            } else {
+                              netPrice = price;
+                              finalCustomerPrice = price + flatAmount;
+                            }
+                          } else if (rate > 0) {
+                            if (editForm.tax_inclusive) {
+                              netPrice = price / (1 + rate / 100);
+                              gstAmount = price - netPrice;
+                              finalCustomerPrice = price;
+                            } else {
+                              gstAmount = price * (rate / 100);
+                              finalCustomerPrice = price + gstAmount;
+                            }
                           }
                         }
 
@@ -999,11 +1083,11 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                             </span>
                             <div className="space-y-1 my-1">
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-500">Base Price (excl. GST):</span>
+                                <span className="text-gray-500">Base Product Price:</span>
                                 <span className="font-semibold">{formatCurrency(netPrice)}</span>
                               </div>
-                              <div className="flex justify-between text-xs text-rose-600 dark:text-rose-400 font-medium">
-                                <span>GST ({rate}%):</span>
+                              <div className="flex justify-between text-xs text-rose-600 dark:text-rose-400 font-bold">
+                                <span>{isFlat ? `Flat GST (Rupees):` : `GST (${rate}%):`}</span>
                                 <span>+{formatCurrency(gstAmount)}</span>
                               </div>
                               <div className="flex justify-between text-xs font-bold pt-1 border-t border-gray-200 dark:border-gray-700">
@@ -1011,10 +1095,10 @@ export function InventoryList({ products, categories = [], isAdmin }: InventoryL
                                 <span className="text-emerald-600 font-extrabold">{formatCurrency(finalCustomerPrice)}</span>
                               </div>
                             </div>
-                            <span className="text-[9.5px] text-gray-400">
+                            <span className="text-[9.5px] text-gray-500 leading-tight">
                               {editForm.tax_inclusive
-                                ? '✓ Customer pays flat price. GST registered automatically in POS.'
-                                : '⚡ GST will be added on top in POS cart.'}
+                                ? `✓ Doctor Option 2: Customer pays Rs. ${price.toLocaleString()}. POS automatically registers Rs. ${gstAmount.toLocaleString()} flat GST.`
+                                : `⚡ GST Rs. ${gstAmount.toLocaleString()} will be added on top in POS cart.`}
                             </span>
                           </div>
                         );

@@ -201,7 +201,7 @@ export const productSchema = z.object({
   sort_order: z.number().int().default(0),
   is_taxable: z.boolean().default(false),
   tax_rate: z.number().min(0).max(100).default(0),
-  tax_type: z.enum(['percentage', 'flat']).default('percentage'),
+  tax_type: z.enum(['percentage', 'flat']).default('flat'),
   tax_inclusive: z.boolean().default(true),
   flat_tax_amount: monetarySchema.default(0),
 });
@@ -242,7 +242,7 @@ const saleItemSchema = z.object({
   discount_value: z.number().nonnegative().default(0),
   is_taxable: z.boolean().optional().default(false),
   tax_rate: z.number().min(0).max(100).optional().default(0),
-  tax_type: z.enum(['percentage', 'flat']).optional().default('percentage'),
+  tax_type: z.enum(['percentage', 'flat']).optional().default('flat'),
   tax_inclusive: z.boolean().optional().default(true),
   flat_tax_amount: monetarySchema.optional().default(0),
   tax_amount: monetarySchema.optional().default(0),

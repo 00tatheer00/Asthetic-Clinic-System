@@ -117,7 +117,10 @@ export async function createSale(formData: unknown) {
       );
 
       if (isTaxable) {
-        if (taxType === 'percentage' && taxRate > 0) {
+        if ((taxType === 'flat' || flatTax > 0) && flatTax > 0) {
+          const flatTotal = flatTax * item.quantity;
+          itemTaxAmount = taxInclusive ? Math.min(computedLineTotal, flatTotal) : flatTotal;
+        } else if (taxType === 'percentage' && taxRate > 0) {
           if (taxInclusive) {
             // Option 2 (Tax Inclusive): Flat price includes GST
             // net = lineTotal / (1 + (taxRate / 100))
@@ -127,9 +130,6 @@ export async function createSale(formData: unknown) {
             // Tax Exclusive: GST added on top
             itemTaxAmount = Math.round((computedLineTotal * (taxRate / 100)) * 100) / 100;
           }
-        } else if (taxType === 'flat' && flatTax > 0) {
-          const flatTotal = flatTax * item.quantity;
-          itemTaxAmount = taxInclusive ? Math.min(computedLineTotal, flatTotal) : flatTotal;
         }
       }
     }

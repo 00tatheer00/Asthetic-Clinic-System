@@ -180,8 +180,8 @@ export function POSTerminal({
     purchase_price: '',
     stock_quantity: '20',
     is_taxable: true,
-    tax_rate: '18',
-    tax_type: 'percentage' as 'percentage' | 'flat',
+    tax_rate: '0',
+    tax_type: 'flat' as 'percentage' | 'flat',
     tax_inclusive: true,
     flat_tax_amount: '0',
   });
@@ -250,6 +250,7 @@ export function POSTerminal({
     discount: number;
     tax: number;
     taxRate: number;
+    taxInclusive?: boolean;
     customerName: string;
     customerPhone?: string | null;
     paymentMethod: string;
@@ -336,7 +337,7 @@ export function POSTerminal({
           max_stock: available > 0 ? available : 999,
           is_taxable: Boolean(product.is_taxable),
           tax_rate: Number(product.tax_rate || 0),
-          tax_type: product.tax_type || 'percentage',
+          tax_type: product.tax_type || (product.flat_tax_amount && Number(product.flat_tax_amount) > 0 ? 'flat' : 'flat'),
           tax_inclusive: product.tax_inclusive !== false,
           flat_tax_amount: Number(product.flat_tax_amount || 0),
         },
@@ -390,12 +391,15 @@ export function POSTerminal({
     let itemTax = 0;
     const isTaxable = Boolean(item.is_taxable);
     const taxRate = Number(item.tax_rate || 0);
-    const taxType = item.tax_type || 'percentage';
+    const taxType = item.tax_type || (item.flat_tax_amount && Number(item.flat_tax_amount) > 0 ? 'flat' : 'flat');
     const taxInclusive = item.tax_inclusive !== false; // Option 2 default (true)
     const flatTax = Number(item.flat_tax_amount || 0);
 
     if (isTaxable) {
-      if (taxType === 'percentage' && taxRate > 0) {
+      if ((taxType === 'flat' || flatTax > 0) && flatTax > 0) {
+        const flatTotal = flatTax * item.quantity;
+        itemTax = taxInclusive ? Math.min(lineTotal, flatTotal) : flatTotal;
+      } else if (taxType === 'percentage' && taxRate > 0) {
         if (taxInclusive) {
           // Option 2 (Tax Inclusive): Flat price includes GST
           const net = lineTotal / (1 + taxRate / 100);
@@ -403,9 +407,6 @@ export function POSTerminal({
         } else {
           itemTax = lineTotal * (taxRate / 100);
         }
-      } else if (taxType === 'flat' && flatTax > 0) {
-        const flatTotal = flatTax * item.quantity;
-        itemTax = taxInclusive ? Math.min(lineTotal, flatTotal) : flatTotal;
       }
     }
     return {
@@ -713,8 +714,8 @@ export function POSTerminal({
         purchase_price: '',
         stock_quantity: '20',
         is_taxable: true,
-        tax_rate: '18',
-        tax_type: 'percentage',
+        tax_rate: '0',
+        tax_type: 'flat',
         tax_inclusive: true,
         flat_tax_amount: '0',
       });
@@ -968,8 +969,15 @@ export function POSTerminal({
                               {formatCurrency(p.sale_price)}
                             </span>
                             {p.is_taxable && (
-                              <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60" title={`Includes ${p.tax_rate}% GST`}>
-                                GST
+                              <span
+                                className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60"
+                                title={
+                                  Number(p.flat_tax_amount || 0) > 0 || p.tax_type === 'flat'
+                                    ? `Includes Rs. ${Number(p.flat_tax_amount || 0).toLocaleString()} Flat GST`
+                                    : `Includes ${p.tax_rate}% GST`
+                                }
+                              >
+                                GST {Number(p.flat_tax_amount || 0) > 0 ? `Rs. ${p.flat_tax_amount}` : ''}
                               </span>
                             )}
                           </div>
@@ -1164,9 +1172,11 @@ export function POSTerminal({
                       <p className="text-[10px] text-slate-500 font-medium">
                         {formatCurrency(item.unit_price)} × {item.quantity}
                       </p>
-                      {item.is_taxable && (item.tax_rate ?? 0) > 0 ? (
+                      {item.is_taxable && ((item.flat_tax_amount ?? 0) > 0 || (item.tax_rate ?? 0) > 0) ? (
                         <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200/60">
-                          GST {item.tax_rate}% {item.tax_inclusive !== false ? '(Incl)' : ''}
+                          {Number(item.flat_tax_amount || 0) > 0
+                            ? `GST Rs. ${Number(item.flat_tax_amount || 0).toLocaleString()} (Flat${item.tax_inclusive !== false ? ' Incl' : ''})`
+                            : `GST ${item.tax_rate}% ${item.tax_inclusive !== false ? '(Incl)' : ''}`}
                         </span>
                       ) : null}
                     </div>
@@ -1682,7 +1692,7 @@ export function POSTerminal({
                     )}
                     {lastSaleInfo.tax > 0 && (
                       <div className="flex justify-between">
-                        <span>GST / Sales Tax {lastSaleInfo.taxRate > 0 ? `(${lastSaleInfo.taxRate}%)` : ''}:</span>
+                        <span>GST / Sales Tax {lastSaleInfo.taxInclusive ? '(Flat Incl)' : (lastSaleInfo.taxRate > 0 ? `(${lastSaleInfo.taxRate}%)` : '')}:</span>
                         <span>{formatCurrency(lastSaleInfo.tax)}</span>
                       </div>
                     )}
@@ -1913,6 +1923,34 @@ export function POSTerminal({
 
               {newProductForm.is_taxable && (
                 <div className="pt-2 border-t border-rose-100 space-y-2">
+                  {/* Mode Toggle: Flat Price (Doctor Preferred) vs % Percentage */}
+                  <div className="flex items-center justify-between bg-gray-100 p-0.5 rounded-lg text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setNewProductForm({ ...newProductForm, tax_type: 'flat' })}
+                      className={cn(
+                        'flex-1 py-1 px-2 rounded-md font-bold transition-all cursor-pointer',
+                        newProductForm.tax_type === 'flat'
+                          ? 'bg-rose-600 text-white shadow-2xs'
+                          : 'text-gray-600 hover:text-gray-900'
+                      )}
+                    >
+                      Flat GST (PKR Rs.) — Doctor Default
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewProductForm({ ...newProductForm, tax_type: 'percentage' })}
+                      className={cn(
+                        'py-1 px-2 rounded-md font-medium transition-all cursor-pointer',
+                        newProductForm.tax_type === 'percentage'
+                          ? 'bg-rose-600 text-white shadow-2xs font-bold'
+                          : 'text-gray-500 hover:text-gray-900'
+                      )}
+                    >
+                      % Rate
+                    </button>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-1.5 text-[11px]">
                     <button
                       type="button"
@@ -1924,7 +1962,7 @@ export function POSTerminal({
                           : 'border-gray-200 bg-transparent text-gray-500'
                       )}
                     >
-                      Flat Price (Tax Incl.)
+                      Inclusive (Price includes GST)
                     </button>
                     <button
                       type="button"
@@ -1936,59 +1974,117 @@ export function POSTerminal({
                           : 'border-gray-200 bg-transparent text-gray-500'
                       )}
                     >
-                      Exclusive (+ Tax)
+                      Exclusive (+ Tax Extra)
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="any"
-                        placeholder="18"
-                        value={newProductForm.tax_rate}
-                        onChange={(e) =>
-                          setNewProductForm({ ...newProductForm, tax_rate: e.target.value })
-                        }
-                        className="h-8 text-xs font-bold bg-white pr-6"
-                      />
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
-                        %
-                      </span>
+                  {newProductForm.tax_type === 'flat' ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">
+                            Rs.
+                          </span>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="any"
+                            placeholder="150"
+                            value={newProductForm.flat_tax_amount}
+                            onChange={(e) =>
+                              setNewProductForm({ ...newProductForm, flat_tax_amount: e.target.value })
+                            }
+                            className="h-8 text-xs font-bold bg-white pl-8 pr-2"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {['50', '100', '150', '200', '300'].map((r) => (
+                            <button
+                              key={r}
+                              type="button"
+                              onClick={() => setNewProductForm({ ...newProductForm, flat_tax_amount: r })}
+                              className={cn(
+                                'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                newProductForm.flat_tax_amount === r
+                                  ? 'bg-rose-600 text-white'
+                                  : 'bg-white border border-gray-200 text-gray-600'
+                              )}
+                            >
+                              Rs.{r}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {['0', '5', '16', '18'].map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setNewProductForm({ ...newProductForm, tax_rate: r })}
-                          className={cn(
-                            'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
-                            newProductForm.tax_rate === r
-                              ? 'bg-rose-600 text-white'
-                              : 'bg-white border border-gray-200 text-gray-600'
-                          )}
-                        >
-                          {r}%
-                        </button>
-                      ))}
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="any"
+                          placeholder="18"
+                          value={newProductForm.tax_rate}
+                          onChange={(e) =>
+                            setNewProductForm({ ...newProductForm, tax_rate: e.target.value })
+                          }
+                          className="h-8 text-xs font-bold bg-white pr-6"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                          %
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {['0', '5', '16', '18'].map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setNewProductForm({ ...newProductForm, tax_rate: r })}
+                            className={cn(
+                              'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                              newProductForm.tax_rate === r
+                                ? 'bg-rose-600 text-white'
+                                : 'bg-white border border-gray-200 text-gray-600'
+                            )}
+                          >
+                            {r}%
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Live preview */}
                   {(() => {
                     const price = parseFloat(newProductForm.sale_price) || 0;
+                    const isFlat = newProductForm.tax_type === 'flat';
+                    const flatAmount = parseFloat(newProductForm.flat_tax_amount) || 0;
                     const rate = parseFloat(newProductForm.tax_rate) || 0;
-                    if (price > 0 && rate > 0) {
-                      const net = newProductForm.tax_inclusive ? price / (1 + rate / 100) : price;
-                      const gst = newProductForm.tax_inclusive ? price - net : price * (rate / 100);
+                    if (price > 0) {
+                      let net = price;
+                      let gst = 0;
+                      let finalBill = price;
+                      if (isFlat) {
+                        gst = flatAmount;
+                        if (newProductForm.tax_inclusive) {
+                          net = Math.max(0, price - flatAmount);
+                          finalBill = price;
+                        } else {
+                          net = price;
+                          finalBill = price + flatAmount;
+                        }
+                      } else if (rate > 0) {
+                        net = newProductForm.tax_inclusive ? price / (1 + rate / 100) : price;
+                        gst = newProductForm.tax_inclusive ? price - net : price * (rate / 100);
+                        finalBill = newProductForm.tax_inclusive ? price : price + gst;
+                      }
+
                       return (
                         <div className="text-[10px] bg-white p-1.5 rounded-md border border-rose-100 flex justify-between font-medium text-gray-600">
                           <span>Base: {formatCurrency(net)}</span>
                           <span className="text-rose-600 font-bold">GST: +{formatCurrency(gst)}</span>
-                          <span className="font-bold text-emerald-700">Total: {formatCurrency(newProductForm.tax_inclusive ? price : price + gst)}</span>
+                          <span className="font-bold text-emerald-700">Total: {formatCurrency(finalBill)}</span>
                         </div>
                       );
                     }

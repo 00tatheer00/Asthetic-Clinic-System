@@ -176,8 +176,8 @@ export function ProductsList({
   const [isPublished, setIsPublished] = useState(true);
   const [isActive, setIsActive] = useState(true);
   const [isTaxable, setIsTaxable] = useState(true);
-  const [taxRate, setTaxRate] = useState('18');
-  const [taxType, setTaxType] = useState<'percentage' | 'flat'>('percentage');
+  const [taxRate, setTaxRate] = useState('0');
+  const [taxType, setTaxType] = useState<'percentage' | 'flat'>('flat');
   const [taxInclusive, setTaxInclusive] = useState(true);
   const [flatTaxAmount, setFlatTaxAmount] = useState('0');
 
@@ -250,8 +250,8 @@ export function ProductsList({
     setIsPublished(true);
     setIsActive(true);
     setIsTaxable(true);
-    setTaxRate('18');
-    setTaxType('percentage');
+    setTaxRate('0');
+    setTaxType('flat');
     setTaxInclusive(true);
     setFlatTaxAmount('0');
     setShowNewCategory(false);
@@ -276,8 +276,8 @@ export function ProductsList({
     setIsPublished(prod.is_published);
     setIsActive(prod.is_active);
     setIsTaxable(prod.is_taxable ?? false);
-    setTaxRate(String(prod.tax_rate ?? 18));
-    setTaxType((prod.tax_type as 'percentage' | 'flat') || 'percentage');
+    setTaxRate(String(prod.tax_rate ?? 0));
+    setTaxType((prod.tax_type as 'percentage' | 'flat') || (prod.flat_tax_amount && Number(prod.flat_tax_amount) > 0 ? 'flat' : 'flat'));
     setTaxInclusive(prod.tax_inclusive !== false);
     setFlatTaxAmount(String(prod.flat_tax_amount ?? 0));
     setShowNewCategory(false);
@@ -475,7 +475,9 @@ export function ProductsList({
                           <span>{formatCurrency(prod.sale_price)}</span>
                           {prod.is_taxable ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5 mt-0.5">
-                              GST {prod.tax_rate}% {prod.tax_inclusive !== false ? '(Incl)' : '(Excl)'}
+                              {Number(prod.flat_tax_amount || 0) > 0 || prod.tax_type === 'flat'
+                                ? `GST Rs. ${Number(prod.flat_tax_amount || 0).toLocaleString()} (${prod.tax_inclusive !== false ? 'Flat Incl' : 'Flat Excl'})`
+                                : `GST ${prod.tax_rate}% (${prod.tax_inclusive !== false ? 'Incl' : 'Excl'})`}
                             </span>
                           ) : (
                             <span className="text-[10px] text-gray-400 font-normal">No GST</span>
@@ -726,7 +728,7 @@ export function ProductsList({
                 />
               </div>
 
-              {/* GST & Fiscal Tax Settings for Doctor & POS (Option 2 Flat Price with Included GST) */}
+              {/* GST & Fiscal Tax Settings for Doctor & POS (Doctor Flat Price Mode) */}
               <div className="sm:col-span-2 p-3.5 rounded-xl border border-rose-200/90 bg-gradient-to-br from-rose-50/50 via-white to-pink-50/30 dark:from-rose-950/20 dark:via-background dark:to-pink-950/10 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -735,21 +737,50 @@ export function ProductsList({
                     </div>
                     <div>
                       <Label className="text-xs font-bold text-gray-900 dark:text-gray-100 cursor-pointer">
-                        GST / Sales Tax (Auto POS Integration)
+                        GST / Tax Advance Setting (Flat Price Mode)
                       </Label>
                       <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                        Set advance GST for this product. POS will automatically deduce & record GST on bills.
+                        Doctor can enter flat GST in Rupees directly (e.g. Rs. 150). POS will automatically deduce & record it.
                       </p>
                     </div>
                   </div>
                   <Switch
                     checked={isTaxable}
-                    onCheckedChange={(checked) => setIsTaxable(checked)}
+                    onCheckedChange={(checked: boolean) => setIsTaxable(checked)}
                   />
                 </div>
 
                 {isTaxable && (
                   <div className="pt-2.5 border-t border-rose-100 dark:border-rose-900/40 space-y-3">
+                    {/* Mode Toggle: Flat Price (Doctor Preferred) vs % Percentage */}
+                    <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800/80 p-1 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setTaxType('flat')}
+                        className={cn(
+                          'flex-1 py-1 px-2.5 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5',
+                          taxType === 'flat'
+                            ? 'bg-rose-600 text-white shadow-xs'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+                        )}
+                      >
+                        <CheckCircle2 className={cn('h-3.5 w-3.5', taxType === 'flat' ? 'opacity-100' : 'opacity-0')} />
+                        <span>Flat GST Price (PKR Rupees) — Doctor Default</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTaxType('percentage')}
+                        className={cn(
+                          'py-1 px-3 rounded-md text-xs font-medium transition-all cursor-pointer',
+                          taxType === 'percentage'
+                            ? 'bg-rose-600 text-white shadow-xs font-bold'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900'
+                        )}
+                      >
+                        % Percentage Rate
+                      </button>
+                    </div>
+
                     {/* Tax Pricing Mode: Inclusive (Option 2 Default) vs Exclusive */}
                     <div className="grid grid-cols-2 gap-2">
                       <button
@@ -763,11 +794,11 @@ export function ProductsList({
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Tax Inclusive (Flat Price)</span>
+                          <span className="text-xs font-bold">Tax Inclusive (Selling Price Includes GST)</span>
                           {taxInclusive && <CheckCircle2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />}
                         </div>
                         <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
-                          Selling price already includes GST (Doctor Option 2)
+                          Customer pays flat retail price. POS automatically records the GST portion (Doctor Option 2).
                         </p>
                       </button>
 
@@ -782,72 +813,125 @@ export function ProductsList({
                         )}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Tax Exclusive (+ GST)</span>
+                          <span className="text-xs font-bold">Tax Exclusive (+ GST Extra)</span>
                           {!taxInclusive && <CheckCircle2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />}
                         </div>
                         <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
-                          GST is added on top of selling price at POS
+                          GST is added on top of the retail price at POS checkout.
                         </p>
                       </button>
                     </div>
 
-                    {/* Tax Rate & Calculation Mode */}
+                    {/* Tax Amount / Rate Input & Calculation */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                          GST Rate (%)
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="any"
-                            value={taxRate}
-                            onChange={(e) => setTaxRate(e.target.value)}
-                            placeholder="18"
-                            className="h-9 text-xs font-bold pr-7"
-                          />
-                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
-                            %
-                          </span>
+                      {taxType === 'flat' ? (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center justify-between">
+                            <span>Flat GST Amount (PKR) *</span>
+                            <span className="text-[10px] text-rose-600 font-semibold">Fixed Rupees</span>
+                          </Label>
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">
+                              Rs.
+                            </span>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="any"
+                              value={flatTaxAmount}
+                              onChange={(e) => setFlatTaxAmount(e.target.value)}
+                              placeholder="150"
+                              className="h-9 text-xs font-bold pl-9 pr-3 text-slate-900 bg-white dark:bg-card"
+                            />
+                          </div>
+                          {/* Quick Rupee Presets for Doctor */}
+                          <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                            {['50', '100', '150', '200', '250', '300', '500'].map((preset) => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setFlatTaxAmount(preset)}
+                                className={cn(
+                                  'px-2 py-0.5 text-[10px] rounded font-bold transition-colors cursor-pointer',
+                                  flatTaxAmount === preset
+                                    ? 'bg-rose-600 text-white'
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300'
+                                )}
+                              >
+                                Rs. {preset}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        {/* Quick Presets */}
-                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                          {['0', '5', '16', '17', '18'].map((preset) => (
-                            <button
-                              key={preset}
-                              type="button"
-                              onClick={() => setTaxRate(preset)}
-                              className={cn(
-                                'px-2 py-0.5 text-[10px] rounded font-medium transition-colors cursor-pointer',
-                                taxRate === preset
-                                  ? 'bg-rose-600 text-white font-bold'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
-                              )}
-                            >
-                              {preset}%
-                            </button>
-                          ))}
+                      ) : (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                            GST Percentage Rate (%)
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="any"
+                              value={taxRate}
+                              onChange={(e) => setTaxRate(e.target.value)}
+                              placeholder="18"
+                              className="h-9 text-xs font-bold pr-7"
+                            />
+                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                              %
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                            {['0', '5', '16', '17', '18'].map((preset) => (
+                              <button
+                                key={preset}
+                                type="button"
+                                onClick={() => setTaxRate(preset)}
+                                className={cn(
+                                  'px-2 py-0.5 text-[10px] rounded font-medium transition-colors cursor-pointer',
+                                  taxRate === preset
+                                    ? 'bg-rose-600 text-white font-bold'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                                )}
+                              >
+                                {preset}%
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Live Calculation Preview Card for Doctor */}
                       {(() => {
                         const price = parseFloat(salePrice) || 0;
+                        const isFlat = taxType === 'flat';
+                        const flatAmount = parseFloat(flatTaxAmount) || 0;
                         const rate = parseFloat(taxRate) || 0;
                         let netPrice = price;
                         let gstAmount = 0;
                         let finalCustomerPrice = price;
 
-                        if (price > 0 && rate > 0) {
-                          if (taxInclusive) {
-                            netPrice = price / (1 + rate / 100);
-                            gstAmount = price - netPrice;
-                            finalCustomerPrice = price;
-                          } else {
-                            gstAmount = price * (rate / 100);
-                            finalCustomerPrice = price + gstAmount;
+                        if (price > 0) {
+                          if (isFlat) {
+                            gstAmount = flatAmount;
+                            if (taxInclusive) {
+                              netPrice = Math.max(0, price - flatAmount);
+                              finalCustomerPrice = price;
+                            } else {
+                              netPrice = price;
+                              finalCustomerPrice = price + flatAmount;
+                            }
+                          } else if (rate > 0) {
+                            if (taxInclusive) {
+                              netPrice = price / (1 + rate / 100);
+                              gstAmount = price - netPrice;
+                              finalCustomerPrice = price;
+                            } else {
+                              gstAmount = price * (rate / 100);
+                              finalCustomerPrice = price + gstAmount;
+                            }
                           }
                         }
 
@@ -858,11 +942,11 @@ export function ProductsList({
                             </span>
                             <div className="space-y-1 my-1">
                               <div className="flex justify-between text-xs">
-                                <span className="text-gray-500">Base Price (excl. GST):</span>
+                                <span className="text-gray-500">Base Product Price:</span>
                                 <span className="font-semibold">{formatCurrency(netPrice)}</span>
                               </div>
-                              <div className="flex justify-between text-xs text-rose-600 dark:text-rose-400 font-medium">
-                                <span>GST ({rate}%):</span>
+                              <div className="flex justify-between text-xs text-rose-600 dark:text-rose-400 font-bold">
+                                <span>{isFlat ? `Flat GST (Rupees):` : `GST (${rate}%):`}</span>
                                 <span>+{formatCurrency(gstAmount)}</span>
                               </div>
                               <div className="flex justify-between text-xs font-bold pt-1 border-t border-gray-200 dark:border-gray-700">
@@ -870,10 +954,10 @@ export function ProductsList({
                                 <span className="text-emerald-600 font-extrabold">{formatCurrency(finalCustomerPrice)}</span>
                               </div>
                             </div>
-                            <span className="text-[9.5px] text-gray-400">
+                            <span className="text-[9.5px] text-gray-500 leading-tight">
                               {taxInclusive
-                                ? '✓ Customer pays flat price. GST registered automatically in POS.'
-                                : '⚡ GST will be added on top in POS cart.'}
+                                ? `✓ Doctor Option 2: Customer pays Rs. ${price.toLocaleString()}. POS automatically registers Rs. ${gstAmount.toLocaleString()} flat GST.`
+                                : `⚡ GST Rs. ${gstAmount.toLocaleString()} will be added on top in POS cart.`}
                             </span>
                           </div>
                         );
