@@ -60,51 +60,67 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
   const cleanNum = rawNum.replace(/^[#\s]+/, '').trim();
   const hasSearched = Boolean(rawId || cleanNum);
 
+  const isUuid = (val: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+
+  // Extract all potential UUIDs and text/number candidates safely without throwing 22P02
+  const uuidCandidates = [rawId, cleanNum].filter(Boolean).filter(isUuid);
+  const textCandidates = [cleanNum, rawId].filter(Boolean);
+
   let invoice: any = null;
 
-  if (rawId) {
+  // 1. UUID-based lookup on invoices (Primary key or sale_id/order_id)
+  for (const uid of uuidCandidates) {
     const { data: byId } = await supabase
       .from('invoices')
       .select('*, invoice_line_items (*)')
-      .eq('id', rawId)
+      .eq('id', uid)
       .maybeSingle();
-    invoice = byId;
+    if (byId) {
+      invoice = byId;
+      break;
+    }
 
-    if (!invoice) {
-      // Check if rawId was passed as a sale_id or order_id
-      const { data: altInv } = await supabase
-        .from('invoices')
-        .select('*, invoice_line_items (*)')
-        .or(`sale_id.eq.${rawId},order_id.eq.${rawId}`)
-        .maybeSingle();
+    const { data: altInv } = await supabase
+      .from('invoices')
+      .select('*, invoice_line_items (*)')
+      .or(`sale_id.eq.${uid},order_id.eq.${uid}`)
+      .maybeSingle();
+    if (altInv) {
       invoice = altInv;
+      break;
     }
   }
 
-  if (!invoice && cleanNum) {
-    // 1. Exact or case-insensitive search
-    const { data: exactMatch } = await supabase
-      .from('invoices')
-      .select('*, invoice_line_items (*)')
-      .ilike('invoice_number', cleanNum)
-      .maybeSingle();
-    invoice = exactMatch;
+  // 2. Text / Number-based lookup on invoices
+  if (!invoice && textCandidates.length > 0) {
+    for (const term of textCandidates) {
+      // 2a. Exact match
+      const { data: exactMatch } = await supabase
+        .from('invoices')
+        .select('*, invoice_line_items (*)')
+        .ilike('invoice_number', term)
+        .maybeSingle();
+      if (exactMatch) {
+        invoice = exactMatch;
+        break;
+      }
 
-    // 2. Format variations (e.g. user typed "00002", "2", "2026-00002", "BSC-2026-0002")
-    if (!invoice) {
-      const digitMatch = cleanNum.match(/(\d+)$/);
-      const yearMatch = cleanNum.match(/(20\d\d)/);
+      // 2b. Formatted number variations (e.g. "1", "00001", "2026-00001", "BSC-2026-1")
+      const digitMatch = term.match(/(\d+)$/);
+      const yearMatch = term.match(/(20\d\d)/);
       const year = yearMatch ? yearMatch[1] : new Date().getFullYear().toString();
 
       const candidateFormats = [
-        `BSC-${year}-${cleanNum.replace(/^BSC-?/i, '')}`,
+        `BSC-${year}-${term.replace(/^BSC-?/i, '')}`,
         digitMatch ? `BSC-${year}-${digitMatch[1].padStart(5, '0')}` : null,
         digitMatch ? `BSC-${digitMatch[1].padStart(5, '0')}` : null,
-        cleanNum.replace(/\s+/g, '-'),
+        digitMatch ? `BSC-${year}-${digitMatch[1]}` : null,
+        term.replace(/\s+/g, '-'),
       ].filter(Boolean) as string[];
 
       for (const candidate of candidateFormats) {
-        if (!invoice && candidate.toLowerCase() !== cleanNum.toLowerCase()) {
+        if (candidate.toLowerCase() !== term.toLowerCase()) {
           const { data: altMatch } = await supabase
             .from('invoices')
             .select('*, invoice_line_items (*)')
@@ -116,34 +132,73 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
           }
         }
       }
-    }
+      if (invoice) break;
 
-    // 3. Partial substring search if string is distinctive (>= 4 chars)
-    if (!invoice && cleanNum.length >= 4) {
-      const { data: partialMatch } = await supabase
-        .from('invoices')
-        .select('*, invoice_line_items (*)')
-        .ilike('invoice_number', `%${cleanNum}%`)
-        .limit(1)
-        .maybeSingle();
-      invoice = partialMatch;
-    }
-
-    // 4. UUID check if cleanNum is a UUID
-    if (
-      !invoice &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanNum)
-    ) {
-      const { data: idMatch } = await supabase
-        .from('invoices')
-        .select('*, invoice_line_items (*)')
-        .eq('id', cleanNum)
-        .maybeSingle();
-      invoice = idMatch;
+      // 2c. Partial substring search if string is distinctive (>= 3 chars)
+      if (term.length >= 3) {
+        const { data: partialMatch } = await supabase
+          .from('invoices')
+          .select('*, invoice_line_items (*)')
+          .ilike('invoice_number', `%${term}%`)
+          .limit(1)
+          .maybeSingle();
+        if (partialMatch) {
+          invoice = partialMatch;
+          break;
+        }
+      }
     }
   }
 
-  // 5. Check procedure_payments (for official procedure receipts e.g. BSC-PAY-2026-XXXXX)
+  // 3. Fallback: Check sales directly (if sale completed without an invoice or POS receipt printed)
+  if (!invoice) {
+    for (const uid of uuidCandidates) {
+      const { data: sale } = await supabase
+        .from('sales')
+        .select('*')
+        .eq('id', uid)
+        .maybeSingle();
+      if (sale) {
+        const { data: saleItems } = await supabase
+          .from('sale_items')
+          .select('*')
+          .eq('sale_id', sale.id);
+
+        invoice = {
+          id: sale.id,
+          invoice_number: `BSC-SALE-${sale.id.slice(0, 8).toUpperCase()}`,
+          customer_name: sale.customer_name || 'Walk-in Customer',
+          customer_phone: '',
+          customer_email: '',
+          customer_address: '',
+          subtotal: Number(sale.subtotal || 0),
+          discount_amount: Number(sale.discount_amount || 0),
+          tax_amount: Number(sale.tax_amount || 0),
+          tax_rate: Number(sale.tax_rate || 0),
+          tax_label: 'GST',
+          total: Number(sale.total || 0),
+          payment_method: sale.payment_method || 'cash',
+          payment_status: sale.payment_status || 'paid',
+          status: 'paid',
+          created_at: sale.created_at,
+          issued_at: sale.created_at,
+          paid_at: sale.created_at,
+          invoice_line_items: (saleItems || []).map((si: any, idx: number) => ({
+            id: si.id,
+            description: si.name || 'Clinical Aesthetic Treatment / Product',
+            quantity: si.quantity || 1,
+            unit_price: Number(si.unit_price || 0),
+            discount_amount: Number(si.discount_amount || 0),
+            line_total: Number(si.line_total ?? (si.unit_price * (si.quantity || 1))),
+            sort_order: idx,
+          })),
+        };
+        break;
+      }
+    }
+  }
+
+  // 4. Check procedure_payments (for official procedure receipts e.g. BSC-PAY-2026-XXXXX)
   if (!invoice && (cleanNum || rawId)) {
     let procPay: any = null;
     const procSelect = `
@@ -174,31 +229,41 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
       )
     `;
 
-    if (rawId) {
+    // Only query id if it is a valid UUID
+    for (const uid of uuidCandidates) {
       const { data } = await supabase
         .from('procedure_payments')
         .select(procSelect)
-        .eq('id', rawId)
+        .eq('id', uid)
         .maybeSingle();
-      procPay = data;
+      if (data) {
+        procPay = data;
+        break;
+      }
     }
 
-    if (!procPay && cleanNum) {
-      const { data } = await supabase
-        .from('procedure_payments')
-        .select(procSelect)
-        .ilike('receipt_number', cleanNum)
-        .maybeSingle();
-      procPay = data;
+    if (!procPay) {
+      for (const term of textCandidates) {
+        const { data } = await supabase
+          .from('procedure_payments')
+          .select(procSelect)
+          .ilike('receipt_number', term)
+          .maybeSingle();
+        if (data) {
+          procPay = data;
+          break;
+        }
 
-      if (!procPay) {
         const { data: alt } = await supabase
           .from('procedure_payments')
           .select(procSelect)
-          .ilike('receipt_number', `%${cleanNum}%`)
+          .ilike('receipt_number', `%${term}%`)
           .limit(1)
           .maybeSingle();
-        procPay = alt;
+        if (alt) {
+          procPay = alt;
+          break;
+        }
       }
     }
 
@@ -247,7 +312,7 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
     }
   }
 
-  // If invoice found but line items missing, try pulling from sale_items
+  // 5. If invoice found but line items missing, try pulling from sale_items
   if (
     invoice &&
     (!invoice.invoice_line_items || invoice.invoice_line_items.length === 0) &&
@@ -260,11 +325,11 @@ export default async function VerifyInvoicePage({ searchParams }: VerifyPageProp
     if (saleItems && saleItems.length > 0) {
       invoice.invoice_line_items = saleItems.map((si: any, idx: number) => ({
         id: si.id,
-        description: si.item_name || 'Clinical Aesthetic Treatment / Product',
+        description: si.name || 'Clinical Aesthetic Treatment / Product',
         quantity: si.quantity || 1,
-        unit_price: si.unit_price || 0,
-        discount_amount: si.discount_amount || 0,
-        line_total: si.total_price || si.unit_price * (si.quantity || 1),
+        unit_price: Number(si.unit_price || 0),
+        discount_amount: Number(si.discount_amount || 0),
+        line_total: Number(si.line_total ?? (si.unit_price * (si.quantity || 1))),
         sort_order: idx,
       }));
     }

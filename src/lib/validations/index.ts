@@ -39,7 +39,7 @@ export const slugSchema = z
 export const monetarySchema = z
   .number()
   .nonnegative('Amount must be non-negative')
-  .multipleOf(0.01, 'Amount must have at most 2 decimal places');
+  .transform((val) => Math.round(val * 100) / 100);
 
 export const ratingSchema = z.number().int().min(1, 'Minimum rating is 1').max(5, 'Maximum rating is 5');
 
@@ -182,22 +182,47 @@ export type TreatmentCategoryInput = z.infer<typeof treatmentCategorySchema>;
 // ============================================================
 
 export const productSchema = z.object({
-  name: z.string().min(2).max(200).trim(),
-  slug: slugSchema,
-  sku: z.string().min(1).max(50).trim(),
-  category_id: z.string().uuid().optional().nullable(),
-  description: z.string().max(10000).optional().or(z.literal('')),
-  short_description: z.string().max(300).optional().or(z.literal('')),
-  purchase_price: monetarySchema,
+  name: z.string().min(2, 'Name must be at least 2 characters').max(200).trim(),
+  slug: z
+    .string()
+    .min(1)
+    .trim()
+    .transform((val) =>
+      val
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || `prd-${Date.now()}`
+    ),
+  sku: z.string().min(1, 'SKU is required').max(50).trim(),
+  category_id: z
+    .string()
+    .uuid()
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null)),
+  description: z.string().max(10000).optional().nullable().or(z.literal('')),
+  short_description: z.string().max(300).optional().nullable().or(z.literal('')),
+  purchase_price: monetarySchema.default(0),
   sale_price: monetarySchema.refine((val) => val > 0, 'Sale price must be greater than 0'),
   stock_quantity: z.number().int().nonnegative().default(0),
   low_stock_threshold: z.number().int().nonnegative().default(5),
-  expiry_date: z.string().date().optional().nullable(),
-  image_url: z.string().url().optional().or(z.literal('')),
+  expiry_date: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null)),
+  image_url: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null)),
   is_published: z.boolean().default(false),
   is_active: z.boolean().default(true),
-  seo_title: z.string().max(70).optional().or(z.literal('')),
-  seo_description: z.string().max(160).optional().or(z.literal('')),
+  seo_title: z.string().max(70).optional().nullable().or(z.literal('')),
+  seo_description: z.string().max(160).optional().nullable().or(z.literal('')),
   sort_order: z.number().int().default(0),
   is_taxable: z.boolean().default(false),
   tax_rate: z.number().min(0).max(100).default(0),

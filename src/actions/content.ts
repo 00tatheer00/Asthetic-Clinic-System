@@ -386,7 +386,9 @@ export async function deleteTreatment(treatmentId: string) {
 export async function saveProduct(productId: string | null, formData: unknown) {
   const parsed = productSchema.safeParse(formData);
   if (!parsed.success) {
-    return { success: false, error: 'Validation failed', fieldErrors: parsed.error.flatten().fieldErrors };
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    const firstMsg = Object.values(fieldErrors).flat()[0] || 'Validation failed. Please check form fields.';
+    return { success: false, error: firstMsg, fieldErrors };
   }
 
   const supabase = await createClient();
@@ -415,22 +417,48 @@ export async function saveProduct(productId: string | null, formData: unknown) {
   };
 
   if (productId) {
-    const { error } = await supabase
+    let { error } = await supabase
       .from('products')
       .update(payload)
       .eq('id', productId);
 
-    if (error) return { success: false, error: 'Failed to update product.' };
+    // If new GST columns don't exist in Supabase schema yet (PGRST204), fall back to base columns
+    if (error && (error.code === 'PGRST204' || error.message?.includes('schema cache') || error.code === '42703')) {
+      const { is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, ...basePayload } = payload;
+      const fallback = await supabase
+        .from('products')
+        .update(basePayload)
+        .eq('id', productId);
+      error = fallback.error;
+    }
+
+    if (error) {
+      console.error('[saveProduct update error]', error);
+      return { success: false, error: error.message || 'Failed to update product.' };
+    }
   } else {
-    const { data: product, error } = await supabase
+    let { data: product, error } = await supabase
       .from('products')
       .insert({ ...payload, created_by: staff.id })
       .select('id')
       .single();
 
+    // If new GST columns don't exist in Supabase schema yet (PGRST204), fall back to base columns
+    if (error && (error.code === 'PGRST204' || error.message?.includes('schema cache') || error.code === '42703')) {
+      const { is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, ...basePayload } = payload;
+      const fallback = await supabase
+        .from('products')
+        .insert({ ...basePayload, created_by: staff.id })
+        .select('id')
+        .single();
+      product = fallback.data;
+      error = fallback.error;
+    }
+
     if (error) {
+      console.error('[saveProduct insert error]', error);
       if (error.code === '23505') return { success: false, error: 'A product with this slug or SKU already exists.' };
-      return { success: false, error: 'Failed to create product.' };
+      return { success: false, error: error.message || 'Failed to create product.' };
     }
 
     // Create initial stock movement
