@@ -49,6 +49,8 @@ import {
   Loader2,
   ExternalLink,
   X,
+  Percent,
+  CheckCircle2,
 } from 'lucide-react';
 import { formatCurrency, slugify } from '@/lib/utils/helpers';
 import { toast } from 'sonner';
@@ -75,6 +77,11 @@ interface Product {
   image_url: string | null;
   is_published: boolean;
   is_active: boolean;
+  is_taxable?: boolean;
+  tax_rate?: number;
+  tax_type?: 'percentage' | 'flat';
+  tax_inclusive?: boolean;
+  flat_tax_amount?: number;
   product_categories?: Category | null;
 }
 
@@ -168,6 +175,11 @@ export function ProductsList({
   const [imageUrl, setImageUrl] = useState('');
   const [isPublished, setIsPublished] = useState(true);
   const [isActive, setIsActive] = useState(true);
+  const [isTaxable, setIsTaxable] = useState(true);
+  const [taxRate, setTaxRate] = useState('18');
+  const [taxType, setTaxType] = useState<'percentage' | 'flat'>('percentage');
+  const [taxInclusive, setTaxInclusive] = useState(true);
+  const [flatTaxAmount, setFlatTaxAmount] = useState('0');
 
   const handleSearch = () => {
     setActiveSearch(searchValue);
@@ -237,6 +249,11 @@ export function ProductsList({
     setImageUrl('');
     setIsPublished(true);
     setIsActive(true);
+    setIsTaxable(true);
+    setTaxRate('18');
+    setTaxType('percentage');
+    setTaxInclusive(true);
+    setFlatTaxAmount('0');
     setShowNewCategory(false);
     setNewCategoryName('');
     setDialogOpen(true);
@@ -258,6 +275,11 @@ export function ProductsList({
     setImageUrl(prod.image_url || '');
     setIsPublished(prod.is_published);
     setIsActive(prod.is_active);
+    setIsTaxable(prod.is_taxable ?? false);
+    setTaxRate(String(prod.tax_rate ?? 18));
+    setTaxType((prod.tax_type as 'percentage' | 'flat') || 'percentage');
+    setTaxInclusive(prod.tax_inclusive !== false);
+    setFlatTaxAmount(String(prod.flat_tax_amount ?? 0));
     setShowNewCategory(false);
     setNewCategoryName('');
     setDialogOpen(true);
@@ -301,6 +323,11 @@ export function ProductsList({
         image_url: imageUrl || '',
         is_published: isPublished,
         is_active: isActive,
+        is_taxable: isTaxable,
+        tax_rate: isTaxable ? (parseFloat(taxRate) || 0) : 0,
+        tax_type: taxType,
+        tax_inclusive: taxInclusive,
+        flat_tax_amount: isTaxable ? (parseFloat(flatTaxAmount) || 0) : 0,
       };
 
       const res = await saveProduct(editingProduct ? editingProduct.id : null, payload);
@@ -444,7 +471,16 @@ export function ProductsList({
                         {formatCurrency(prod.purchase_price)}
                       </TableCell>
                       <TableCell className="text-right text-xs font-bold text-gray-900">
-                        {formatCurrency(prod.sale_price)}
+                        <div className="flex flex-col items-end">
+                          <span>{formatCurrency(prod.sale_price)}</span>
+                          {prod.is_taxable ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded px-1.5 py-0.5 mt-0.5">
+                              GST {prod.tax_rate}% {prod.tax_inclusive !== false ? '(Incl)' : '(Excl)'}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 font-normal">No GST</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge
@@ -686,8 +722,165 @@ export function ProductsList({
                   placeholder="3800"
                   value={salePrice}
                   onChange={(e) => setSalePrice(e.target.value)}
-                  className="text-xs"
+                  className="text-xs font-semibold"
                 />
+              </div>
+
+              {/* GST & Fiscal Tax Settings for Doctor & POS (Option 2 Flat Price with Included GST) */}
+              <div className="sm:col-span-2 p-3.5 rounded-xl border border-rose-200/90 bg-gradient-to-br from-rose-50/50 via-white to-pink-50/30 dark:from-rose-950/20 dark:via-background dark:to-pink-950/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
+                      <Percent className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-gray-900 dark:text-gray-100 cursor-pointer">
+                        GST / Sales Tax (Auto POS Integration)
+                      </Label>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        Set advance GST for this product. POS will automatically deduce & record GST on bills.
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={isTaxable}
+                    onCheckedChange={(checked) => setIsTaxable(checked)}
+                  />
+                </div>
+
+                {isTaxable && (
+                  <div className="pt-2.5 border-t border-rose-100 dark:border-rose-900/40 space-y-3">
+                    {/* Tax Pricing Mode: Inclusive (Option 2 Default) vs Exclusive */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setTaxInclusive(true)}
+                        className={cn(
+                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer',
+                          taxInclusive
+                            ? 'border-rose-500 bg-rose-50/90 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 ring-1 ring-rose-500 font-semibold'
+                            : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-card text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold">Tax Inclusive (Flat Price)</span>
+                          {taxInclusive && <CheckCircle2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />}
+                        </div>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
+                          Selling price already includes GST (Doctor Option 2)
+                        </p>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTaxInclusive(false)}
+                        className={cn(
+                          'p-2.5 rounded-lg border text-left transition-all cursor-pointer',
+                          !taxInclusive
+                            ? 'border-rose-500 bg-rose-50/90 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 ring-1 ring-rose-500 font-semibold'
+                            : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-card text-gray-600 dark:text-gray-400 hover:bg-gray-50'
+                        )}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold">Tax Exclusive (+ GST)</span>
+                          {!taxInclusive && <CheckCircle2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />}
+                        </div>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
+                          GST is added on top of selling price at POS
+                        </p>
+                      </button>
+                    </div>
+
+                    {/* Tax Rate & Calculation Mode */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                          GST Rate (%)
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="any"
+                            value={taxRate}
+                            onChange={(e) => setTaxRate(e.target.value)}
+                            placeholder="18"
+                            className="h-9 text-xs font-bold pr-7"
+                          />
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                            %
+                          </span>
+                        </div>
+                        {/* Quick Presets */}
+                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                          {['0', '5', '16', '17', '18'].map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => setTaxRate(preset)}
+                              className={cn(
+                                'px-2 py-0.5 text-[10px] rounded font-medium transition-colors cursor-pointer',
+                                taxRate === preset
+                                  ? 'bg-rose-600 text-white font-bold'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                              )}
+                            >
+                              {preset}%
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Live Calculation Preview Card for Doctor */}
+                      {(() => {
+                        const price = parseFloat(salePrice) || 0;
+                        const rate = parseFloat(taxRate) || 0;
+                        let netPrice = price;
+                        let gstAmount = 0;
+                        let finalCustomerPrice = price;
+
+                        if (price > 0 && rate > 0) {
+                          if (taxInclusive) {
+                            netPrice = price / (1 + rate / 100);
+                            gstAmount = price - netPrice;
+                            finalCustomerPrice = price;
+                          } else {
+                            gstAmount = price * (rate / 100);
+                            finalCustomerPrice = price + gstAmount;
+                          }
+                        }
+
+                        return (
+                          <div className="p-2.5 rounded-lg bg-gray-50/90 dark:bg-card/80 border border-gray-200/80 dark:border-gray-800 flex flex-col justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                              Live POS Price Breakdown
+                            </span>
+                            <div className="space-y-1 my-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-gray-500">Base Price (excl. GST):</span>
+                                <span className="font-semibold">{formatCurrency(netPrice)}</span>
+                              </div>
+                              <div className="flex justify-between text-xs text-rose-600 dark:text-rose-400 font-medium">
+                                <span>GST ({rate}%):</span>
+                                <span>+{formatCurrency(gstAmount)}</span>
+                              </div>
+                              <div className="flex justify-between text-xs font-bold pt-1 border-t border-gray-200 dark:border-gray-700">
+                                <span>Final Bill Price:</span>
+                                <span className="text-emerald-600 font-extrabold">{formatCurrency(finalCustomerPrice)}</span>
+                              </div>
+                            </div>
+                            <span className="text-[9.5px] text-gray-400">
+                              {taxInclusive
+                                ? '✓ Customer pays flat price. GST registered automatically in POS.'
+                                : '⚡ GST will be added on top in POS cart.'}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">

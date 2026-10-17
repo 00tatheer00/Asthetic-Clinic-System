@@ -17,7 +17,7 @@ export default async function POSPage() {
   ] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, sale_price, stock_quantity, reserved_quantity, sku, category_id, product_categories(id, name)')
+      .select('id, name, sale_price, stock_quantity, reserved_quantity, sku, category_id, is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, product_categories(id, name)')
       .eq('is_active', true)
       .is('deleted_at', null)
       .order('name'),

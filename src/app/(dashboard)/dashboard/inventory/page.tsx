@@ -15,7 +15,7 @@ export default async function InventoryPage() {
   ] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, slug, sku, category_id, description, short_description, purchase_price, sale_price, stock_quantity, reserved_quantity, low_stock_threshold, is_active, is_published, image_url, product_categories(id, name)')
+      .select('id, name, slug, sku, category_id, description, short_description, purchase_price, sale_price, stock_quantity, reserved_quantity, low_stock_threshold, is_active, is_published, is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, image_url, product_categories(id, name)')
       .is('deleted_at', null)
       .order('name'),
     supabase

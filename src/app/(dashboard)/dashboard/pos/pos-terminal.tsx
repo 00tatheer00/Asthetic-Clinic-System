@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -67,6 +68,11 @@ interface ProductItem {
   reserved_quantity: number;
   sku?: string | null;
   category_id?: string | null;
+  is_taxable?: boolean;
+  tax_rate?: number;
+  tax_type?: 'percentage' | 'flat';
+  tax_inclusive?: boolean;
+  flat_tax_amount?: number;
   product_categories?: { id: string; name: string } | { id: string; name: string }[] | null | any;
 }
 
@@ -93,6 +99,11 @@ interface POSItem {
   discount_type: 'percentage' | 'fixed' | null;
   discount_value: number;
   max_stock?: number;
+  is_taxable?: boolean;
+  tax_rate?: number;
+  tax_type?: 'percentage' | 'flat';
+  tax_inclusive?: boolean;
+  flat_tax_amount?: number;
 }
 
 interface POSTerminalProps {
@@ -168,6 +179,11 @@ export function POSTerminal({
     sale_price: '',
     purchase_price: '',
     stock_quantity: '20',
+    is_taxable: true,
+    tax_rate: '18',
+    tax_type: 'percentage' as 'percentage' | 'flat',
+    tax_inclusive: true,
+    flat_tax_amount: '0',
   });
 
   const [showReceiptModal, setShowReceiptModal] = useState(false);
@@ -318,6 +334,11 @@ export function POSTerminal({
           discount_type: null,
           discount_value: 0,
           max_stock: available > 0 ? available : 999,
+          is_taxable: Boolean(product.is_taxable),
+          tax_rate: Number(product.tax_rate || 0),
+          tax_type: product.tax_type || 'percentage',
+          tax_inclusive: product.tax_inclusive !== false,
+          flat_tax_amount: Number(product.flat_tax_amount || 0),
         },
       ]);
     }
@@ -358,22 +379,73 @@ export function POSTerminal({
     setItems([]);
   };
 
-  // Calculate totals
-  const subtotal = items.reduce(
-    (sum, item) =>
-      sum +
-      calculateLineTotal(
-        item.unit_price,
-        item.quantity,
-        item.discount_type,
-        item.discount_value
-      ),
-    0
-  );
+  // Calculate totals including product advance GST
+  const productTaxes = items.map((item) => {
+    const lineTotal = calculateLineTotal(
+      item.unit_price,
+      item.quantity,
+      item.discount_type,
+      item.discount_value
+    );
+    let itemTax = 0;
+    const isTaxable = Boolean(item.is_taxable);
+    const taxRate = Number(item.tax_rate || 0);
+    const taxType = item.tax_type || 'percentage';
+    const taxInclusive = item.tax_inclusive !== false; // Option 2 default (true)
+    const flatTax = Number(item.flat_tax_amount || 0);
+
+    if (isTaxable) {
+      if (taxType === 'percentage' && taxRate > 0) {
+        if (taxInclusive) {
+          // Option 2 (Tax Inclusive): Flat price includes GST
+          const net = lineTotal / (1 + taxRate / 100);
+          itemTax = lineTotal - net;
+        } else {
+          itemTax = lineTotal * (taxRate / 100);
+        }
+      } else if (taxType === 'flat' && flatTax > 0) {
+        const flatTotal = flatTax * item.quantity;
+        itemTax = taxInclusive ? Math.min(lineTotal, flatTotal) : flatTotal;
+      }
+    }
+    return {
+      lineTotal,
+      itemTax,
+      isTaxable,
+      taxInclusive,
+      taxRate,
+    };
+  });
+
+  const subtotal = productTaxes.reduce((sum, pt) => sum + pt.lineTotal, 0);
   const saleDiscount = calculateDiscount(subtotal, discountType, discountValue);
   const afterDiscount = subtotal - saleDiscount;
-  const tax = calculateTax(afterDiscount, posTaxRate);
-  const total = afterDiscount + tax;
+
+  const totalAutoProductTax = productTaxes.reduce((sum, pt) => sum + pt.itemTax, 0);
+  const hasProductGst = productTaxes.some((pt) => pt.itemTax > 0);
+
+  const totalExclusiveTax = productTaxes
+    .filter((pt) => !pt.taxInclusive)
+    .reduce((sum, pt) => sum + pt.itemTax, 0);
+
+  // If products have advance GST configured, use it automatically!
+  // Otherwise if doctor explicitly configured POS tax, use posTaxRate
+  const tax = hasProductGst
+    ? Math.round(totalAutoProductTax * 100) / 100
+    : calculateTax(afterDiscount, posTaxRate);
+
+  // For Option 2 (Tax Inclusive), flat prices already include tax, so afterDiscount is the total payable.
+  // Any exclusive tax is added on top.
+  const total = hasProductGst
+    ? Math.round((afterDiscount + totalExclusiveTax) * 100) / 100
+    : afterDiscount + tax;
+
+  const effectiveTaxRate = hasProductGst
+    ? subtotal > 0
+      ? Math.round((tax / (subtotal - totalAutoProductTax + totalExclusiveTax)) * 1000) / 10
+      : 0
+    : posTaxRate;
+
   const change =
     paymentMethod === 'cash' && amountReceived
       ? Math.max(0, parseFloat(amountReceived) - total)
@@ -415,6 +487,11 @@ export function POSTerminal({
         unit_price: i.unit_price,
         discount_type: i.discount_type,
         discount_value: i.discount_value,
+        is_taxable: i.is_taxable,
+        tax_rate: i.tax_rate,
+        tax_type: i.tax_type,
+        tax_inclusive: i.tax_inclusive,
+        flat_tax_amount: i.flat_tax_amount,
       })),
       customer_name: customerName.trim() || undefined,
       customer_phone: customerPhone.trim() || undefined,
@@ -422,7 +499,7 @@ export function POSTerminal({
       amount_received: amountReceived ? parseFloat(amountReceived) : undefined,
       discount_type: discountType,
       discount_value: discountValue,
-      tax_rate: posTaxRate,
+      tax_rate: effectiveTaxRate,
       idempotency_key: crypto.randomUUID(),
     });
     setProcessing(false);
@@ -439,7 +516,8 @@ export function POSTerminal({
         subtotal,
         discount: saleDiscount,
         tax,
-        taxRate: posTaxRate,
+        taxRate: effectiveTaxRate,
+        taxInclusive: hasProductGst,
         customerName: customerName || 'Walk-in Customer',
         customerPhone: customerPhone || null,
         paymentMethod,
@@ -616,6 +694,11 @@ export function POSTerminal({
       low_stock_threshold: 5,
       is_published: true,
       is_active: true,
+      is_taxable: newProductForm.is_taxable,
+      tax_rate: newProductForm.is_taxable ? (parseFloat(newProductForm.tax_rate) || 0) : 0,
+      tax_type: newProductForm.tax_type,
+      tax_inclusive: newProductForm.tax_inclusive,
+      flat_tax_amount: newProductForm.is_taxable ? (parseFloat(newProductForm.flat_tax_amount) || 0) : 0,
     });
 
     setSavingProduct(false);
@@ -629,6 +712,11 @@ export function POSTerminal({
         sale_price: '',
         purchase_price: '',
         stock_quantity: '20',
+        is_taxable: true,
+        tax_rate: '18',
+        tax_type: 'percentage',
+        tax_inclusive: true,
+        flat_tax_amount: '0',
       });
       router.refresh();
     } else {
@@ -875,9 +963,16 @@ export function POSTerminal({
                         </div>
 
                         <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
-                          <span className="text-xs font-bold text-rose-600 font-serif">
-                            {formatCurrency(p.sale_price)}
-                          </span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-bold text-rose-600 font-serif">
+                              {formatCurrency(p.sale_price)}
+                            </span>
+                            {p.is_taxable && (
+                              <span className="text-[8px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60" title={`Includes ${p.tax_rate}% GST`}>
+                                GST
+                              </span>
+                            )}
+                          </div>
                           <span
                             className={cn(
                               'text-[9px] px-1.5 py-0.2 rounded font-medium',
@@ -1065,9 +1160,16 @@ export function POSTerminal({
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-900 truncate leading-tight text-xs">{item.name}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">
-                      {formatCurrency(item.unit_price)} × {item.quantity}
-                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-[10px] text-slate-500 font-medium">
+                        {formatCurrency(item.unit_price)} × {item.quantity}
+                      </p>
+                      {item.is_taxable && (item.tax_rate ?? 0) > 0 ? (
+                        <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1 rounded border border-emerald-200/60">
+                          GST {item.tax_rate}% {item.tax_inclusive !== false ? '(Incl)' : ''}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
 
                   {/* Quantity Stepper */}
@@ -1157,13 +1259,17 @@ export function POSTerminal({
                   onClick={() => setShowTaxSection(!showTaxSection)}
                   className={cn(
                     'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all cursor-pointer',
-                    showTaxSection || posTaxRate > 0
+                    showTaxSection || tax > 0
                       ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs font-bold'
                       : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900 shadow-2xs'
                   )}
                 >
                   <Receipt className="h-2.5 w-2.5 text-blue-500" />
-                  <span>GST: {posTaxRate}%</span>
+                  <span>
+                    {hasProductGst
+                      ? `GST: ${formatCurrency(tax)} (Auto)`
+                      : `GST: ${posTaxRate}%`}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1293,14 +1399,23 @@ export function POSTerminal({
 
             {/* Row 2: Total & Payment Method on ONE Clean Line */}
             <div className="px-2.5 py-1.5 flex items-center justify-between gap-2">
-              <div className="flex items-baseline gap-1.5 min-w-0">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total:</span>
-                <span className="text-xl sm:text-2xl font-extrabold text-slate-950 font-mono tracking-tight leading-none">
-                  {formatCurrency(total)}
-                </span>
-                {subtotal !== total && (
-                  <span className="text-[10px] text-slate-400 line-through font-mono">
-                    {formatCurrency(subtotal)}
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total:</span>
+                  <span className="text-xl sm:text-2xl font-extrabold text-slate-950 font-mono tracking-tight leading-none">
+                    {formatCurrency(total)}
+                  </span>
+                  {subtotal !== total && (
+                    <span className="text-[10px] text-slate-400 line-through font-mono">
+                      {formatCurrency(subtotal)}
+                    </span>
+                  )}
+                </div>
+                {tax > 0 && (
+                  <span className="text-[9.5px] font-medium text-emerald-700 leading-none mt-0.5">
+                    {hasProductGst
+                      ? `✓ Includes ${formatCurrency(tax)} GST`
+                      : `+ ${formatCurrency(tax)} GST (${posTaxRate}%)`}
                   </span>
                 )}
               </div>
@@ -1567,7 +1682,7 @@ export function POSTerminal({
                     )}
                     {lastSaleInfo.tax > 0 && (
                       <div className="flex justify-between">
-                        <span>GST / Sales Tax ({lastSaleInfo.taxRate}%):</span>
+                        <span>GST / Sales Tax {lastSaleInfo.taxRate > 0 ? `(${lastSaleInfo.taxRate}%)` : ''}:</span>
                         <span>{formatCurrency(lastSaleInfo.tax)}</span>
                       </div>
                     )}
@@ -1575,6 +1690,11 @@ export function POSTerminal({
                       <span className="uppercase">NET TOTAL:</span>
                       <span>{formatCurrency(lastSaleInfo.total)}</span>
                     </div>
+                    {lastSaleInfo.tax > 0 && (
+                      <div className="text-[8px] text-gray-600 text-right">
+                        (Includes {formatCurrency(lastSaleInfo.tax)} GST)
+                      </div>
+                    )}
                     {lastSaleInfo.paymentMethod === 'cash' && (
                       <>
                         <div className="flex justify-between text-[9px] text-gray-700 pt-0.5">
@@ -1772,6 +1892,110 @@ export function POSTerminal({
                 }
                 className="text-xs h-9"
               />
+            </div>
+
+            {/* GST Configuration (Doctor Option 2 Default) */}
+            <div className="p-3 rounded-xl border border-rose-200/90 bg-rose-50/40 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Percent className="h-3.5 w-3.5 text-rose-600" />
+                  <Label className="text-xs font-bold text-gray-800 cursor-pointer">
+                    Enable GST on this product
+                  </Label>
+                </div>
+                <Switch
+                  checked={newProductForm.is_taxable}
+                  onCheckedChange={(checked: boolean) =>
+                    setNewProductForm({ ...newProductForm, is_taxable: checked })
+                  }
+                />
+              </div>
+
+              {newProductForm.is_taxable && (
+                <div className="pt-2 border-t border-rose-100 space-y-2">
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setNewProductForm({ ...newProductForm, tax_inclusive: true })}
+                      className={cn(
+                        'p-1.5 rounded-lg border text-left font-semibold transition-all cursor-pointer',
+                        newProductForm.tax_inclusive
+                          ? 'border-rose-500 bg-white text-rose-900 shadow-2xs font-bold'
+                          : 'border-gray-200 bg-transparent text-gray-500'
+                      )}
+                    >
+                      Flat Price (Tax Incl.)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewProductForm({ ...newProductForm, tax_inclusive: false })}
+                      className={cn(
+                        'p-1.5 rounded-lg border text-left font-semibold transition-all cursor-pointer',
+                        !newProductForm.tax_inclusive
+                          ? 'border-rose-500 bg-white text-rose-900 shadow-2xs font-bold'
+                          : 'border-gray-200 bg-transparent text-gray-500'
+                      )}
+                    >
+                      Exclusive (+ Tax)
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="any"
+                        placeholder="18"
+                        value={newProductForm.tax_rate}
+                        onChange={(e) =>
+                          setNewProductForm({ ...newProductForm, tax_rate: e.target.value })
+                        }
+                        className="h-8 text-xs font-bold bg-white pr-6"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                        %
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {['0', '5', '16', '18'].map((r) => (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => setNewProductForm({ ...newProductForm, tax_rate: r })}
+                          className={cn(
+                            'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                            newProductForm.tax_rate === r
+                              ? 'bg-rose-600 text-white'
+                              : 'bg-white border border-gray-200 text-gray-600'
+                          )}
+                        >
+                          {r}%
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Live preview */}
+                  {(() => {
+                    const price = parseFloat(newProductForm.sale_price) || 0;
+                    const rate = parseFloat(newProductForm.tax_rate) || 0;
+                    if (price > 0 && rate > 0) {
+                      const net = newProductForm.tax_inclusive ? price / (1 + rate / 100) : price;
+                      const gst = newProductForm.tax_inclusive ? price - net : price * (rate / 100);
+                      return (
+                        <div className="text-[10px] bg-white p-1.5 rounded-md border border-rose-100 flex justify-between font-medium text-gray-600">
+                          <span>Base: {formatCurrency(net)}</span>
+                          <span className="text-rose-600 font-bold">GST: +{formatCurrency(gst)}</span>
+                          <span className="font-bold text-emerald-700">Total: {formatCurrency(newProductForm.tax_inclusive ? price : price + gst)}</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+              )}
             </div>
 
             <div className="pt-2 flex items-center justify-end gap-2">

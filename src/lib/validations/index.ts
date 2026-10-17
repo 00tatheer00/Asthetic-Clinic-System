@@ -199,6 +199,11 @@ export const productSchema = z.object({
   seo_title: z.string().max(70).optional().or(z.literal('')),
   seo_description: z.string().max(160).optional().or(z.literal('')),
   sort_order: z.number().int().default(0),
+  is_taxable: z.boolean().default(false),
+  tax_rate: z.number().min(0).max(100).default(0),
+  tax_type: z.enum(['percentage', 'flat']).default('percentage'),
+  tax_inclusive: z.boolean().default(true),
+  flat_tax_amount: monetarySchema.default(0),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;
@@ -235,6 +240,12 @@ const saleItemSchema = z.object({
   unit_price: monetarySchema,
   discount_type: z.enum(['percentage', 'fixed']).optional().nullable(),
   discount_value: z.number().nonnegative().default(0),
+  is_taxable: z.boolean().optional().default(false),
+  tax_rate: z.number().min(0).max(100).optional().default(0),
+  tax_type: z.enum(['percentage', 'flat']).optional().default('percentage'),
+  tax_inclusive: z.boolean().optional().default(true),
+  flat_tax_amount: monetarySchema.optional().default(0),
+  tax_amount: monetarySchema.optional().default(0),
 });
 
 export const saleSchema = z.object({

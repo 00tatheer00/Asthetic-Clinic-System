@@ -53,6 +53,10 @@ export async function createSale(formData: unknown) {
     discount_value: number;
     discount_amount: number;
     line_total: number;
+    is_taxable?: boolean;
+    tax_rate?: number;
+    tax_inclusive?: boolean;
+    tax_amount?: number;
   }> = [];
 
   let subtotal = 0;
@@ -63,7 +67,7 @@ export async function createSale(formData: unknown) {
 
   const [productsResult, treatmentsResult] = await Promise.all([
     productIds.length > 0
-      ? supabase.from('products').select('id, stock_quantity, reserved_quantity, name, sale_price').in('id', productIds)
+      ? supabase.from('products').select('id, stock_quantity, reserved_quantity, name, sale_price, is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount').in('id', productIds)
       : Promise.resolve({ data: [] as any[] }),
     treatmentIds.length > 0
       ? supabase.from('treatments').select('id, price, name, is_active').in('id', treatmentIds)
@@ -75,6 +79,10 @@ export async function createSale(formData: unknown) {
 
   for (const item of data.items) {
     let verifiedUnitPrice = item.unit_price;
+    let isTaxable = false;
+    let taxRate = 0;
+    let taxInclusive = true;
+    let itemTaxAmount = 0;
 
     // Validate stock and verify price for product items
     if (item.item_type === 'product' && item.product_id) {
@@ -93,6 +101,37 @@ export async function createSale(formData: unknown) {
       }
 
       verifiedUnitPrice = Number(product.sale_price);
+
+      // Advance GST configuration from product
+      isTaxable = Boolean(product.is_taxable);
+      taxRate = isTaxable ? Number(product.tax_rate || 0) : 0;
+      taxInclusive = product.tax_inclusive !== false; // Option 2: Default true
+      const taxType = product.tax_type || 'percentage';
+      const flatTax = Number(product.flat_tax_amount || 0);
+
+      const computedLineTotal = calculateLineTotal(
+        verifiedUnitPrice,
+        item.quantity,
+        item.discount_type,
+        item.discount_value
+      );
+
+      if (isTaxable) {
+        if (taxType === 'percentage' && taxRate > 0) {
+          if (taxInclusive) {
+            // Option 2 (Tax Inclusive): Flat price includes GST
+            // net = lineTotal / (1 + (taxRate / 100))
+            const net = computedLineTotal / (1 + (taxRate / 100));
+            itemTaxAmount = Math.round((computedLineTotal - net) * 100) / 100;
+          } else {
+            // Tax Exclusive: GST added on top
+            itemTaxAmount = Math.round((computedLineTotal * (taxRate / 100)) * 100) / 100;
+          }
+        } else if (taxType === 'flat' && flatTax > 0) {
+          const flatTotal = flatTax * item.quantity;
+          itemTaxAmount = taxInclusive ? Math.min(computedLineTotal, flatTotal) : flatTotal;
+        }
+      }
     }
 
     // Verify price for treatment/service items
@@ -131,14 +170,42 @@ export async function createSale(formData: unknown) {
       discount_value: item.discount_value,
       discount_amount: itemDiscount,
       line_total: lineTotal,
+      is_taxable: isTaxable,
+      tax_rate: taxRate,
+      tax_inclusive: taxInclusive,
+      tax_amount: itemTaxAmount,
     });
   }
 
   // Calculate sale-level totals
   const saleDiscount = calculateDiscount(subtotal, data.discount_type, data.discount_value);
   const afterDiscount = subtotal - saleDiscount;
-  const taxAmount = calculateTax(afterDiscount, data.tax_rate);
-  const total = afterDiscount + taxAmount;
+
+  // Aggregate product advance GST
+  const totalItemTax = saleItems.reduce((acc, curr) => acc + (curr.tax_amount || 0), 0);
+  const hasItemLevelTax = saleItems.some((i) => (i.tax_amount || 0) > 0);
+
+  // Exclusive tax to add on top (if any items were configured tax-exclusive)
+  const totalExclusiveTax = saleItems
+    .filter((i) => !i.tax_inclusive)
+    .reduce((acc, curr) => acc + (curr.tax_amount || 0), 0);
+
+  let taxAmount = 0;
+  let effectiveTaxRate = data.tax_rate || 0;
+
+  if (hasItemLevelTax) {
+    taxAmount = Math.round(totalItemTax * 100) / 100;
+    const taxableBase = afterDiscount - (totalItemTax - totalExclusiveTax);
+    effectiveTaxRate = taxableBase > 0 ? Math.round((taxAmount / taxableBase) * 1000) / 10 : 0;
+  } else if (data.tax_rate && data.tax_rate > 0) {
+    taxAmount = calculateTax(afterDiscount, data.tax_rate);
+    effectiveTaxRate = data.tax_rate;
+  }
+
+  // Total payable: With option 2 (tax inclusive flat price), total is afterDiscount; any exclusive tax adds on top
+  const total = Math.round(
+    (afterDiscount + totalExclusiveTax + (hasItemLevelTax ? 0 : (data.tax_rate > 0 ? taxAmount : 0))) * 100
+  ) / 100;
 
   // Calculate change for cash
   let changeAmount: number | null = null;
@@ -157,7 +224,7 @@ export async function createSale(formData: unknown) {
       discount_type: data.discount_type || null,
       discount_value: data.discount_value,
       discount_amount: saleDiscount,
-      tax_rate: data.tax_rate,
+      tax_rate: effectiveTaxRate,
       tax_amount: taxAmount,
       total,
       payment_method: data.payment_method,
@@ -262,7 +329,7 @@ export async function createSale(formData: unknown) {
       subtotal,
       discount_amount: saleDiscount,
       tax_label: settings?.default_tax_label || 'GST',
-      tax_rate: data.tax_rate,
+      tax_rate: effectiveTaxRate,
       tax_amount: taxAmount,
       total,
       payment_method: data.payment_method,
@@ -288,6 +355,8 @@ export async function createSale(formData: unknown) {
           unit_price: item.unit_price,
           discount_amount: item.discount_amount,
           line_total: item.line_total,
+          tax_rate: item.tax_rate || 0,
+          tax_amount: item.tax_amount || 0,
           sort_order: index,
         }))
       );

@@ -684,7 +684,7 @@ export function InvoicesList({
                     )}
                     {selectedInvoice.tax_amount > 0 && (
                       <div className="flex justify-between">
-                        <span>Services Tax ({selectedInvoice.tax_rate}%):</span>
+                        <span>{selectedInvoice.tax_label || 'GST / Tax'} {selectedInvoice.tax_rate > 0 ? `(${selectedInvoice.tax_rate}%)` : ''}:</span>
                         <span>{formatCurrency(selectedInvoice.tax_amount)}</span>
                       </div>
                     )}
