@@ -302,6 +302,7 @@ CREATE INDEX idx_products_category ON products(category_id) WHERE deleted_at IS 
 CREATE INDEX idx_products_published ON products(is_published) WHERE deleted_at IS NULL AND is_active = true;
 CREATE INDEX idx_products_low_stock ON products(stock_quantity, low_stock_threshold)
     WHERE deleted_at IS NULL AND is_active = true;
+CREATE INDEX idx_products_is_taxable ON products(is_taxable) WHERE deleted_at IS NULL;
 
 CREATE TABLE stock_movements (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -401,6 +402,10 @@ CREATE TABLE sale_items (
     discount_value  NUMERIC(12, 2) DEFAULT 0,
     discount_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
     line_total      NUMERIC(12, 2) NOT NULL,
+    is_taxable      BOOLEAN DEFAULT false,
+    tax_rate        NUMERIC(5, 2) DEFAULT 0,
+    tax_inclusive   BOOLEAN DEFAULT true,
+    tax_amount      NUMERIC(12, 2) DEFAULT 0,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -592,6 +597,8 @@ CREATE TABLE invoice_line_items (
     quantity        INTEGER NOT NULL DEFAULT 1,
     unit_price      NUMERIC(12, 2) NOT NULL,
     discount_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    tax_rate        NUMERIC(5, 2) DEFAULT 0,
+    tax_amount      NUMERIC(12, 2) DEFAULT 0,
     line_total      NUMERIC(12, 2) NOT NULL,
     sort_order      INTEGER NOT NULL DEFAULT 0,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()

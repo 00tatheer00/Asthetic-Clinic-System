@@ -14,27 +14,14 @@ export default async function InventoryPage() {
     .select('id, name')
     .order('name');
 
-  let { data: products, error: prodErr } = await supabase
+  const { data: products, error: prodErr } = await supabase
     .from('products')
     .select('id, name, slug, sku, category_id, description, short_description, purchase_price, sale_price, stock_quantity, reserved_quantity, low_stock_threshold, is_active, is_published, is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, image_url, product_categories(id, name)')
     .is('deleted_at', null)
     .order('name');
 
-  // Fallback if migration 008 columns are not yet applied in DB
-  if (prodErr && (prodErr.code === '42703' || prodErr.code === 'PGRST204' || prodErr.message?.includes('does not exist'))) {
-    const fallback = await supabase
-      .from('products')
-      .select('id, name, slug, sku, category_id, description, short_description, purchase_price, sale_price, stock_quantity, reserved_quantity, low_stock_threshold, is_active, is_published, image_url, product_categories(id, name)')
-      .is('deleted_at', null)
-      .order('name');
-    products = (fallback.data || []).map((p) => ({
-      ...p,
-      is_taxable: false,
-      tax_rate: 0,
-      tax_type: 'flat' as const,
-      tax_inclusive: true,
-      flat_tax_amount: 0,
-    })) as any;
+  if (prodErr) {
+    console.error('[Inventory Page] Error fetching products:', prodErr);
   }
 
   const { data: categories } = await categoriesQuery;

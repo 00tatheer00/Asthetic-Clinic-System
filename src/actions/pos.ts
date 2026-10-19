@@ -74,18 +74,10 @@ export async function createSale(formData: unknown) {
       : Promise.resolve({ data: [] as any[], error: null }),
   ]);
 
-  let productsData: any[] = (productsResult as any).data || [];
-  if (
-    (productsResult as any).error &&
-    ((productsResult as any).error.code === '42703' ||
-      (productsResult as any).error.code === 'PGRST204' ||
-      (productsResult as any).error.message?.includes('column'))
-  ) {
-    const fallbackRes = await supabase
-      .from('products')
-      .select('id, stock_quantity, reserved_quantity, name, sale_price')
-      .in('id', productIds);
-    productsData = fallbackRes.data || [];
+  const productsData: any[] = (productsResult as any).data || [];
+  if ((productsResult as any).error) {
+    console.error('[POS] Error fetching products:', (productsResult as any).error);
+    return { success: false, error: 'Failed to fetch product data.' };
   }
 
   const productsMap = new Map<string, any>(productsData.map((p: any) => [p.id, p]));
@@ -256,34 +248,9 @@ export async function createSale(formData: unknown) {
   }
 
   // Insert sale items
-  let { error: itemsError } = await supabase
+  const { error: itemsError } = await supabase
     .from('sale_items')
     .insert(saleItems.map((item) => ({ ...item, sale_id: sale.id })));
-
-  if (
-    itemsError &&
-    (itemsError.code === 'PGRST204' ||
-      itemsError.code === '42703' ||
-      itemsError.message?.includes('column') ||
-      itemsError.message?.includes('schema cache'))
-  ) {
-    console.warn('[POS] Retrying sale_items insert without GST columns:', itemsError.message);
-    const baseSaleItems = saleItems.map((item) => ({
-      sale_id: sale.id,
-      product_id: item.product_id || null,
-      treatment_id: item.treatment_id || null,
-      item_type: item.item_type,
-      name: item.name,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      discount_type: item.discount_type || null,
-      discount_value: item.discount_value,
-      discount_amount: item.discount_amount,
-      line_total: item.line_total,
-    }));
-    const retryRes = await supabase.from('sale_items').insert(baseSaleItems);
-    itemsError = retryRes.error;
-  }
 
   if (itemsError) {
     console.error('[POS] Sale items insert failed:', itemsError);
@@ -396,29 +363,8 @@ export async function createSale(formData: unknown) {
       sort_order: index,
     }));
 
-    let { error: lineItemsErr } = await supabase.from('invoice_line_items').insert(fullItems);
-    if (
-      lineItemsErr &&
-      (lineItemsErr.code === 'PGRST204' ||
-        lineItemsErr.code === '42703' ||
-        lineItemsErr.message?.includes('column') ||
-        lineItemsErr.message?.includes('schema cache'))
-    ) {
-      console.warn('[POS] Retrying invoice_line_items insert without GST columns:', lineItemsErr.message);
-      const baseItems = saleItems.map((item, index) => ({
-        invoice_id: invoice.id,
-        description: `${item.name}${item.item_type === 'service' ? ' (Service)' : ''}`,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        discount_amount: item.discount_amount,
-        line_total: item.line_total,
-        sort_order: index,
-      }));
-      const retryLineRes = await supabase.from('invoice_line_items').insert(baseItems);
-      if (retryLineRes.error) {
-        console.error('[POS] Base invoice line items insert failed:', retryLineRes.error);
-      }
-    } else if (lineItemsErr) {
+    const { error: lineItemsErr } = await supabase.from('invoice_line_items').insert(fullItems);
+    if (lineItemsErr) {
       console.error('[POS] Invoice line items insert failed:', lineItemsErr);
     }
   }

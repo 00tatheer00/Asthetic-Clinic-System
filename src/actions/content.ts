@@ -417,43 +417,21 @@ export async function saveProduct(productId: string | null, formData: unknown) {
   };
 
   if (productId) {
-    let { error } = await supabase
+    const { error } = await supabase
       .from('products')
       .update(payload)
       .eq('id', productId);
-
-    // If new GST columns don't exist in Supabase schema yet (PGRST204), fall back to base columns
-    if (error && (error.code === 'PGRST204' || error.message?.includes('schema cache') || error.code === '42703')) {
-      const { is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, ...basePayload } = payload;
-      const fallback = await supabase
-        .from('products')
-        .update(basePayload)
-        .eq('id', productId);
-      error = fallback.error;
-    }
 
     if (error) {
       console.error('[saveProduct update error]', error);
       return { success: false, error: error.message || 'Failed to update product.' };
     }
   } else {
-    let { data: product, error } = await supabase
+    const { data: product, error } = await supabase
       .from('products')
       .insert({ ...payload, created_by: staff.id })
       .select('id')
       .single();
-
-    // If new GST columns don't exist in Supabase schema yet (PGRST204), fall back to base columns
-    if (error && (error.code === 'PGRST204' || error.message?.includes('schema cache') || error.code === '42703')) {
-      const { is_taxable, tax_rate, tax_type, tax_inclusive, flat_tax_amount, ...basePayload } = payload;
-      const fallback = await supabase
-        .from('products')
-        .insert({ ...basePayload, created_by: staff.id })
-        .select('id')
-        .single();
-      product = fallback.data;
-      error = fallback.error;
-    }
 
     if (error) {
       console.error('[saveProduct insert error]', error);
