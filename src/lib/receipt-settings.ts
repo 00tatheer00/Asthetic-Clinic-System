@@ -23,7 +23,7 @@ export const DEFAULT_RECEIPT_SETTINGS: InvoiceReceiptSettings = {
   receiptPhone: 'Dr: 0335-6400959 | WhatsApp: 0335-6400959',
   receiptFooterMessage: 'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days of treatment.',
   enableQrVerification: true,
-  printerName: 'POS-80',
+  printerName: 'Xprinter XP-80',
   paperWidth: '80mm',
   useQzTray: true,
 };
@@ -37,18 +37,16 @@ export function getReceiptSettings(): InvoiceReceiptSettings {
     if (!raw) return DEFAULT_RECEIPT_SETTINGS;
     const parsed = JSON.parse(raw);
 
-    // Auto-migrate legacy 58mm settings: the clinic has permanently upgraded to an 80mm printer
-    if (parsed.paperWidth !== '80mm' || parsed.printerName === 'POS-58 11.3.0.0') {
+    // Auto-migrate to the newly installed Xprinter XP-80 80mm printer
+    if (parsed.paperWidth !== '80mm' || parsed.printerName !== 'Xprinter XP-80') {
       parsed.paperWidth = '80mm';
-      if (parsed.printerName === 'POS-58 11.3.0.0' || !parsed.printerName) {
-        parsed.printerName = 'POS-80';
-      }
+      parsed.printerName = 'Xprinter XP-80';
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_RECEIPT_SETTINGS, ...parsed }));
       } catch {}
     }
 
-    return { ...DEFAULT_RECEIPT_SETTINGS, ...parsed, paperWidth: '80mm' };
+    return { ...DEFAULT_RECEIPT_SETTINGS, ...parsed, paperWidth: '80mm', printerName: 'Xprinter XP-80' };
   } catch {
     return DEFAULT_RECEIPT_SETTINGS;
   }
