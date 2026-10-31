@@ -659,10 +659,10 @@ export function SettingsForm({
                       <div className="space-y-1">
                         <Label className="text-xs font-medium text-gray-700">Windows Printer Name</Label>
                         <Input
-                          value={receiptForm.printerName || 'POS-58 11.3.0.0'}
+                          value={receiptForm.printerName || 'POS-80'}
                           onChange={(e) => setReceiptForm({ ...receiptForm, printerName: e.target.value })}
                           disabled={!isAdmin}
-                          placeholder="POS-58 11.3.0.0"
+                          placeholder="POS-80"
                           className="h-8 text-xs font-mono"
                         />
                       </div>

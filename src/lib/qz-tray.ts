@@ -2,8 +2,8 @@
 
 /**
  * QZ Tray Integration Service for Brimish Skin Care POS
- * Connects directly to local QZ Tray (WebSocket) to stream rasterized 58mm thermal
- * receipts directly to the "POS-58 11.3.0.0" (SPEED X BT-500M) receipt printer.
+ * Connects directly to local QZ Tray (WebSocket) to stream rasterized 80mm thermal
+ * receipts directly to the configured receipt printer (default: POS-80).
  */
 
 import type { QzTrayStatic } from 'qz-tray';
@@ -97,10 +97,10 @@ export async function connectQz(): Promise<QzTrayStatic> {
 
 /**
  * Finds the target Windows thermal printer.
- * Prioritizes exact printer name "POS-58 11.3.0.0", then fuzzy matches (POS-58, BT-500, etc.),
+ * Prioritizes exact printer name from settings, then fuzzy matches (POS-80, POS-58, BT-500, etc.),
  * and finally falls back to the default Windows printer.
  */
-export async function findPosPrinter(preferredName: string = 'POS-58 11.3.0.0'): Promise<string> {
+export async function findPosPrinter(preferredName: string = 'POS-80'): Promise<string> {
   const qz = await connectQz();
 
   // 1. Exact match attempt
@@ -128,9 +128,11 @@ export async function findPosPrinter(preferredName: string = 'POS-58 11.3.0.0'):
       : [];
 
     const searchPatterns = [
+      /POS[-_ ]?80/i,
       /POS[-_ ]?58/i,
       /BT[-_ ]?500/i,
       /SPEED[-_ ]?X/i,
+      /\b80\b/i,
       /\b58\b/i,
       /thermal/i,
     ];
@@ -176,13 +178,13 @@ export async function isQzTrayAvailable(): Promise<boolean> {
 
 /**
  * Extracts element HTML, inlines thermal logo and QR codes as Data URLs,
- * and wraps in thermal-optimized 48mm CSS for the SPEED X BT-500M printer.
+ * and wraps in thermal-optimized CSS for the configured 80mm printer.
  * Calculates exact physical receipt height to prevent continuous roll feeds.
  */
 async function prepareThermalHtml(
   element: HTMLElement,
   title: string = 'Receipt',
-  printWidthMm: number = 48
+  printWidthMm: number = 72
 ): Promise<{ html: string; heightMm: number }> {
   // 1. Calculate physical height of the rendered receipt
   const scrollHeight = element.scrollHeight;
@@ -242,7 +244,7 @@ async function prepareThermalHtml(
       target.className = 'thermal-receipt-logo';
       target.setAttribute(
         'style',
-        'width: 30mm !important; max-width: 30mm !important; height: auto !important; max-height: 28mm !important; display: block !important; margin: 0 auto 4px auto !important; object-fit: contain !important;'
+        'width: 38mm !important; max-width: 38mm !important; height: auto !important; max-height: 34mm !important; display: block !important; margin: 0 auto 6px auto !important; object-fit: contain !important;'
       );
       continue;
     }
@@ -307,8 +309,8 @@ async function prepareThermalHtml(
       background: #ffffff !important;
       color: #000000 !important;
       font-family: 'Courier New', Consolas, 'Lucida Console', monospace !important;
-      font-size: 10px !important;
-      line-height: 1.25 !important;
+      font-size: 12px !important;
+      line-height: 1.3 !important;
     }
     .thermal-receipt-container {
       width: ${printWidthMm}mm !important;
@@ -359,12 +361,12 @@ async function prepareThermalHtml(
     .thermal-receipt-container .py-2 { padding-top: 4px !important; padding-bottom: 4px !important; }
 
     /* Typography utilities */
-    .thermal-receipt-container .text-\\[8px\\] { font-size: 8px !important; }
-    .thermal-receipt-container .text-\\[9px\\] { font-size: 8.5px !important; }
-    .thermal-receipt-container .text-\\[10px\\] { font-size: 9.5px !important; }
-    .thermal-receipt-container .text-\\[11px\\] { font-size: 10px !important; }
-    .thermal-receipt-container .text-xs { font-size: 10px !important; }
-    .thermal-receipt-container .text-sm { font-size: 11px !important; }
+    .thermal-receipt-container .text-\\[8px\\] { font-size: 10px !important; }
+    .thermal-receipt-container .text-\\[9px\\] { font-size: 10.5px !important; }
+    .thermal-receipt-container .text-\\[10px\\] { font-size: 11px !important; }
+    .thermal-receipt-container .text-\\[11px\\] { font-size: 12px !important; }
+    .thermal-receipt-container .text-xs { font-size: 12px !important; }
+    .thermal-receipt-container .text-sm { font-size: 13px !important; }
     .thermal-receipt-container .tracking-tight { letter-spacing: -0.2px !important; }
     .thermal-receipt-container .tracking-wider { letter-spacing: 0.5px !important; }
 
@@ -402,18 +404,18 @@ async function prepareThermalHtml(
     .thermal-receipt-container img[alt*="Logo" i],
     .thermal-receipt-container img[src*="logo" i],
     .thermal-receipt-container .w-11 {
-      width: 30mm !important;
-      max-width: 30mm !important;
+      width: 38mm !important;
+      max-width: 38mm !important;
       height: auto !important;
-      max-height: 28mm !important;
+      max-height: 34mm !important;
       display: block !important;
-      margin: 0 auto 4px auto !important;
+      margin: 0 auto 6px auto !important;
       object-fit: contain !important;
     }
     .thermal-receipt-container img[src*="data:image"],
     .thermal-receipt-container .w-24 img {
-      width: 72px !important;
-      height: 72px !important;
+      width: 88px !important;
+      height: 88px !important;
       background: #ffffff !important;
       margin: 0 auto !important;
       display: block !important;
@@ -473,11 +475,11 @@ export async function printElementWithQz(
 
   try {
     const qz = await connectQz();
-    const targetPrinter = options?.printerName || 'POS-58 11.3.0.0';
+    const targetPrinter = options?.printerName || 'POS-80';
     const printer = await findPosPrinter(targetPrinter);
 
-    // 58mm roll: 48mm printable head width. 80mm roll: 72mm printable width.
-    const is58mm = options?.paperWidth !== '80mm';
+    // 80mm roll: 72mm printable head width (default). 58mm roll: 48mm printable width.
+    const is58mm = options?.paperWidth === '58mm';
     const printWidthMm = is58mm ? 48 : 72;
 
     // Prepare HTML and calculate exact physical height
@@ -495,7 +497,7 @@ export async function printElementWithQz(
       margins: 0,
       scaleContent: false, // 1:1 crisp rendering, do not scale!
       colorType: 'color',  // Render full contrast in JavaFX WebKit
-      rasterize: false,    // Use native vector/GDI text rendering on Windows POS-58
+      rasterize: false,    // Use native vector/GDI text rendering on Windows thermal printer
       interpolation: 'nearest-neighbor',
     });
 

@@ -2,7 +2,7 @@
 
 /**
  * Universal High-Reliability Receipt & Invoice Print Helper for Brimish Skin Care
- * Priority 1: Direct silent thermal printing via QZ Tray to "POS-58 11.3.0.0" (58mm thermal roll).
+ * Priority 1: Direct silent thermal printing via QZ Tray to the configured 80mm thermal printer.
  * Priority 2 (Fallback): Isolated iframe printing via native browser dialog.
  */
 
@@ -46,14 +46,14 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     existingFrame.remove();
   }
 
-  // Create an isolated hidden iframe rendered off-screen at 48mm thermal width
+  // Create an isolated hidden iframe rendered off-screen at 72mm thermal width (80mm roll)
   const iframe = document.createElement('iframe');
   iframe.id = 'brimish-isolated-print-frame';
   iframe.setAttribute('aria-hidden', 'true');
   iframe.style.position = 'fixed';
   iframe.style.top = '-99999px';
   iframe.style.left = '-99999px';
-  iframe.style.width = '48mm';
+  iframe.style.width = '72mm';
   iframe.style.height = 'auto';
   iframe.style.border = '0';
   iframe.style.opacity = '0';
@@ -109,7 +109,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       img.className = 'thermal-receipt-logo';
       img.setAttribute(
         'style',
-        'width: 30mm !important; max-width: 30mm !important; height: auto !important; max-height: 28mm !important; display: block !important; margin: 0 auto 4px auto !important; object-fit: contain !important;'
+        'width: 38mm !important; max-width: 38mm !important; height: auto !important; max-height: 34mm !important; display: block !important; margin: 0 auto 6px auto !important; object-fit: contain !important;'
       );
     }
   });
@@ -125,10 +125,10 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
   <title>${title}</title>
   <style>
     /* ======================================================== */
-    /* STANDALONE 58MM THERMAL RECEIPT (ZERO GAPS & CLEAN LINES)*/
+    /* STANDALONE 80MM THERMAL RECEIPT (ZERO GAPS & CLEAN LINES)*/
     /* ======================================================== */
     @page {
-      size: 58mm auto;
+      size: 80mm auto;
       margin: 0mm !important;
     }
 
@@ -143,8 +143,8 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      width: 48mm !important;
-      max-width: 48mm !important;
+      width: 72mm !important;
+      max-width: 72mm !important;
       height: auto !important;
       min-height: 0 !important;
       background: #ffffff !important;
@@ -162,17 +162,17 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     }
 
     .printable-receipt-wrapper {
-      width: 48mm !important;
-      max-width: 48mm !important;
-      min-width: 48mm !important;
+      width: 72mm !important;
+      max-width: 72mm !important;
+      min-width: 72mm !important;
       margin: 0 !important;
-      padding: 0 1mm 2mm 1mm !important;
+      padding: 0 2mm 3mm 2mm !important;
       display: block !important;
       position: static !important;
       background: #ffffff !important;
       color: #000000 !important;
-      font-size: 9.5px !important;
-      line-height: 1.25 !important;
+      font-size: 12px !important;
+      line-height: 1.3 !important;
       word-break: break-word !important;
       overflow-wrap: break-word !important;
     }
@@ -207,42 +207,42 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 
     /* Clinic Header & Headings */
     .printable-receipt-wrapper h2 {
-      font-size: 11px !important;
+      font-size: 14px !important;
       font-weight: 900 !important;
       line-height: 1.2 !important;
       text-align: center !important;
-      margin: 1px 0 !important;
+      margin: 2px 0 !important;
       letter-spacing: -0.2px !important;
     }
 
     .printable-receipt-wrapper p {
-      font-size: 8.5px !important;
-      line-height: 1.2 !important;
+      font-size: 11px !important;
+      line-height: 1.25 !important;
       margin: 1px 0 !important;
       color: #000000 !important;
     }
 
-    /* Spacing utilities for compact thermal receipt */
-    .printable-receipt-wrapper .space-y-0\\.5 > * + * { margin-top: 1.5px !important; }
-    .printable-receipt-wrapper .space-y-1 > * + * { margin-top: 2.5px !important; }
-    .printable-receipt-wrapper .space-y-1\\.5 > * + * { margin-top: 3.5px !important; }
-    .printable-receipt-wrapper .space-y-2 > * + * { margin-top: 5px !important; }
-    .printable-receipt-wrapper .py-0\\.5 { padding-top: 1px !important; padding-bottom: 1px !important; }
-    .printable-receipt-wrapper .py-1 { padding-top: 2px !important; padding-bottom: 2px !important; }
-    .printable-receipt-wrapper .py-1\\.5 { padding-top: 3px !important; padding-bottom: 3px !important; }
-    .printable-receipt-wrapper .py-2 { padding-top: 4px !important; padding-bottom: 4px !important; }
-    .printable-receipt-wrapper .pb-1 { padding-bottom: 2px !important; }
-    .printable-receipt-wrapper .pb-2 { padding-bottom: 4px !important; }
-    .printable-receipt-wrapper .pb-2\\.5 { padding-bottom: 5px !important; }
-    .printable-receipt-wrapper .pt-0\\.5 { padding-top: 1px !important; }
-    .printable-receipt-wrapper .pt-1 { padding-top: 2px !important; }
-    .printable-receipt-wrapper .pt-1\\.5 { padding-top: 3px !important; }
-    .printable-receipt-wrapper .pt-2 { padding-top: 4px !important; }
-    .printable-receipt-wrapper .pt-2\\.5 { padding-top: 5px !important; }
-    .printable-receipt-wrapper .mb-1 { margin-bottom: 2px !important; }
-    .printable-receipt-wrapper .mb-1\\.5 { margin-bottom: 3px !important; }
-    .printable-receipt-wrapper .mt-0\\.5 { margin-top: 1px !important; }
-    .printable-receipt-wrapper .mt-1 { margin-top: 2px !important; }
+    /* Spacing utilities for 80mm thermal receipt */
+    .printable-receipt-wrapper .space-y-0\\.5 > * + * { margin-top: 2px !important; }
+    .printable-receipt-wrapper .space-y-1 > * + * { margin-top: 4px !important; }
+    .printable-receipt-wrapper .space-y-1\\.5 > * + * { margin-top: 5px !important; }
+    .printable-receipt-wrapper .space-y-2 > * + * { margin-top: 6px !important; }
+    .printable-receipt-wrapper .py-0\\.5 { padding-top: 2px !important; padding-bottom: 2px !important; }
+    .printable-receipt-wrapper .py-1 { padding-top: 3px !important; padding-bottom: 3px !important; }
+    .printable-receipt-wrapper .py-1\\.5 { padding-top: 4px !important; padding-bottom: 4px !important; }
+    .printable-receipt-wrapper .py-2 { padding-top: 5px !important; padding-bottom: 5px !important; }
+    .printable-receipt-wrapper .pb-1 { padding-bottom: 3px !important; }
+    .printable-receipt-wrapper .pb-2 { padding-bottom: 5px !important; }
+    .printable-receipt-wrapper .pb-2\\.5 { padding-bottom: 6px !important; }
+    .printable-receipt-wrapper .pt-0\\.5 { padding-top: 2px !important; }
+    .printable-receipt-wrapper .pt-1 { padding-top: 3px !important; }
+    .printable-receipt-wrapper .pt-1\\.5 { padding-top: 4px !important; }
+    .printable-receipt-wrapper .pt-2 { padding-top: 5px !important; }
+    .printable-receipt-wrapper .pt-2\\.5 { padding-top: 6px !important; }
+    .printable-receipt-wrapper .mb-1 { margin-bottom: 3px !important; }
+    .printable-receipt-wrapper .mb-1\\.5 { margin-bottom: 4px !important; }
+    .printable-receipt-wrapper .mt-0\\.5 { margin-top: 2px !important; }
+    .printable-receipt-wrapper .mt-1 { margin-top: 3px !important; }
 
     /* Flex items & Table Rows */
     .printable-receipt-wrapper .flex {
@@ -252,7 +252,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 
     .printable-receipt-wrapper .justify-between {
       justify-content: space-between !important;
-      gap: 2px !important;
+      gap: 4px !important;
     }
 
     .printable-receipt-wrapper .justify-center { justify-content: center !important; }
@@ -269,19 +269,24 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     .printable-receipt-wrapper .w-1\\/4 { width: 26% !important; }
     .printable-receipt-wrapper .mx-auto { margin-left: auto !important; margin-right: auto !important; }
 
-    /* Fine-tune font sizes for 48mm thermal roll */
-    .printable-receipt-wrapper .text-xs,
+    /* Fine-tune font sizes for 72mm printable area (80mm roll) */
+    .printable-receipt-wrapper .text-xs {
+      font-size: 12px !important;
+    }
     .printable-receipt-wrapper .text-sm {
-      font-size: 10px !important;
+      font-size: 13px !important;
     }
     .printable-receipt-wrapper .text-\\[10px\\] {
-      font-size: 9px !important;
+      font-size: 11px !important;
     }
     .printable-receipt-wrapper .text-\\[9px\\] {
-      font-size: 8.5px !important;
+      font-size: 10.5px !important;
     }
     .printable-receipt-wrapper .text-\\[8px\\] {
-      font-size: 8px !important;
+      font-size: 10px !important;
+    }
+    .printable-receipt-wrapper .text-\\[11px\\] {
+      font-size: 12px !important;
     }
 
     /* Strictly NO BORDERS anywhere on the receipt */
@@ -307,8 +312,8 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     .printable-receipt-wrapper span.rounded,
     .printable-receipt-wrapper [class*="rounded"] {
       border-radius: 2px !important;
-      padding: 1px 4px !important;
-      font-size: 8.5px !important;
+      padding: 1px 5px !important;
+      font-size: 10.5px !important;
       border: none !important;
       background: transparent !important;
       color: #000000 !important;
@@ -327,27 +332,27 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       image-rendering: pixelated !important;
     }
 
-    /* Logo size */
+    /* Logo size — scaled up for 80mm */
     .printable-receipt-wrapper .thermal-receipt-logo,
     .printable-receipt-wrapper .w-11,
     .printable-receipt-wrapper img[alt*="logo" i],
     .printable-receipt-wrapper img[alt*="Logo" i],
     .printable-receipt-wrapper img[src*="logo" i] {
-      width: 30mm !important;
-      max-width: 30mm !important;
+      width: 38mm !important;
+      max-width: 38mm !important;
       height: auto !important;
-      max-height: 28mm !important;
+      max-height: 34mm !important;
       display: block !important;
-      margin: 0 auto 4px auto !important;
+      margin: 0 auto 6px auto !important;
       object-fit: contain !important;
       filter: none !important;
     }
 
-    /* Verification QR Code: Scannable Black on White matrix */
+    /* Verification QR Code: Scannable Black on White matrix — larger for 80mm */
     .printable-receipt-wrapper img[src*="data:image"],
     .printable-receipt-wrapper .w-24 img {
-      width: 72px !important;
-      height: 72px !important;
+      width: 88px !important;
+      height: 88px !important;
       background: #ffffff !important;
       filter: none !important;
       -webkit-filter: none !important;
@@ -358,10 +363,10 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 
     /* QR Code container box */
     .printable-receipt-wrapper .w-24 {
-      width: 76px !important;
-      height: 76px !important;
+      width: 92px !important;
+      height: 92px !important;
       margin: 0 auto !important;
-      padding: 1px !important;
+      padding: 2px !important;
       background: #ffffff !important;
       border: none !important;
       display: flex !important;
@@ -373,12 +378,12 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
       html, body {
         margin: 0 !important;
         padding: 0 !important;
-        width: 48mm !important;
+        width: 72mm !important;
       }
       .printable-receipt-wrapper {
         margin: 0 !important;
-        padding: 0 1mm 2mm 1mm !important;
-        width: 48mm !important;
+        padding: 0 2mm 3mm 2mm !important;
+        width: 72mm !important;
       }
     }
   </style>
@@ -413,7 +418,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
     }
 
     try {
-      // Calculate true rendered height of receipt inside iframe at 48mm width
+      // Calculate true rendered height of receipt inside iframe at 72mm width (80mm roll)
       const wrapper = iframeDoc.querySelector('.printable-receipt-wrapper') as HTMLElement | null;
       const trueHeightPx = wrapper?.offsetHeight || wrapper?.scrollHeight || iframeDoc.body.scrollHeight || 400;
       // 1px = 0.264583mm (at 96dpi). Add 6mm for clean tear-off margin
@@ -421,7 +426,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 
       // Inject exact @page size so Chrome preview and printer only take the receipt length!
       const dynamicPageStyle = iframeDoc.createElement('style');
-      dynamicPageStyle.textContent = `@page { size: 58mm ${dynamicHeightMm}mm !important; margin: 0mm !important; }`;
+      dynamicPageStyle.textContent = `@page { size: 80mm ${dynamicHeightMm}mm !important; margin: 0mm !important; }`;
       iframeDoc.head.appendChild(dynamicPageStyle);
 
       iframe.contentWindow?.focus();
@@ -477,7 +482,7 @@ export function executeIframePrint(elementId: string, options?: PrintReceiptOpti
 
 /**
  * Primary Print Function:
- * 1. Checks if QZ Tray is enabled and attempts direct thermal print to "POS-58 11.3.0.0".
+ * 1. Checks if QZ Tray is enabled and attempts direct thermal print to configured 80mm printer.
  * 2. If QZ Tray succeeds: silently prints and returns without browser print dialog.
  * 3. If QZ Tray is unavailable or fails: smoothly falls back to the isolated iframe browser print.
  */
@@ -511,13 +516,13 @@ export async function printReceipt(
   if (!skipQz && settings.useQzTray) {
     try {
       const qzResult = await printElementWithQz(elementId, {
-        printerName: preferredPrinter || settings.printerName || 'POS-58 11.3.0.0',
-        paperWidth: settings.paperWidth || '58mm',
+        printerName: preferredPrinter || settings.printerName || 'POS-80',
+        paperWidth: settings.paperWidth || '80mm',
         title,
       });
 
       if (qzResult.success) {
-        toast.success(`Printed directly to ${qzResult.printer || 'POS-58'}`, {
+        toast.success(`Printed directly to ${qzResult.printer || 'Thermal Printer'}`, {
           duration: 3000,
         });
         return true;
