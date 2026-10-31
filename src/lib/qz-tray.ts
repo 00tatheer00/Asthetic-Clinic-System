@@ -129,12 +129,19 @@ export async function findPosPrinter(preferredName: string = 'POS-80'): Promise<
 
     const searchPatterns = [
       /POS[-_ ]?80/i,
+      /80[-_ ]?Series/i,
+      /XP[-_ ]?80/i,
+      /RP[-_ ]?80/i,
+      /ZJ[-_ ]?80/i,
+      /Xprinter/i,
+      /\b80\b/i,
       /POS[-_ ]?58/i,
       /BT[-_ ]?500/i,
       /SPEED[-_ ]?X/i,
-      /\b80\b/i,
       /\b58\b/i,
       /thermal/i,
+      /receipt/i,
+      /printer/i,
     ];
 
     for (const pattern of searchPatterns) {
@@ -193,8 +200,8 @@ async function prepareThermalHtml(
   const rect = element.getBoundingClientRect();
   const measuredHeightPx = Math.max(scrollHeight, offsetHeight, clientHeight, Math.ceil(rect.height), 320);
 
-  // 1 CSS px (96 DPI) = 0.264583 mm. Add 8mm bottom tear-off space for the cutter
-  const heightMm = Math.max(65, Math.ceil((measuredHeightPx / 96) * 25.4) + 8);
+  // 1 CSS px (96 DPI) = 0.264583 mm. Add 16mm bottom tear-off space for the cutter
+  const heightMm = Math.max(80, Math.ceil((measuredHeightPx / 96) * 25.4) + 16);
 
   // 2. Clone element to avoid modifying the on-screen POS preview
   const clone = element.cloneNode(true) as HTMLElement;
@@ -244,7 +251,7 @@ async function prepareThermalHtml(
       target.className = 'thermal-receipt-logo';
       target.setAttribute(
         'style',
-        'width: 38mm !important; max-width: 38mm !important; height: auto !important; max-height: 34mm !important; display: block !important; margin: 0 auto 6px auto !important; object-fit: contain !important;'
+        'width: 32mm !important; max-width: 32mm !important; height: auto !important; max-height: 30mm !important; display: block !important; margin: 0 auto 3px auto !important; object-fit: contain !important;'
       );
       continue;
     }
@@ -308,14 +315,15 @@ async function prepareThermalHtml(
       max-width: ${printWidthMm}mm !important;
       background: #ffffff !important;
       color: #000000 !important;
-      font-family: 'Courier New', Consolas, 'Lucida Console', monospace !important;
-      font-size: 12px !important;
-      line-height: 1.3 !important;
+      font-family: 'Consolas', 'Courier New', monospace !important;
+      font-size: 10px !important;
+      line-height: 1.25 !important;
+      -webkit-font-smoothing: antialiased;
     }
     .thermal-receipt-container {
       width: ${printWidthMm}mm !important;
       max-width: ${printWidthMm}mm !important;
-      padding: 0 1mm 2mm 1mm !important;
+      padding: 0 1.5mm 3mm 1.5mm !important;
       margin: 0 auto !important;
       background: #ffffff !important;
       color: #000000 !important;
@@ -326,9 +334,40 @@ async function prepareThermalHtml(
       text-shadow: none !important;
     }
 
+    /* Section divider lines — crisp dashed horizontal borders */
+    .thermal-receipt-container > div:not(:last-child) {
+      border-bottom: 1px dashed #000000 !important;
+      padding-bottom: 4px !important;
+      margin-bottom: 4px !important;
+    }
+
+    /* Prevent any unwanted side borders */
+    .thermal-receipt-container,
+    .thermal-receipt-container * {
+      border-left: none !important;
+      border-right: none !important;
+    }
+
+    /* Clinic Header */
+    .thermal-receipt-container h2 {
+      font-size: 13px !important;
+      font-weight: 900 !important;
+      line-height: 1.2 !important;
+      text-align: center !important;
+      margin: 2px 0 1px 0 !important;
+      letter-spacing: 0.3px !important;
+      text-transform: uppercase !important;
+    }
+
     /* Flex utilities */
-    .thermal-receipt-container .flex { display: flex !important; }
-    .thermal-receipt-container .justify-between { justify-content: space-between !important; }
+    .thermal-receipt-container .flex { 
+      display: flex !important; 
+      width: 100% !important;
+    }
+    .thermal-receipt-container .justify-between { 
+      justify-content: space-between !important; 
+      gap: 4px !important;
+    }
     .thermal-receipt-container .justify-center { justify-content: center !important; }
     .thermal-receipt-container .items-center { align-items: center !important; }
     .thermal-receipt-container .text-center { text-align: center !important; }
@@ -345,48 +384,47 @@ async function prepareThermalHtml(
 
     /* Spacing utilities */
     .thermal-receipt-container .space-y-0\\.5 > * + * { margin-top: 2px !important; }
-    .thermal-receipt-container .space-y-1 > * + * { margin-top: 4px !important; }
-    .thermal-receipt-container .space-y-1\\.5 > * + * { margin-top: 6px !important; }
-    .thermal-receipt-container .space-y-2 > * + * { margin-top: 8px !important; }
-    .thermal-receipt-container .mb-1\\.5 { margin-bottom: 4px !important; }
-    .thermal-receipt-container .mt-0\\.5 { margin-top: 2px !important; }
-    .thermal-receipt-container .mt-1 { margin-top: 3px !important; }
-    .thermal-receipt-container .pt-0\\.5 { padding-top: 2px !important; }
-    .thermal-receipt-container .pt-1 { padding-top: 3px !important; }
-    .thermal-receipt-container .pt-1\\.5 { padding-top: 4px !important; }
-    .thermal-receipt-container .pt-2 { padding-top: 5px !important; }
-    .thermal-receipt-container .pt-2\\.5 { padding-top: 6px !important; }
-    .thermal-receipt-container .pb-1 { padding-bottom: 3px !important; }
-    .thermal-receipt-container .pb-2\\.5 { padding-bottom: 6px !important; }
-    .thermal-receipt-container .py-2 { padding-top: 4px !important; padding-bottom: 4px !important; }
+    .thermal-receipt-container .space-y-1 > * + * { margin-top: 3px !important; }
+    .thermal-receipt-container .space-y-1\\.5 > * + * { margin-top: 4px !important; }
+    .thermal-receipt-container .space-y-2 > * + * { margin-top: 5px !important; }
+    .thermal-receipt-container .mb-1\\.5 { margin-bottom: 3px !important; }
+    .thermal-receipt-container .mt-0\\.5 { margin-top: 1.5px !important; }
+    .thermal-receipt-container .mt-1 { margin-top: 2px !important; }
+    .thermal-receipt-container .pt-0\\.5 { padding-top: 1.5px !important; }
+    .thermal-receipt-container .pt-1 { padding-top: 2px !important; }
+    .thermal-receipt-container .pt-1\\.5 { padding-top: 3px !important; }
+    .thermal-receipt-container .pt-2 { padding-top: 4px !important; }
+    .thermal-receipt-container .pt-2\\.5 { padding-top: 5px !important; }
+    .thermal-receipt-container .pb-1 { padding-bottom: 2px !important; }
+    .thermal-receipt-container .pb-2\\.5 { padding-bottom: 5px !important; }
+    .thermal-receipt-container .py-2 { padding-top: 3px !important; padding-bottom: 3px !important; }
 
     /* Typography utilities */
-    .thermal-receipt-container .text-\\[8px\\] { font-size: 10px !important; }
-    .thermal-receipt-container .text-\\[9px\\] { font-size: 10.5px !important; }
-    .thermal-receipt-container .text-\\[10px\\] { font-size: 11px !important; }
-    .thermal-receipt-container .text-\\[11px\\] { font-size: 12px !important; }
-    .thermal-receipt-container .text-xs { font-size: 12px !important; }
-    .thermal-receipt-container .text-sm { font-size: 13px !important; }
-    .thermal-receipt-container .tracking-tight { letter-spacing: -0.2px !important; }
-    .thermal-receipt-container .tracking-wider { letter-spacing: 0.5px !important; }
+    .thermal-receipt-container .text-\\[8px\\] { font-size: 8.5px !important; }
+    .thermal-receipt-container .text-\\[9px\\] { font-size: 9.5px !important; }
+    .thermal-receipt-container .text-\\[10px\\] { font-size: 10px !important; }
+    .thermal-receipt-container .text-\\[11px\\] { font-size: 10.5px !important; }
+    .thermal-receipt-container .text-xs { font-size: 10.5px !important; }
+    .thermal-receipt-container .text-sm { font-size: 11.5px !important; }
+    .thermal-receipt-container .tracking-tight { letter-spacing: -0.1px !important; }
+    .thermal-receipt-container .tracking-wider { letter-spacing: 0.3px !important; }
 
-    /* Strictly NO BORDERS anywhere on the receipt */
-    .thermal-receipt-container,
-    .thermal-receipt-container *,
-    .thermal-receipt-container div,
-    .thermal-receipt-container p,
-    .thermal-receipt-container span,
-    .thermal-receipt-container section,
-    .thermal-receipt-container img {
-      border: none !important;
-      border-top: none !important;
-      border-bottom: none !important;
-      border-left: none !important;
-      border-right: none !important;
-      border-style: none !important;
-      border-width: 0 !important;
-      outline: none !important;
-      box-shadow: none !important;
+    /* Table Header Underline */
+    .thermal-receipt-container .tracking-wider {
+      border-bottom: 1px solid #000000 !important;
+      padding-bottom: 2px !important;
+      margin-bottom: 3px !important;
+    }
+
+    /* NET TOTAL Highlight */
+    .thermal-receipt-container .font-black.pt-1,
+    .thermal-receipt-container .font-black.text-xs,
+    .thermal-receipt-container .font-black.text-sm {
+      font-size: 12.5px !important;
+      font-weight: 900 !important;
+      border-top: 1px dashed #000000 !important;
+      padding-top: 3px !important;
+      margin-top: 2px !important;
     }
 
     /* Images */
@@ -404,21 +442,41 @@ async function prepareThermalHtml(
     .thermal-receipt-container img[alt*="Logo" i],
     .thermal-receipt-container img[src*="logo" i],
     .thermal-receipt-container .w-11 {
-      width: 38mm !important;
-      max-width: 38mm !important;
+      width: 32mm !important;
+      max-width: 32mm !important;
       height: auto !important;
-      max-height: 34mm !important;
+      max-height: 30mm !important;
       display: block !important;
-      margin: 0 auto 6px auto !important;
+      margin: 0 auto 3px auto !important;
       object-fit: contain !important;
     }
     .thermal-receipt-container img[src*="data:image"],
     .thermal-receipt-container .w-24 img {
-      width: 88px !important;
-      height: 88px !important;
+      width: 80px !important;
+      height: 80px !important;
       background: #ffffff !important;
       margin: 0 auto !important;
       display: block !important;
+    }
+    .thermal-receipt-container .w-24 {
+      width: 84px !important;
+      height: 84px !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    /* Status badge (PAID IN FULL) */
+    .thermal-receipt-container span.rounded,
+    .thermal-receipt-container [class*="rounded"] {
+      border-radius: 2px !important;
+      padding: 1px 4px !important;
+      font-size: 9.5px !important;
+      font-weight: 800 !important;
+      background: transparent !important;
+      color: #000000 !important;
+      display: inline-block !important;
     }
 
     /* Badges */
@@ -436,6 +494,7 @@ async function prepareThermalHtml(
 <body>
   <div class="thermal-receipt-container">
     ${innerContent}
+    <div style="height: 10mm; width: 100%;"></div>
   </div>
 </body>
 </html>`;
@@ -478,7 +537,7 @@ export async function printElementWithQz(
     const targetPrinter = options?.printerName || 'POS-80';
     const printer = await findPosPrinter(targetPrinter);
 
-    // 80mm roll: 72mm printable head width (default). 58mm roll: 48mm printable width.
+    // 80mm roll: 72mm printable head width across 576 dots
     const is58mm = options?.paperWidth === '58mm';
     const printWidthMm = is58mm ? 48 : 72;
 

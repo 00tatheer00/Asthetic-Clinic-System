@@ -35,7 +35,20 @@ export function getReceiptSettings(): InvoiceReceiptSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_RECEIPT_SETTINGS;
-    return { ...DEFAULT_RECEIPT_SETTINGS, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw);
+
+    // Auto-migrate legacy 58mm settings: the clinic has permanently upgraded to an 80mm printer
+    if (parsed.paperWidth !== '80mm' || parsed.printerName === 'POS-58 11.3.0.0') {
+      parsed.paperWidth = '80mm';
+      if (parsed.printerName === 'POS-58 11.3.0.0' || !parsed.printerName) {
+        parsed.printerName = 'POS-80';
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_RECEIPT_SETTINGS, ...parsed }));
+      } catch {}
+    }
+
+    return { ...DEFAULT_RECEIPT_SETTINGS, ...parsed, paperWidth: '80mm' };
   } catch {
     return DEFAULT_RECEIPT_SETTINGS;
   }
