@@ -1154,6 +1154,12 @@ export function OrdersList({
                     <p className="text-[8px] text-gray-500">
                       Official E-Commerce Order Fulfillment Slip
                     </p>
+                    <p className="text-[8px] font-semibold text-black pt-0.5">
+                      Software Made by Tech4Edges
+                    </p>
+                    <p className="text-[8px] text-gray-600">
+                      03275792600
+                    </p>
                   </div>
                 </div>
               </div>

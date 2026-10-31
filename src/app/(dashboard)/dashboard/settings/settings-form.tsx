@@ -803,7 +803,8 @@ export function SettingsForm({
                       {receiptForm.receiptFooterMessage ||
                         'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days.'}
                     </p>
-                    <p className="text-[8px] text-stone-400 mt-1">*** Software by Brimish POS ***</p>
+                    <p className="text-[8px] text-stone-700 font-semibold mt-1">Software Made by Tech4Edges</p>
+                    <p className="text-[8px] text-stone-500">03275792600</p>
                   </div>
                 </div>
               </div>
