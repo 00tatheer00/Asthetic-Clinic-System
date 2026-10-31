@@ -514,7 +514,7 @@ export async function printReceipt(
   // If QZ Tray is enabled and not explicitly skipped, attempt direct thermal printing
   if (!skipQz && settings.useQzTray) {
     try {
-      const targetPrinterName = preferredPrinter || (settings.printerName && !settings.printerName.includes('58') ? settings.printerName : 'Xprinter XP-80');
+      const targetPrinterName = preferredPrinter || (settings.printerName && !settings.printerName.includes('58') ? settings.printerName : 'POS-80');
       const qzResult = await printElementWithQz(elementId, {
         printerName: targetPrinterName,
         paperWidth: '80mm',

@@ -97,10 +97,10 @@ export async function connectQz(): Promise<QzTrayStatic> {
 
 /**
  * Finds the target Windows thermal printer.
- * Prioritizes exact printer name from settings, then fuzzy matches (Xprinter XP-80, POS-80, etc.),
+ * Prioritizes exact printer name from settings (POS-80), then fuzzy matches,
  * and finally falls back to the default Windows printer.
  */
-export async function findPosPrinter(preferredName: string = 'Xprinter XP-80'): Promise<string> {
+export async function findPosPrinter(preferredName: string = 'POS-80'): Promise<string> {
   const qz = await connectQz();
 
   // 1. Exact match attempt
@@ -535,7 +535,7 @@ export async function printElementWithQz(
 
   try {
     const qz = await connectQz();
-    const targetPrinter = options?.printerName || 'Xprinter XP-80';
+    const targetPrinter = options?.printerName || 'POS-80';
     const printer = await findPosPrinter(targetPrinter);
 
     // 80mm roll: 72mm printable head width across 576 dots
