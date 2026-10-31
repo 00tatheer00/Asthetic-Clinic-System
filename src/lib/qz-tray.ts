@@ -550,14 +550,13 @@ export async function printElementWithQz(
     );
 
     // Explicit dimensions (width & height) are REQUIRED for thermal continuous rolls
-    // to prevent infinite 0-height pagination loops that feed blank paper continuously.
     const config = qz.configs.create(printer, {
-      size: { width: printWidthMm, height: heightMm },
+      size: { width: 80, height: heightMm },
       units: 'mm',
       margins: 0,
-      scaleContent: false, // 1:1 crisp rendering, do not scale!
-      colorType: 'color',  // Render full contrast in JavaFX WebKit
-      rasterize: false,    // Use native vector/GDI text rendering on Windows thermal printer
+      scaleContent: true,  // Scale content smoothly to fit 80mm roll boundary
+      colorType: 'color',  // Render full contrast
+      rasterize: true,     // Render to image first - bypasses JavaFX printer driver cache bugs!
       interpolation: 'nearest-neighbor',
     });
 
@@ -568,7 +567,7 @@ export async function printElementWithQz(
         flavor: 'plain',
         data: thermalHtml,
         options: {
-          pageWidth: printWidthMm,
+          pageWidth: 80,
           pageHeight: heightMm,
         },
       },
