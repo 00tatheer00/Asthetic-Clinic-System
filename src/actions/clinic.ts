@@ -377,6 +377,8 @@ export async function voidInvoice(invoiceId: string, reason: string) {
   });
 
   revalidatePath('/dashboard/invoices');
+  revalidatePath('/dashboard/reports');
+  revalidatePath('/dashboard');
   return { success: true };
 }
 

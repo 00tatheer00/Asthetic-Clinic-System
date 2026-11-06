@@ -122,7 +122,13 @@ export const patientSchema = z.object({
   phone: phoneSchema,
   email: optionalEmailSchema,
   gender: z.enum(['male', 'female', 'other']).optional().nullable(),
-  date_of_birth: z.string().date().optional().nullable(),
+  date_of_birth: z
+    .string()
+    .date()
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null)),
   address: z.string().max(500).optional().or(z.literal('')),
   notes: z.string().max(2000).optional().or(z.literal('')),
 });
