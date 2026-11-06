@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,6 +40,7 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -48,6 +49,15 @@ export function LoginForm() {
       password: '',
     },
   });
+
+  // Explicitly keep inputs empty on initial load, blocking browser autofill cache
+  useEffect(() => {
+    reset({ email: '', password: '' });
+    const timer = setTimeout(() => {
+      reset({ email: '', password: '' });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [reset]);
 
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
@@ -121,7 +131,7 @@ export function LoginForm() {
             <CardDescription>Sign in to access the clinic dashboard</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
               {serverError && (
                 <div className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
@@ -130,12 +140,14 @@ export function LoginForm() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email or Username</Label>
+                <Label htmlFor="login_email">Email or Username</Label>
                 <Input
-                  id="email"
+                  id="login_email"
                   type="text"
-                  placeholder="bilal@admin.com"
-                  autoComplete="email"
+                  placeholder="Enter email or username"
+                  autoComplete="off"
+                  data-1p-ignore="true"
+                  data-lpignore="true"
                   disabled={isLoading}
                   {...register('email')}
                   className={errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}
@@ -146,13 +158,15 @@ export function LoginForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="login_password">Password</Label>
                 <div className="relative">
                   <Input
-                    id="password"
+                    id="login_password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
+                    placeholder="Enter password"
+                    autoComplete="new-password"
+                    data-1p-ignore="true"
+                    data-lpignore="true"
                     disabled={isLoading}
                     {...register('password')}
                     className={errors.password ? 'border-red-500 pr-10 focus-visible:ring-red-500' : 'pr-10'}
