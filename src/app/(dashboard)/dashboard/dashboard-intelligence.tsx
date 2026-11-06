@@ -416,55 +416,54 @@ export function DashboardIntelligence({
           </Card>
         </Link>
 
-        {/* Revenue KPI (Admin Only - Emerald) */}
-        {isAdmin ? (
-          <Link href="/dashboard/invoices" className="group block focus:outline-none">
-            <Card className="border-2 border-emerald-300 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-300 bg-gradient-to-br from-white via-emerald-50/70 to-emerald-100/70 rounded-2xl cursor-pointer shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-900">
-                      Today&apos;s Revenue
-                    </p>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-950 mt-1 font-serif tracking-tight group-hover:text-emerald-950 transition-colors">
-                      {formatCurrency(stats.todayRevenue)}
-                    </p>
-                    <p className="text-xs text-emerald-900 mt-1.5 flex items-center gap-1 font-bold">
-                      <TrendingUp className="h-3.5 w-3.5 text-emerald-700" />
-                      <span>All-Time: {formatCurrency(stats.allTimeRevenue || stats.monthRevenue)}</span>
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                    <DollarSign className="h-6 w-6" />
-                  </div>
+        {/* Daily Revenue KPI (Emerald) - Prominently visible for Doctor & Staff */}
+        <Link href="/dashboard/invoices" className="group block focus:outline-none">
+          <Card className="border-2 border-emerald-300 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/15 transition-all duration-300 bg-gradient-to-br from-white via-emerald-50/70 to-emerald-100/70 rounded-2xl cursor-pointer shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-900">
+                    Today&apos;s Daily Revenue
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-extrabold text-slate-950 mt-1 font-serif tracking-tight group-hover:text-emerald-950 transition-colors">
+                    {formatCurrency(stats.todayRevenue)}
+                  </p>
+                  <p className="text-xs text-emerald-900 mt-1.5 flex items-center gap-1 font-bold">
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-700" />
+                    <span>All-Time: {formatCurrency(stats.allTimeRevenue || stats.monthRevenue)}</span>
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ) : (
-          <Link href="/dashboard/patients" className="group block focus:outline-none">
-            <Card className="border-2 border-indigo-300 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/15 transition-all duration-300 bg-gradient-to-br from-white via-indigo-50/70 to-indigo-100/70 rounded-2xl cursor-pointer shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-900">
-                      Total Patients
-                    </p>
-                    <p className="text-3xl sm:text-4xl font-extrabold text-slate-950 mt-1 font-serif group-hover:text-indigo-950 transition-colors">
-                      {stats.totalPatients}
-                    </p>
-                    <p className="text-xs text-indigo-900 mt-1.5 font-bold">
-                      Registered Clinic Directory
-                    </p>
-                  </div>
-                  <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
-                    <Users className="h-6 w-6" />
-                  </div>
+                <div className="h-12 w-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <DollarSign className="h-6 w-6" />
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
-        )}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Registered Patients (Indigo) */}
+        <Link href="/dashboard/patients" className="group block focus:outline-none">
+          <Card className="border-2 border-indigo-300 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/15 transition-all duration-300 bg-gradient-to-br from-white via-indigo-50/70 to-indigo-100/70 rounded-2xl cursor-pointer shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-900">
+                    Total Patients
+                  </p>
+                  <p className="text-3xl sm:text-4xl font-extrabold text-slate-950 mt-1 font-serif group-hover:text-indigo-950 transition-colors">
+                    {stats.totalPatients}
+                  </p>
+                  <p className="text-xs text-indigo-900 mt-1.5 font-bold">
+                    Registered Clinic Directory
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/30 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <Users className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
 
         {/* Pending Web Orders (Amber) */}
         <Link href="/dashboard/orders" className="group block focus:outline-none">

@@ -33,6 +33,11 @@ import {
   Printer,
   CheckCircle2,
   AlertTriangle,
+  CalendarDays,
+  Search,
+  ChevronRight,
+  ArrowUpDown,
+  Clock,
 } from 'lucide-react';
 import { formatCurrency, formatDate, formatTime } from '@/lib/utils/helpers';
 import { exportToCSV } from '@/lib/utils/csv-export';
@@ -168,6 +173,15 @@ interface ReportsViewProps {
   patients: PatientRecord[];
 }
 
+export type ReportTimeRange =
+  | 'today'
+  | 'yesterday'
+  | '7d'
+  | '30d'
+  | '365d'
+  | 'all'
+  | 'specific_date';
+
 export function ReportsView({
   invoices,
   appointments,
@@ -176,24 +190,165 @@ export function ReportsView({
   treatments,
   patients,
 }: ReportsViewProps) {
-  const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | '90d' | 'all'>('30d');
+  const [timeRange, setTimeRange] = useState<ReportTimeRange>('30d');
+  const [specificDate, setSpecificDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [dailyLedgerSearch, setDailyLedgerSearch] = useState('');
+  const [visibleLedgerCount, setVisibleLedgerCount] = useState(15);
 
   // Filter records by timeRange
   const filterByDate = <T extends { created_at: string }>(items: T[]): T[] => {
     if (timeRange === 'all') return items;
     const now = new Date();
+
     if (timeRange === 'today') {
-      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return items.filter((item) => new Date(item.created_at) >= todayStart);
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      return items.filter((item) => {
+        const itemDateStr = (item as any).scheduled_at || item.created_at;
+        const t = new Date(itemDateStr).getTime();
+        return t >= todayStart.getTime() && t <= todayEnd.getTime();
+      });
     }
-    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+
+    if (timeRange === 'yesterday') {
+      const yestStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+      const yestEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+      return items.filter((item) => {
+        const itemDateStr = (item as any).scheduled_at || item.created_at;
+        const t = new Date(itemDateStr).getTime();
+        return t >= yestStart.getTime() && t <= yestEnd.getTime();
+      });
+    }
+
+    if (timeRange === 'specific_date' && specificDate) {
+      const [y, m, d] = specificDate.split('-').map(Number);
+      const dayStart = new Date(y, m - 1, d, 0, 0, 0);
+      const dayEnd = new Date(y, m - 1, d, 23, 59, 59, 999);
+      return items.filter((item) => {
+        const itemDateStr = (item as any).scheduled_at || item.created_at;
+        const t = new Date(itemDateStr).getTime();
+        return t >= dayStart.getTime() && t <= dayEnd.getTime();
+      });
+    }
+
+    const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 365;
     const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-    return items.filter((item) => new Date(item.created_at) >= cutoff);
+    return items.filter((item) => {
+      const itemDateStr = (item as any).scheduled_at || item.created_at;
+      return new Date(itemDateStr) >= cutoff;
+    });
   };
 
-  const filteredInvoices = useMemo(() => filterByDate(invoices), [invoices, timeRange]);
-  const filteredAppointments = useMemo(() => filterByDate(appointments), [appointments, timeRange]);
-  const filteredOrders = useMemo(() => filterByDate(orders), [orders, timeRange]);
+  const filteredInvoices = useMemo(() => filterByDate(invoices), [invoices, timeRange, specificDate]);
+  const filteredAppointments = useMemo(() => filterByDate(appointments), [appointments, timeRange, specificDate]);
+  const filteredOrders = useMemo(() => filterByDate(orders), [orders, timeRange, specificDate]);
+
+  // Comprehensive Day-by-Day Revenue Ledger (Computed across all records)
+  const dailyLedger = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        dateISO: string;
+        invoiceCount: number;
+        cash: number;
+        card: number;
+        bankTransfer: number;
+        totalRevenue: number;
+        appointmentsCount: number;
+      }
+    >();
+
+    invoices.forEach((inv) => {
+      if (inv.status !== 'paid') return;
+      const d = new Date(inv.created_at);
+      if (isNaN(d.getTime())) return;
+      const dateISO = d.toISOString().split('T')[0];
+
+      if (!map.has(dateISO)) {
+        map.set(dateISO, {
+          dateISO,
+          invoiceCount: 0,
+          cash: 0,
+          card: 0,
+          bankTransfer: 0,
+          totalRevenue: 0,
+          appointmentsCount: 0,
+        });
+      }
+      const entry = map.get(dateISO)!;
+      entry.invoiceCount += 1;
+      const total = Number(inv.total) || 0;
+      entry.totalRevenue += total;
+      if (inv.payment_method === 'card') entry.card += total;
+      else if (inv.payment_method === 'bank_transfer') entry.bankTransfer += total;
+      else entry.cash += total;
+    });
+
+    appointments.forEach((a) => {
+      const dateStr = a.scheduled_at || a.created_at;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return;
+      const dateISO = d.toISOString().split('T')[0];
+
+      if (!map.has(dateISO)) {
+        map.set(dateISO, {
+          dateISO,
+          invoiceCount: 0,
+          cash: 0,
+          card: 0,
+          bankTransfer: 0,
+          totalRevenue: 0,
+          appointmentsCount: 0,
+        });
+      }
+      map.get(dateISO)!.appointmentsCount += 1;
+    });
+
+    const now = new Date();
+    const todayISO = now.toISOString().split('T')[0];
+    const yest = new Date(now);
+    yest.setDate(now.getDate() - 1);
+    const yesterdayISO = yest.toISOString().split('T')[0];
+
+    // Ensure today is always present in ledger
+    if (!map.has(todayISO)) {
+      map.set(todayISO, {
+        dateISO: todayISO,
+        invoiceCount: 0,
+        cash: 0,
+        card: 0,
+        bankTransfer: 0,
+        totalRevenue: 0,
+        appointmentsCount: 0,
+      });
+    }
+
+    const rows = Array.from(map.values()).map((row) => {
+      const [y, m, d] = row.dateISO.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      return {
+        ...row,
+        formattedDate: dateObj.toLocaleDateString('en-GB', {
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }),
+        isToday: row.dateISO === todayISO,
+        isYesterday: row.dateISO === yesterdayISO,
+      };
+    });
+
+    return rows.sort((a, b) => b.dateISO.localeCompare(a.dateISO));
+  }, [invoices, appointments]);
+
+  const filteredDailyLedger = useMemo(() => {
+    if (!dailyLedgerSearch.trim()) return dailyLedger;
+    const q = dailyLedgerSearch.toLowerCase();
+    return dailyLedger.filter(
+      (r) => r.dateISO.includes(q) || r.formattedDate.toLowerCase().includes(q)
+    );
+  }, [dailyLedger, dailyLedgerSearch]);
 
   // Financial Metrics
   const paidInvoices = filteredInvoices.filter((inv) => inv.status === 'paid');
@@ -333,6 +488,31 @@ export function ReportsView({
     ];
     exportToCSV(`brimish-daily-closing-${new Date().toISOString().split('T')[0]}`, headers, rows);
     toast.success('Daily Closing CSV exported');
+  };
+
+  const handleExportDailyLedgerCSV = () => {
+    const headers = [
+      'Date (YYYY-MM-DD)',
+      'Day of Week',
+      'Paid Invoices Count',
+      'Cash Collection (PKR)',
+      'Card Collection (PKR)',
+      'Bank Transfer (PKR)',
+      'Total Daily Revenue (PKR)',
+      'Appointments Count',
+    ];
+    const rows = dailyLedger.map((row) => [
+      row.dateISO,
+      row.formattedDate,
+      row.invoiceCount,
+      row.cash,
+      row.card,
+      row.bankTransfer,
+      row.totalRevenue,
+      row.appointmentsCount,
+    ]);
+    exportToCSV(`brimish-daily-revenue-ledger-${new Date().toISOString().split('T')[0]}`, headers, rows);
+    toast.success('Daily Revenue Ledger CSV exported');
   };
 
   // Consolidated Unique Clinic Clients & Patients (EMR Registrations + Appointment Bookings + POS Invoices)
@@ -749,7 +929,7 @@ export function ReportsView({
             Cash Reconciliation
           </Button>
 
-          {timeRange === 'today' && (
+          {(timeRange === 'today' || timeRange === 'yesterday' || timeRange === 'specific_date') && (
             <Button
               size="sm"
               onClick={handleExportDailyClosing}
@@ -760,17 +940,18 @@ export function ReportsView({
             </Button>
           )}
 
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+          <div className="flex flex-wrap items-center gap-1 bg-gray-100 p-1 rounded-xl">
             {[
               { label: 'Today', value: 'today' },
-              { label: '7 Days', value: '7d' },
-              { label: '30 Days', value: '30d' },
-              { label: '90 Days', value: '90d' },
+              { label: 'Yesterday', value: 'yesterday' },
+              { label: 'Weekly', value: '7d' },
+              { label: 'Monthly', value: '30d' },
+              { label: 'Yearly', value: '365d' },
               { label: 'All Time', value: 'all' },
             ].map((btn) => (
               <button
                 key={btn.value}
-                onClick={() => setTimeRange(btn.value as 'today' | '7d' | '30d' | '90d' | 'all')}
+                onClick={() => setTimeRange(btn.value as ReportTimeRange)}
                 className={cn(
                   'px-3 py-1 rounded-lg text-xs font-semibold transition-all',
                   timeRange === btn.value
@@ -782,8 +963,59 @@ export function ReportsView({
               </button>
             ))}
           </div>
+
+          {/* Specific Date Picker */}
+          <div className={cn(
+            'flex items-center gap-1.5 border rounded-xl px-2.5 py-1 text-xs transition-all shadow-2xs',
+            timeRange === 'specific_date'
+              ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-500/20'
+              : 'bg-white border-gray-300 hover:border-gray-400'
+          )}>
+            <Calendar className={cn('h-3.5 w-3.5', timeRange === 'specific_date' ? 'text-rose-600' : 'text-gray-500')} />
+            <span className={cn('text-[11px] font-bold whitespace-nowrap', timeRange === 'specific_date' ? 'text-rose-900' : 'text-gray-600')}>
+              Pick Day:
+            </span>
+            <input
+              type="date"
+              value={specificDate}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setSpecificDate(e.target.value);
+                  setTimeRange('specific_date');
+                }
+              }}
+              className="text-xs bg-transparent border-0 focus:outline-none font-bold text-gray-900 cursor-pointer"
+            />
+          </div>
         </div>
       </div>
+
+      {/* Specific Date Filter Banner */}
+      {timeRange === 'specific_date' && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-50 via-pink-50 to-rose-50 border-2 border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-lg bg-rose-600 text-white flex items-center justify-center shadow-xs">
+              <CalendarDays className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-900">
+                Single-Day Inspection Filter Active: <span className="font-serif text-rose-700">{specificDate}</span>
+              </p>
+              <p className="text-[11px] text-slate-600 font-medium">
+                All financial KPIs, invoices, and clinical funnel are currently isolated to this exact date.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setTimeRange('today')}
+            className="text-xs font-bold border-rose-300 text-rose-700 hover:bg-rose-100 self-start sm:self-center"
+          >
+            Reset to Today
+          </Button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -990,6 +1222,174 @@ export function ReportsView({
         </Card>
       </div>
 
+      {/* Day-by-Day Revenue Ledger (Har Din Ka Revenue Breakdown) */}
+      <Card className="border border-slate-200/90 hover:border-emerald-500/50 hover:shadow-lg transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
+        <CardHeader className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <CalendarDays className="h-4 w-4" />
+              </div>
+              <CardTitle className="text-base sm:text-lg font-bold text-slate-950 font-serif">
+                Day-by-Day Revenue Ledger (Daily Revenue)
+              </CardTitle>
+              <Badge className="text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                {dailyLedger.length} Days Total
+              </Badge>
+            </div>
+            <CardDescription className="text-xs text-slate-600 font-medium mt-1">
+              Complete historical daily breakdown showing cash, card, and total income for each single date.
+            </CardDescription>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={dailyLedgerSearch}
+                onChange={(e) => setDailyLedgerSearch(e.target.value)}
+                placeholder="Search date (e.g. 2026-11)..."
+                className="h-8 pl-8 text-xs w-48 rounded-lg bg-white"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={handleExportDailyLedgerCSV}
+              variant="outline"
+              className="h-8 text-xs border-emerald-300 text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900 font-semibold"
+            >
+              <Download className="h-3.5 w-3.5 mr-1 text-emerald-700" />
+              Export Daily CSV
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-100/80 text-slate-700 uppercase tracking-wider text-[10px] font-extrabold border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">Date & Day</th>
+                  <th className="py-3 px-4 text-center">Paid Bills</th>
+                  <th className="py-3 px-4 text-right">Cash Received</th>
+                  <th className="py-3 px-4 text-right">Card / POS</th>
+                  <th className="py-3 px-4 text-right">Bank Transfer</th>
+                  <th className="py-3 px-4 text-right">Total Daily Revenue</th>
+                  <th className="py-3 px-4 text-center">Appointments</th>
+                  <th className="py-3 px-4 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredDailyLedger.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-10 text-center text-slate-400">
+                      No records found for the searched date.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredDailyLedger.slice(0, visibleLedgerCount).map((row) => (
+                    <tr
+                      key={row.dateISO}
+                      className={cn(
+                        'hover:bg-emerald-50/30 transition-colors',
+                        row.isToday && 'bg-emerald-50/50 font-medium'
+                      )}
+                    >
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-950 font-serif">
+                            {row.formattedDate}
+                          </span>
+                          {row.isToday && (
+                            <Badge className="bg-emerald-600 text-white text-[9px] px-1.5 py-0 font-extrabold shadow-2xs">
+                              Today
+                            </Badge>
+                          )}
+                          {row.isYesterday && (
+                            <Badge className="bg-blue-600 text-white text-[9px] px-1.5 py-0 font-extrabold shadow-2xs">
+                              Yesterday
+                            </Badge>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-mono block">
+                          {row.dateISO}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <span className="font-bold text-slate-800">
+                          {row.invoiceCount}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-right font-medium text-slate-700">
+                        {row.cash > 0 ? formatCurrency(row.cash) : '—'}
+                      </td>
+
+                      <td className="py-3 px-4 text-right font-medium text-slate-700">
+                        {row.card > 0 ? formatCurrency(row.card) : '—'}
+                      </td>
+
+                      <td className="py-3 px-4 text-right font-medium text-slate-700">
+                        {row.bankTransfer > 0 ? formatCurrency(row.bankTransfer) : '—'}
+                      </td>
+
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <span className={cn(
+                          'font-extrabold font-serif text-sm',
+                          row.totalRevenue > 0 ? 'text-emerald-700' : 'text-slate-400'
+                        )}>
+                          {formatCurrency(row.totalRevenue)}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-center text-slate-600">
+                        {row.appointmentsCount > 0 ? (
+                          <span className="font-semibold text-slate-800">
+                            {row.appointmentsCount} visits
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setSpecificDate(row.dateISO);
+                            setTimeRange('specific_date');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="h-7 px-2.5 text-[11px] font-bold text-rose-700 hover:text-rose-900 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        >
+                          <span>Inspect Day</span>
+                          <ChevronRight className="h-3 w-3 ml-0.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredDailyLedger.length > visibleLedgerCount && (
+            <div className="p-3 text-center border-t border-slate-100 bg-slate-50/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setVisibleLedgerCount((prev) => prev + 15)}
+                className="text-xs text-slate-700 font-bold hover:bg-white"
+              >
+                Show More Days ({filteredDailyLedger.length - visibleLedgerCount} remaining)
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* One-Click CSV Data Export Hub (Emerald) */}
       <Card className="border border-emerald-200/80 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 rounded-2xl sm:rounded-3xl bg-white overflow-hidden shadow-xs">
         <CardHeader>
@@ -1002,7 +1402,18 @@ export function ReportsView({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <Button
+              onClick={handleExportDailyLedgerCSV}
+              variant="outline"
+              className="h-18 flex flex-col items-center justify-center gap-1 rounded-xl border border-emerald-300 hover:border-emerald-600 hover:bg-emerald-50/70 hover:shadow-md transition-all duration-200 group cursor-pointer text-center px-2 bg-emerald-50/20"
+            >
+              <CalendarDays className="h-4 w-4 text-emerald-700 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-semibold text-emerald-950">Export Daily Revenue Ledger</span>
+              <span className="text-[10px] text-emerald-700 font-medium">
+                {dailyLedger.length} days complete breakdown
+              </span>
+            </Button>
             <Button
               onClick={handleExportInvoices}
               variant="outline"

@@ -32,6 +32,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/helpers';
+import { cn } from '@/lib/utils';
 
 // Register Chart.js modules
 ChartJS.register(
@@ -431,6 +432,54 @@ export function DashboardCharts({
               {dominantPaymentMethod.label} ({dominantPaymentMethod.percent}%)
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* 7-Day Day-by-Day Revenue Strip for Doctor & Staff */}
+      <div className="bg-white border-2 border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <div className="h-2.5 w-2.5 rounded-full bg-emerald-600 animate-pulse" />
+            <h3 className="text-xs sm:text-sm font-bold text-slate-950 font-serif">
+              Daily Revenue Tracker (Last 7 Days)
+            </h3>
+            <Badge className="text-[10px] font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">
+              Day-by-Day Revenue
+            </Badge>
+          </div>
+          <span className="text-xs text-slate-500 font-medium">
+            Full historical breakdown available in Reports
+          </span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+          {dailyData.map((day, idx) => {
+            const isToday = idx === dailyData.length - 1;
+            return (
+              <div
+                key={day.dateISO}
+                className={cn(
+                  'p-3 rounded-xl border text-center transition-all',
+                  isToday
+                    ? 'border-2 border-emerald-500 bg-emerald-50/70 shadow-xs ring-2 ring-emerald-500/20'
+                    : 'border-slate-200 bg-slate-50/60 hover:bg-slate-100 hover:border-slate-300'
+                )}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span className={cn('text-xs font-bold', isToday ? 'text-emerald-900' : 'text-slate-600')}>
+                    {isToday ? 'Today' : day.dayLabel}
+                  </span>
+                  {isToday && <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-ping" />}
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">{day.dateISO.split('-').slice(1).join('/')}</p>
+                <p className={cn('text-sm font-extrabold mt-1 font-serif', isToday ? 'text-emerald-950' : 'text-slate-900')}>
+                  {formatCurrency(day.revenue)}
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                  {day.appointments} {day.appointments === 1 ? 'visit' : 'visits'}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
