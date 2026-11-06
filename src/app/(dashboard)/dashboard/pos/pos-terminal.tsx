@@ -163,6 +163,51 @@ export function POSTerminal({
   const [showDiscountSection, setShowDiscountSection] = useState(false);
   const [showTaxSection, setShowTaxSection] = useState(false);
 
+  // Custom / Unlisted Line Item State
+  const [showAddCustomItemModal, setShowAddCustomItemModal] = useState(false);
+  const [customItemForm, setCustomItemForm] = useState({
+    name: '',
+    price: 0,
+    item_type: 'service' as 'service' | 'product',
+    quantity: 1,
+  });
+
+  const handleAddCustomItemToCart = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customItemForm.name.trim()) {
+      toast.error('Item or service name is required');
+      return;
+    }
+    if (customItemForm.price <= 0) {
+      toast.error('Price must be greater than 0');
+      return;
+    }
+
+    setItems((prev) => [
+      ...prev,
+      {
+        id: `custom-${Date.now()}`,
+        product_id: null,
+        treatment_id: null,
+        item_type: customItemForm.item_type,
+        name: customItemForm.name.trim(),
+        quantity: Math.max(1, customItemForm.quantity || 1),
+        unit_price: customItemForm.price,
+        discount_type: null,
+        discount_value: 0,
+      },
+    ]);
+
+    toast.success(`Added custom ${customItemForm.item_type}: "${customItemForm.name.trim()}"`);
+    setShowAddCustomItemModal(false);
+    setCustomItemForm({
+      name: '',
+      price: 0,
+      item_type: 'service',
+      quantity: 1,
+    });
+  };
+
   // Synchronize categories when server revalidates
   useEffect(() => {
     if (categories && categories.length > 0) {
@@ -822,6 +867,17 @@ export function POSTerminal({
           >
             <Plus className="h-3 w-3" />
             <span>New Product</span>
+          </Button>
+
+          {/* Quick Add Custom Item Button */}
+          <Button
+            size="sm"
+            onClick={() => setShowAddCustomItemModal(true)}
+            className="h-7 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-2.5 rounded-lg flex items-center gap-1 shadow-xs cursor-pointer"
+            title="Add unlisted / custom service or product directly to bill"
+          >
+            <Sparkles className="h-3 w-3" />
+            <span>+ Custom Item</span>
           </Button>
         </div>
       </div>
@@ -2134,6 +2190,99 @@ export function POSTerminal({
       </Dialog>
 
       {/* ============================================================ */}
+      {/* ADD CUSTOM / UNLISTED ITEM MODAL                              */}
+      {/* ============================================================ */}
+      <Dialog open={showAddCustomItemModal} onOpenChange={setShowAddCustomItemModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              <span>Add Custom / Unlisted Item to Bill</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Add a one-off service, procedure, or unlisted product directly into the current POS bill.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAddCustomItemToCart} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700">Item / Procedure Description *</Label>
+              <Input
+                required
+                placeholder="e.g. Custom Chemical Peel, Special Dressing, Skin Tag..."
+                value={customItemForm.name}
+                onChange={(e) => setCustomItemForm({ ...customItemForm, name: e.target.value })}
+                className="text-xs h-9"
+                autoFocus
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700">Item Type</Label>
+                <select
+                  value={customItemForm.item_type}
+                  onChange={(e) => setCustomItemForm({ ...customItemForm, item_type: e.target.value as any })}
+                  className="flex h-9 w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs"
+                >
+                  <option value="service">Clinical Service / Procedure</option>
+                  <option value="product">Retail Product / Kit</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700">Quantity</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={customItemForm.quantity}
+                  onChange={(e) => setCustomItemForm({ ...customItemForm, quantity: Number(e.target.value) || 1 })}
+                  className="text-xs h-9 font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-emerald-900">Unit Price (PKR) *</Label>
+              <Input
+                type="number"
+                min="1"
+                required
+                placeholder="0"
+                value={customItemForm.price || ''}
+                onChange={(e) => setCustomItemForm({ ...customItemForm, price: Number(e.target.value) || 0 })}
+                className="text-sm h-9 font-mono font-bold text-emerald-700"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowAddCustomItemModal(false);
+                  setCustomItemForm({ name: '', price: 0, item_type: 'service', quantity: 1 });
+                }}
+                className="text-xs h-9 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!customItemForm.name.trim() || customItemForm.price <= 0}
+                size="sm"
+                className="text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Add to Current Bill
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================ */}
       {/* ADD CUSTOM CATEGORY MODAL                                    */}
       {/* ============================================================ */}
       <Dialog open={showAddCategoryModal} onOpenChange={setShowAddCategoryModal}>
@@ -2191,6 +2340,99 @@ export function POSTerminal({
                     Create Category
                   </>
                 )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================ */}
+      {/* ADD CUSTOM / UNLISTED ITEM MODAL                              */}
+      {/* ============================================================ */}
+      <Dialog open={showAddCustomItemModal} onOpenChange={setShowAddCustomItemModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              <span>Add Custom / Unlisted Item to Bill</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Add a one-off service, procedure, or unlisted product directly into the current POS bill.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAddCustomItemToCart} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700">Item / Procedure Description *</Label>
+              <Input
+                required
+                placeholder="e.g. Custom Chemical Peel, Special Dressing, Skin Tag..."
+                value={customItemForm.name}
+                onChange={(e) => setCustomItemForm({ ...customItemForm, name: e.target.value })}
+                className="text-xs h-9"
+                autoFocus
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700">Item Type</Label>
+                <select
+                  value={customItemForm.item_type}
+                  onChange={(e) => setCustomItemForm({ ...customItemForm, item_type: e.target.value as any })}
+                  className="flex h-9 w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs"
+                >
+                  <option value="service">Clinical Service / Procedure</option>
+                  <option value="product">Retail Product / Kit</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700">Quantity</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={customItemForm.quantity}
+                  onChange={(e) => setCustomItemForm({ ...customItemForm, quantity: Number(e.target.value) || 1 })}
+                  className="text-xs h-9 font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-emerald-900">Unit Price (PKR) *</Label>
+              <Input
+                type="number"
+                min="1"
+                required
+                placeholder="0"
+                value={customItemForm.price || ''}
+                onChange={(e) => setCustomItemForm({ ...customItemForm, price: Number(e.target.value) || 0 })}
+                className="text-sm h-9 font-mono font-bold text-emerald-700"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowAddCustomItemModal(false);
+                  setCustomItemForm({ name: '', price: 0, item_type: 'service', quantity: 1 });
+                }}
+                className="text-xs h-9 cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!customItemForm.name.trim() || customItemForm.price <= 0}
+                size="sm"
+                className="text-xs h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Add to Current Bill
               </Button>
             </div>
           </form>

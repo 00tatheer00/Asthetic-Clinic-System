@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import QRCode from 'qrcode';
 import { useRouter } from 'next/navigation';
 import { createVisit } from '@/actions/clinic';
-import { createClinicalNote, updatePatient, deletePatient } from '@/actions/patients';
+import { createClinicalNote, updatePatient, deletePatient, createCustomPatientServiceAction } from '@/actions/patients';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,9 +24,11 @@ import {
   ArrowLeft, Phone, Mail, Calendar, Clock, User, CreditCard,
   FileText, Stethoscope, Plus, Loader2, Eye, EyeOff, Image as ImageIcon,
   Edit, Trash2, Printer, MessageCircle, ShieldCheck, Share2, Activity, Layers,
+  Sparkles, Banknote, CheckCircle2,
 } from 'lucide-react';
-import { formatCurrency, formatDate, formatDateTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
+import { formatCurrency, formatDate, formatDateTime, formatTime, formatPhone, buildWhatsAppLink } from '@/lib/utils/helpers';
 import { APPOINTMENT_STATUS_LABELS, APPOINTMENT_STATUS_COLORS, PAYMENT_STATUS_LABELS } from '@/lib/constants';
+import { useReceiptSettings } from '@/lib/receipt-settings';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { printReceipt } from '@/lib/print-receipt';
@@ -108,6 +111,106 @@ export function PatientDetail({
   });
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Custom Service & Receipt Dialog States
+  const receiptSettings = useReceiptSettings();
+  const [showCustomServiceDialog, setShowCustomServiceDialog] = useState(false);
+  const [customForm, setCustomForm] = useState({
+    name: '',
+    category: 'Clinical Aesthetic Procedure',
+    price: 0,
+    discount: 0,
+    amount_paid: 0,
+    payment_method: 'cash' as 'cash' | 'card' | 'bank_transfer',
+    total_sessions: 1,
+    doctor_id: staffList[0]?.id || '',
+    notes: '',
+  });
+  const [savingCustom, setSavingCustom] = useState(false);
+
+  // Active custom receipt for 80mm printing
+  const [activeCustomReceipt, setActiveCustomReceipt] = useState<{
+    invoiceNumber: string;
+    name: string;
+    category?: string;
+    price: number;
+    discount: number;
+    total: number;
+    amountPaid: number;
+    balance: number;
+    paymentMethod: string;
+    paymentDate: string;
+    notes?: string;
+  } | null>(null);
+  const [customQrUrl, setCustomQrUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (activeCustomReceipt?.invoiceNumber) {
+      const origin =
+        typeof window !== 'undefined' && window.location.origin
+          ? window.location.origin
+          : 'https://brimishskincare.com';
+      const verifyUrl = `${origin}/verify-invoice?num=${encodeURIComponent(activeCustomReceipt.invoiceNumber)}`;
+
+      QRCode.toDataURL(verifyUrl, {
+        width: 240,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#ffffff',
+        },
+      })
+        .then(setCustomQrUrl)
+        .catch(console.error);
+    }
+  }, [activeCustomReceipt]);
+
+  const handleSaveCustomService = async () => {
+    if (!customForm.name.trim()) {
+      toast.error('Please enter the service or procedure name.');
+      return;
+    }
+    if (customForm.price <= 0) {
+      toast.error('Please enter a valid price/fee.');
+      return;
+    }
+
+    setSavingCustom(true);
+    const res = await createCustomPatientServiceAction({
+      patient_id: patient.id,
+      name: customForm.name.trim(),
+      category: customForm.category,
+      price: customForm.price,
+      discount: customForm.discount,
+      amount_paid: customForm.amount_paid,
+      payment_method: customForm.payment_method,
+      total_sessions: customForm.total_sessions,
+      doctor_id: customForm.doctor_id || undefined,
+      notes: customForm.notes?.trim() || undefined,
+    });
+    setSavingCustom(false);
+
+    if (res.success && res.invoiceNumber) {
+      toast.success('Custom service recorded & official receipt generated!');
+      setShowCustomServiceDialog(false);
+      setActiveCustomReceipt({
+        invoiceNumber: res.invoiceNumber,
+        name: customForm.name.trim(),
+        category: customForm.category,
+        price: customForm.price,
+        discount: customForm.discount,
+        total: res.total ?? Math.max(0, customForm.price - customForm.discount),
+        amountPaid: res.amountPaid ?? customForm.amount_paid,
+        balance: res.balance ?? 0,
+        paymentMethod: customForm.payment_method,
+        paymentDate: new Date().toISOString(),
+        notes: customForm.notes?.trim(),
+      });
+      router.refresh();
+    } else {
+      toast.error(res.error || 'Failed to record custom service.');
+    }
+  };
 
   const handleUpdatePatient = async () => {
     if (!editForm.name.trim() || !editForm.phone.trim()) {
@@ -252,6 +355,27 @@ export function PatientDetail({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => {
+              setCustomForm({
+                name: '',
+                category: 'Clinical Aesthetic Procedure',
+                price: 0,
+                discount: 0,
+                amount_paid: 0,
+                payment_method: 'cash',
+                total_sessions: 1,
+                doctor_id: staffList[0]?.id || '',
+                notes: '',
+              });
+              setShowCustomServiceDialog(true);
+            }}
+            className="rounded-xl h-8 px-3 text-xs bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold shadow-xs cursor-pointer flex items-center gap-1.5"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            <span>+ Custom Service & Receipt</span>
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowVisitDialog(true)} className="rounded-lg h-8 text-xs">
             <Plus className="h-3.5 w-3.5 mr-1" />Visit
           </Button>
@@ -852,6 +976,429 @@ export function PatientDetail({
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Custom Service / Procedure Dialog */}
+      <Dialog open={showCustomServiceDialog} onOpenChange={setShowCustomServiceDialog}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-gray-900 font-serif">
+              <Sparkles className="h-4 w-4 text-emerald-600" />
+              Add Custom Service / Procedure & Issue Receipt
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500">
+              Record an unlisted clinical treatment, minor procedure, or custom service for {patient.name} and generate an official receipt.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            {/* Service Name */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-800">
+                Custom Service / Procedure Name *
+              </Label>
+              <Input
+                placeholder="e.g. Special Chemical Peel & Skin Tag Removal"
+                value={customForm.name}
+                onChange={(e) => setCustomForm({ ...customForm, name: e.target.value })}
+                className="rounded-xl text-sm"
+              />
+            </div>
+
+            {/* Category / Service Type & Total Sessions */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-800">Service Category</Label>
+                <select
+                  value={customForm.category}
+                  onChange={(e) => setCustomForm({ ...customForm, category: e.target.value })}
+                  className="flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="Clinical Aesthetic Procedure">Clinical Aesthetic Procedure</option>
+                  <option value="Laser Dermatology & Skin Therapy">Laser Dermatology & Skin Therapy</option>
+                  <option value="Special Consultation & Minor Procedure">Special Consultation & Minor Procedure</option>
+                  <option value="Medicated Kit / Custom Skincare">Medicated Kit / Custom Skincare</option>
+                  <option value="Other Custom Service">Other Custom Service</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-800">Planned Sessions</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={customForm.total_sessions}
+                  onChange={(e) => setCustomForm({ ...customForm, total_sessions: Number(e.target.value) || 1 })}
+                  className="rounded-xl font-mono text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Price & Discount */}
+            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-200">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-emerald-950">Fee / Charge (PKR) *</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={customForm.price || ''}
+                  onChange={(e) => {
+                    const p = Number(e.target.value) || 0;
+                    const net = Math.max(0, p - customForm.discount);
+                    setCustomForm({ ...customForm, price: p, amount_paid: net });
+                  }}
+                  className="rounded-xl font-mono font-bold text-gray-900 bg-white"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-emerald-950">Discount (PKR)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={customForm.discount || ''}
+                  onChange={(e) => {
+                    const disc = Number(e.target.value) || 0;
+                    const net = Math.max(0, customForm.price - disc);
+                    setCustomForm({ ...customForm, discount: disc, amount_paid: net });
+                  }}
+                  className="rounded-xl font-mono text-rose-700 bg-white"
+                />
+              </div>
+
+              {/* Net Payable Banner */}
+              <div className="col-span-2 pt-2 border-t border-emerald-200 flex justify-between items-center text-xs">
+                <span className="font-semibold text-emerald-900 uppercase tracking-wider text-[11px]">
+                  Net Payable Amount:
+                </span>
+                <span className="text-base font-extrabold text-emerald-950 font-serif">
+                  {formatCurrency(Math.max(0, customForm.price - customForm.discount))}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Amount & Method */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-800">Amount Received Today (PKR)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={customForm.amount_paid}
+                  onChange={(e) => setCustomForm({ ...customForm, amount_paid: Number(e.target.value) || 0 })}
+                  className="rounded-xl font-mono font-bold text-emerald-700"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-800">Payment Tender</Label>
+                <select
+                  value={customForm.payment_method}
+                  onChange={(e) => setCustomForm({ ...customForm, payment_method: e.target.value as any })}
+                  className="flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="cash">Cash at Clinic</option>
+                  <option value="card">Card / POS Terminal</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Doctor / Performer */}
+            {staffList.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-800">Doctor / Staff Attendant</Label>
+                <select
+                  value={customForm.doctor_id}
+                  onChange={(e) => setCustomForm({ ...customForm, doctor_id: e.target.value })}
+                  className="flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"
+                >
+                  {staffList.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Clinical Notes / Observations */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-800">
+                Clinical / Procedure Notes & Aftercare (Optional)
+              </Label>
+              <Textarea
+                rows={2}
+                placeholder="e.g. Performed localized treatment. Advised sun protection and prescribed topical gel."
+                value={customForm.notes}
+                onChange={(e) => setCustomForm({ ...customForm, notes: e.target.value })}
+                className="rounded-xl text-xs"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCustomServiceDialog(false)}
+                className="rounded-xl h-9 text-xs cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={savingCustom || !customForm.name.trim() || customForm.price <= 0}
+                onClick={handleSaveCustomService}
+                className="rounded-xl h-9 px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 cursor-pointer"
+              >
+                {savingCustom ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Recording & Generating...
+                  </>
+                ) : (
+                  <>
+                    <Printer className="h-3.5 w-3.5" />
+                    Save & Generate Receipt
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 80mm Custom Receipt Modal */}
+      <Dialog open={!!activeCustomReceipt} onOpenChange={(open) => !open && setActiveCustomReceipt(null)}>
+        <DialogContent className="sm:max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="border-b pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                  <Printer className="h-4 w-4" />
+                </div>
+                <div>
+                  <DialogTitle className="text-base font-bold text-gray-900 font-serif">
+                    Official Custom Service Receipt
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-gray-500 font-mono">
+                    {activeCustomReceipt?.invoiceNumber}
+                  </DialogDescription>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (!activeCustomReceipt) return;
+                    const origin =
+                      typeof window !== 'undefined' && window.location.origin
+                        ? window.location.origin
+                        : 'https://brimishskincare.com';
+                    const verifyUrl = `${origin}/verify-invoice?num=${encodeURIComponent(activeCustomReceipt.invoiceNumber)}`;
+                    const text = `*Assalam-o-Alaikum ${patient.name}*,\nHere is your official receipt from *Brimish Skin Care & Laser Clinic*:\n\n• Receipt No: ${activeCustomReceipt.invoiceNumber}\n• Service: ${activeCustomReceipt.name}\n• Total Amount: ${formatCurrency(activeCustomReceipt.total)}\n• Amount Paid: ${formatCurrency(activeCustomReceipt.amountPaid)}\n• Remaining Balance: ${formatCurrency(activeCustomReceipt.balance)}\n• Date: ${formatDateTime(activeCustomReceipt.paymentDate)}\n• Digital Verification: ${verifyUrl}\n\nThank you for choosing Brimish Skin Care!\nClinic: Sami Tower, Ring Road, Peshawar (0335-6400959)`;
+                    window.open(buildWhatsAppLink(patient.phone, text), '_blank');
+                  }}
+                  variant="outline"
+                  className="h-8 px-2.5 text-xs text-emerald-700 border-emerald-300 hover:bg-emerald-50 rounded-xl cursor-pointer"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                  WhatsApp
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => activeCustomReceipt && printReceipt('printable-custom-patient-receipt', activeCustomReceipt.invoiceNumber)}
+                  className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-8 px-3 text-xs font-semibold cursor-pointer"
+                >
+                  <Printer className="h-3.5 w-3.5 mr-1" />
+                  Print 80mm
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {activeCustomReceipt && (
+            <div className="bg-stone-100/70 p-4 sm:p-6 print:p-0 print:bg-white flex justify-center max-h-[75vh] overflow-y-auto">
+              <div
+                id="printable-custom-patient-receipt"
+                className="w-full max-w-[340px] bg-white p-4 font-mono text-[11px] text-black leading-tight space-y-0"
+              >
+                {/* Clinic Header */}
+                <div className="text-center pb-2.5">
+                  <div className="flex justify-center mb-1.5">
+                    <Image
+                      src="/images/logo.png"
+                      alt="Brimish Skin Care Logo"
+                      width={46}
+                      height={46}
+                      className="w-11 h-11 object-contain"
+                      priority
+                    />
+                  </div>
+                  <h2 className="text-sm font-black tracking-tight text-black uppercase font-sans">
+                    {receiptSettings.receiptTitle || 'BRIMISH SKIN CARE & LASER CLINIC'}
+                  </h2>
+                  <p className="text-[10px] font-bold text-black mt-0.5">
+                    {receiptSettings.receiptDoctor || 'DR. BILAL AHMAD (MD Aesthetic Medicine)'}
+                  </p>
+                  <p className="text-[9px] text-gray-700 mt-0.5">
+                    {receiptSettings.receiptSpecialty || 'Medical Aesthetics, Dermatology & Laser Center'}
+                  </p>
+                  <p className="text-[9px] text-gray-700 mt-0.5">
+                    {receiptSettings.receiptAddress || 'Sami Tower, Ring Road, Peshawar, KP'}
+                  </p>
+                  <p className="text-[9px] font-semibold text-black mt-0.5">
+                    {receiptSettings.receiptPhone || 'Dr: 0335-6400959 | WhatsApp: 0335-6400959'}
+                  </p>
+                </div>
+
+                {/* Receipt Metadata */}
+                <div className="py-2 text-[10px] space-y-0.5 border-t border-b border-black">
+                  <div className="flex justify-between">
+                    <span>Receipt #:</span>
+                    <strong className="font-bold">{activeCustomReceipt.invoiceNumber}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Date:</span>
+                    <span>{formatDate(activeCustomReceipt.paymentDate)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Time:</span>
+                    <span>{formatTime(activeCustomReceipt.paymentDate)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Patient:</span>
+                    <strong className="font-bold">{patient.name}</strong>
+                  </div>
+                  {patient.phone && (
+                    <div className="flex justify-between">
+                      <span>Phone:</span>
+                      <span>{formatPhone(patient.phone)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Payment:</span>
+                    <span className="uppercase font-bold">{activeCustomReceipt.paymentMethod}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Status:</span>
+                    <span className="font-bold uppercase text-[10px] px-1.5 py-0.5 border border-black rounded text-black bg-white">
+                      {activeCustomReceipt.balance <= 0 ? 'PAID IN FULL' : 'PARTIAL PAYMENT'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Itemized Table */}
+                <div className="py-2">
+                  <div className="flex justify-between font-bold pb-1 text-[9px] uppercase tracking-wider">
+                    <span className="w-1/2">Item / Procedure</span>
+                    <span className="w-1/4 text-center">Qty x Rate</span>
+                    <span className="w-1/4 text-right">Total</span>
+                  </div>
+                  <div className="space-y-1 pt-1">
+                    <div>
+                      <p className="font-bold text-[10px] text-black leading-tight">
+                        {activeCustomReceipt.name}
+                      </p>
+                      {activeCustomReceipt.category && (
+                        <p className="text-[9px] text-gray-600">
+                          {activeCustomReceipt.category}
+                        </p>
+                      )}
+                      <div className="flex justify-between text-[9px] text-gray-800 pt-0.5">
+                        <span>1 x {formatCurrency(activeCustomReceipt.price)}</span>
+                        <span className="font-bold text-black">{formatCurrency(activeCustomReceipt.price)}</span>
+                      </div>
+                      {activeCustomReceipt.discount > 0 && (
+                        <div className="flex justify-between text-[8px] text-emerald-800">
+                          <span>Discount Applied:</span>
+                          <span>-{formatCurrency(activeCustomReceipt.discount)}</span>
+                        </div>
+                      )}
+                      {activeCustomReceipt.notes && (
+                        <div className="text-[8px] text-gray-700 italic pt-0.5">
+                          &ldquo;{activeCustomReceipt.notes}&rdquo;
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Totals Summary */}
+                <div className="py-2 space-y-1 text-[10px] border-t border-black">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>{formatCurrency(activeCustomReceipt.price)}</span>
+                  </div>
+                  {activeCustomReceipt.discount > 0 && (
+                    <div className="flex justify-between text-emerald-800">
+                      <span>Discount:</span>
+                      <span>-{formatCurrency(activeCustomReceipt.discount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-xs sm:text-sm font-black pt-1 text-black border-t border-black">
+                    <span className="uppercase">NET TOTAL:</span>
+                    <span>{formatCurrency(activeCustomReceipt.total)}</span>
+                  </div>
+                  <div className="flex justify-between text-[9px] text-gray-700 pt-0.5">
+                    <span>Amount Tendered / Paid:</span>
+                    <span>{formatCurrency(activeCustomReceipt.amountPaid)}</span>
+                  </div>
+                  <div className="flex justify-between text-[9px] font-bold text-black">
+                    <span>{activeCustomReceipt.balance <= 0 ? 'Change Returned:' : 'Remaining Balance:'}</span>
+                    <span>{formatCurrency(activeCustomReceipt.balance <= 0 ? 0 : activeCustomReceipt.balance)}</span>
+                  </div>
+                </div>
+
+                {/* Autogenerated QR Code for Online Verification */}
+                {receiptSettings.enableQrVerification && customQrUrl && (
+                  <div className="text-center pt-2.5 pb-1 border-t border-black">
+                    <div className="w-24 h-24 mx-auto bg-white p-1 border border-black rounded flex items-center justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={customQrUrl}
+                        alt="Receipt QR Code"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <p className="text-[9px] font-black text-black uppercase mt-1 tracking-wider">
+                      SCAN TO VERIFY RECEIPT
+                    </p>
+                    <p className="text-[8px] text-gray-700 mt-0.5">
+                      Official Clinic Digital Verification Record
+                    </p>
+                    <p className="text-[8px] font-bold text-black mt-0.5">
+                      brimishclinic.com
+                    </p>
+                  </div>
+                )}
+
+                {/* Receipt Footer */}
+                <div className="text-center pt-2 text-[9px] text-gray-800 space-y-0.5">
+                  <p className="font-bold text-black">
+                    {receiptSettings.receiptFooterMessage || 'Thank you for trusting Brimish Skin Care. Follow-up valid within 30 days of treatment.'}
+                  </p>
+                  <p className="text-[8px] text-gray-600">
+                    Follow-up consultations valid within 30 days
+                  </p>
+                  <p className="text-[8px] text-gray-500">
+                    Computer-generated official clinical slip
+                  </p>
+                </div>
+
+                {/* Tech4Edges Credit Footer */}
+                <div className="pt-2 text-center text-[9px] font-bold text-gray-800 border-t border-dashed border-gray-300 mt-2">
+                  <p>Software Made by Tech4Edges</p>
+                  <p>03275792600</p>
+                </div>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

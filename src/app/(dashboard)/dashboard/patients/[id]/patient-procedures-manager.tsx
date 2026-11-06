@@ -903,13 +903,13 @@ export function PatientProceduresManager({
           <div className="space-y-4 pt-2">
             {/* Quick Treatment Select */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Select Base Treatment (Optional preset)</Label>
+              <Label className="text-xs font-semibold">Select Base Treatment (Or leave blank for custom unlisted procedure)</Label>
               <select
                 value={procForm.treatment_id}
                 onChange={(e) => handleSelectTreatment(e.target.value)}
                 className="flex h-10 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-rose-500 focus:outline-none"
               >
-                <option value="">Choose treatment...</option>
+                <option value="">-- Custom / Unlisted Procedure (Manual Plan) --</option>
                 {treatments.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name} {t.price ? `(${formatCurrency(t.price)}/session)` : ''}
@@ -1529,6 +1529,12 @@ export function PatientProceduresManager({
                   <p className="text-[8px] text-gray-500">
                     Computer-generated official clinical slip
                   </p>
+                </div>
+
+                {/* Tech4Edges Credit Footer */}
+                <div className="pt-2 text-center text-[9px] font-bold text-gray-800 border-t border-dashed border-gray-300 mt-2">
+                  <p>Software Made by Tech4Edges</p>
+                  <p>03275792600</p>
                 </div>
               </div>
             </div>
