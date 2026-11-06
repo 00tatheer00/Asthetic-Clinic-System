@@ -68,14 +68,12 @@ export async function loginStaffAction(
       const pwdTrimmed = password.trim();
       const pwdLower = pwdTrimmed.toLowerCase();
       const allowedAdminPasswords = [
+        'bilal@brimishskincare2026',
+        'bilal@brimishskincare2026!',
         'brimish@2026!',
         'brimish@2026',
         'brimish2026!',
         'brimish2026',
-        'admin123',
-        '12345678',
-        'admin',
-        'qqqqqqqqq',
       ];
       const isRecognizedAdminPwd = allowedAdminPasswords.includes(pwdLower);
 
@@ -83,9 +81,9 @@ export async function loginStaffAction(
         try {
           const adminClient = createAdminClient();
 
-          // Ensure Supabase password is kept synchronized to Brimish@2026!
+          // Ensure Supabase password is kept synchronized to Bilal@BrimishSkinCare2026
           await adminClient.auth.admin.updateUserById('142c7cdf-84e0-4011-9960-fe59049349d2', {
-            password: 'Brimish@2026!',
+            password: 'Bilal@BrimishSkinCare2026',
             email_confirm: true,
           });
 
@@ -116,7 +114,7 @@ export async function loginStaffAction(
       console.warn('[AuthAction] Sign in failed for:', targetEmail);
       return {
         success: false,
-        error: 'Invalid email or password. Please use bilal@admin.com and Brimish@2026!',
+        error: 'Invalid email or password. Please check your credentials and try again.',
       };
     }
 

@@ -40,13 +40,12 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'bilal@admin.com',
-      password: 'Brimish@2026!',
+      email: '',
+      password: '',
     },
   });
 
@@ -93,12 +92,6 @@ export function LoginForm() {
     }
   };
 
-  const handleQuickAdminLogin = async () => {
-    setValue('email', 'bilal@admin.com');
-    setValue('password', 'Brimish@2026!');
-    await onSubmit({ email: 'bilal@admin.com', password: 'Brimish@2026!' });
-  };
-
   const isLoading = isSubmitting || isNavigating;
 
   return (
@@ -128,28 +121,6 @@ export function LoginForm() {
             <CardDescription>Sign in to access the clinic dashboard</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Quick 1-Click Login Card for Dr. Bilal / Super Admin */}
-            <div className="mb-5 p-3.5 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200/80 flex items-center justify-between gap-3 shadow-2xs">
-              <div className="min-w-0">
-                <div className="font-semibold text-rose-950 text-xs flex items-center gap-1.5">
-                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Dr. Bilal (Super Admin)
-                </div>
-                <div className="text-[11px] text-gray-600 font-mono mt-0.5 truncate">
-                  bilal@admin.com • Brimish@2026!
-                </div>
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleQuickAdminLogin}
-                disabled={isLoading}
-                className="shrink-0 h-8 px-3 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-xs cursor-pointer"
-              >
-                ⚡ 1-Click Login
-              </Button>
-            </div>
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {serverError && (
                 <div className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
@@ -159,19 +130,7 @@ export function LoginForm() {
               )}
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="email">Email or Username</Label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setValue('email', 'bilal@admin.com');
-                      setValue('password', 'Brimish@2026!');
-                    }}
-                    className="text-[11px] text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
-                  >
-                    Auto-Fill
-                  </button>
-                </div>
+                <Label htmlFor="email">Email or Username</Label>
                 <Input
                   id="email"
                   type="text"
@@ -187,10 +146,7 @@ export function LoginForm() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <span className="text-[11px] text-gray-400 font-mono">Brimish@2026!</span>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
