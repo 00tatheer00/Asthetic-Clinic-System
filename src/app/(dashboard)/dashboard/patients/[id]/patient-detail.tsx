@@ -671,47 +671,18 @@ export function PatientDetail({
                 className="h-8 text-xs"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Email</Label>
-                <Input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium">Gender</Label>
-                <select
-                  value={editForm.gender}
-                  onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
-                  className="w-full text-xs rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 h-8"
-                >
-                  <option value="">Select</option>
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Date of Birth</Label>
-              <Input
-                type="date"
-                value={editForm.date_of_birth}
-                onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Address</Label>
-              <Input
-                value={editForm.address}
-                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                className="h-8 text-xs"
-                placeholder="City, Area"
-              />
+              <Label className="text-xs font-medium">Gender</Label>
+              <select
+                value={editForm.gender}
+                onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                className="w-full text-xs rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 h-8"
+              >
+                <option value="">Select</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Internal Notes</Label>

@@ -308,28 +308,18 @@ export function PatientsList({
               <Label>Phone *</Label>
               <Input value={newForm.phone} onChange={(e) => setNewForm({ ...newForm, phone: e.target.value })} placeholder="03001234567" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={newForm.email} onChange={(e) => setNewForm({ ...newForm, email: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Gender</Label>
-                <select
-                  value={newForm.gender}
-                  onChange={(e) => setNewForm({ ...newForm, gender: e.target.value })}
-                  className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
-                >
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
             <div className="space-y-2">
-              <Label>Date of Birth</Label>
-              <Input type="date" value={newForm.date_of_birth} onChange={(e) => setNewForm({ ...newForm, date_of_birth: e.target.value })} />
+              <Label>Gender</Label>
+              <select
+                value={newForm.gender}
+                onChange={(e) => setNewForm({ ...newForm, gender: e.target.value })}
+                className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+              >
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <Button onClick={handleCreate} disabled={creating || !newForm.name || !newForm.phone} className="w-full bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-lg">
               {creating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : 'Create Patient'}
@@ -369,48 +359,18 @@ export function PatientsList({
                 className="h-8 text-xs"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-700">Email</Label>
-                <Input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  placeholder="patient@example.com"
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-700">Gender</Label>
-                <select
-                  value={editForm.gender}
-                  onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
-                  className="flex h-8 w-full rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs"
-                >
-                  <option value="">Select Gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-gray-700">Date of Birth</Label>
-              <Input
-                type="date"
-                value={editForm.date_of_birth}
-                onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-gray-700">Address</Label>
-              <Input
-                value={editForm.address}
-                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                placeholder="e.g. Hayatabad, Peshawar"
-                className="h-8 text-xs"
-              />
+              <Label className="text-xs font-medium text-gray-700">Gender</Label>
+              <select
+                value={editForm.gender}
+                onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                className="flex h-8 w-full rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-gray-700">Clinical / Administrative Notes</Label>
